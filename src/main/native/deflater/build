@@ -1,0 +1,2 @@
+javah -o IntelDeflater.h -cp ../../java com.intel.gkl.deflater.IntelDeflater
+g++ -shared -fPIC -O3 -I$JAVA_HOME/include -I$JAVA_HOME/include/linux IntelDeflater.cc -o libIntelGKL.so

@@ -1,0 +1,29 @@
+plugins {
+    id "java"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.testng:testng:6.9.6'
+}
+
+test {
+    useTestNG()
+}
+
+task buildNativeLib(type: Exec) {
+    workingDir 'src/main/native/deflater'
+    commandLine './build'
+    outputs.files('src/main/native/deflater/libIntelGKL.so')
+}
+
+task copyNativeLib(type: Copy) {
+    from buildNativeLib.outputs.files
+    into "$compileJava.destinationDir/lib/linux"
+}
+
+jar.dependsOn copyNativeLib
+test.dependsOn copyNativeLib
