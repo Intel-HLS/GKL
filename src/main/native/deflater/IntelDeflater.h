@@ -7,36 +7,42 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef com_intel_gkl_deflater_IntelDeflater_DEFLATED
+#define com_intel_gkl_deflater_IntelDeflater_DEFLATED 8L
+#undef com_intel_gkl_deflater_IntelDeflater_NO_COMPRESSION
+#define com_intel_gkl_deflater_IntelDeflater_NO_COMPRESSION 0L
+#undef com_intel_gkl_deflater_IntelDeflater_BEST_SPEED
+#define com_intel_gkl_deflater_IntelDeflater_BEST_SPEED 1L
+#undef com_intel_gkl_deflater_IntelDeflater_BEST_COMPRESSION
+#define com_intel_gkl_deflater_IntelDeflater_BEST_COMPRESSION 9L
+#undef com_intel_gkl_deflater_IntelDeflater_DEFAULT_COMPRESSION
+#define com_intel_gkl_deflater_IntelDeflater_DEFAULT_COMPRESSION -1L
+#undef com_intel_gkl_deflater_IntelDeflater_FILTERED
+#define com_intel_gkl_deflater_IntelDeflater_FILTERED 1L
+#undef com_intel_gkl_deflater_IntelDeflater_HUFFMAN_ONLY
+#define com_intel_gkl_deflater_IntelDeflater_HUFFMAN_ONLY 2L
+#undef com_intel_gkl_deflater_IntelDeflater_DEFAULT_STRATEGY
+#define com_intel_gkl_deflater_IntelDeflater_DEFAULT_STRATEGY 0L
+#undef com_intel_gkl_deflater_IntelDeflater_NO_FLUSH
+#define com_intel_gkl_deflater_IntelDeflater_NO_FLUSH 0L
+#undef com_intel_gkl_deflater_IntelDeflater_SYNC_FLUSH
+#define com_intel_gkl_deflater_IntelDeflater_SYNC_FLUSH 2L
+#undef com_intel_gkl_deflater_IntelDeflater_FULL_FLUSH
+#define com_intel_gkl_deflater_IntelDeflater_FULL_FLUSH 3L
 /*
  * Class:     com_intel_gkl_deflater_IntelDeflater
- * Method:    initLibrary
+ * Method:    init
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_initLibrary
-  (JNIEnv *, jobject);
+JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_init
+  (JNIEnv *, jclass);
 
 /*
  * Class:     com_intel_gkl_deflater_IntelDeflater
- * Method:    resetLibrary
+ * Method:    resetNative
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_resetLibrary
-  (JNIEnv *, jobject);
-
-/*
- * Class:     com_intel_gkl_deflater_IntelDeflater
- * Method:    setInput
- * Signature: ([BI)V
- */
-JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_setInput
-  (JNIEnv *, jobject, jbyteArray, jint);
-
-/*
- * Class:     com_intel_gkl_deflater_IntelDeflater
- * Method:    setEndOfStream
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_setEndOfStream
+JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_resetNative
   (JNIEnv *, jobject);
 
 /*
@@ -46,14 +52,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_setEndOfStream
  */
 JNIEXPORT jint JNICALL Java_com_intel_gkl_deflater_IntelDeflater_deflate
   (JNIEnv *, jobject, jbyteArray, jint);
-
-/*
- * Class:     com_intel_gkl_deflater_IntelDeflater
- * Method:    deflateFinished
- * Signature: ()Z
- */
-JNIEXPORT jboolean JNICALL Java_com_intel_gkl_deflater_IntelDeflater_deflateFinished
-  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

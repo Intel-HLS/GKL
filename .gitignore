@@ -2,5 +2,7 @@
 .idea/
 build/
 tmp/
-lib*.so
-lib*.dylib
+*.so
+*.dylib
+*.o
+*.a
