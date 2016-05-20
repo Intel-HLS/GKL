@@ -1,2 +1,29 @@
+#!/usr/bin/env bash
+IGZIP=igzip_042
+
+# build igzip library
+cd $IGZIP/igzip
+make
+cd -
+
+# build GKL shared library
 javah -o IntelDeflater.h -cp ../../java com.intel.gkl.deflater.IntelDeflater
-g++ -shared -fPIC -O3 -I$JAVA_HOME/include -I$JAVA_HOME/include/linux IntelDeflater.cc -o libIntelGKL.so
+
+os=$(uname)
+if [[ $os == "Linux" ]]; then
+
+g++ -z noexecstack -shared -fPIC -O3 -I$IGZIP/igzip/c_code/ -I$IGZIP/include \
+    -I$JAVA_HOME/include -I$JAVA_HOME/include/linux \
+    IntelDeflater.cc $IGZIP/igzip/libigzip0c.a -o libIntelGKL.so
+
+elif [[ $os == "Darwin" ]]; then
+
+g++ -shared -fPIC -O3 -I$IGZIP/igzip/c_code/ -I$IGZIP/include \
+    -I$JAVA_HOME/include -I$JAVA_HOME/include/Darwin \
+    IntelDeflater.cc $IGZIP/igzip/libigzip0c.a -o libIntelGKL.dylib
+
+else
+
+echo "OS not supported" 1>&2
+
+fi

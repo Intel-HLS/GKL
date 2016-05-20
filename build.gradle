@@ -1,29 +1,79 @@
 plugins {
     id "java"
+    id "maven"
 }
+
+group = "com.intel"
+version = 0.1
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile 'org.testng:testng:6.9.6'
+    compile 'org.testng:testng:6.9.9'
 }
+
+import org.gradle.internal.os.OperatingSystem
 
 test {
     useTestNG()
+
+    // remove this after implementing load library
+    if (OperatingSystem.current().isLinux()) {
+        environment 'LD_LIBRARY_PATH', "$compileJava.destinationDir/com/intel/gkl/native/linux/64"
+    } else if (OperatingSystem.current().isMacOsX()) {
+        environment 'DYLD_LIBRARY_PATH', "$compileJava.destinationDir/com/intel/gkl/native/mac/64"
+    }
+
+    testLogging {
+        if (!System.env.CI.toString().toBoolean()) {
+            events "passed", "skipped", "failed", "standardOut", "standardError"
+        }
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+            }
+        }
+    }
+
+    // always rerun tests
+    outputs.upToDateWhen { false } 
 }
 
 task buildNativeLib(type: Exec) {
+    // hide stdout, but print stderr
+    standardOutput = new ByteArrayOutputStream()
     workingDir 'src/main/native/deflater'
     commandLine './build'
-    outputs.files('src/main/native/deflater/libIntelGKL.so')
+    if (OperatingSystem.current().isLinux()) {
+        outputs.files('src/main/native/deflater/libIntelGKL.so')
+    } else if (OperatingSystem.current().isMacOsX()) {
+        outputs.files('src/main/native/deflater/libIntelGKL.dylib')
+    }
+
+    // always run this task
+    outputs.upToDateWhen {false}
 }
+
+compileJava.dependsOn(buildNativeLib)
 
 task copyNativeLib(type: Copy) {
     from buildNativeLib.outputs.files
-    into "$compileJava.destinationDir/lib/linux"
+    if (OperatingSystem.current().isLinux()) {
+        into "$compileJava.destinationDir/com/intel/gkl/native/linux/64"
+    } else if (OperatingSystem.current().isMacOsX()) {
+        into "$compileJava.destinationDir/com/intel/gkl/native/mac/64"
+    }
 }
 
-jar.dependsOn copyNativeLib
-test.dependsOn copyNativeLib
+buildNativeLib.finalizedBy copyNativeLib
+
+task cleanNativeLib(type: Exec) {
+    // hide stdout, but print stderr
+    standardOutput = new ByteArrayOutputStream()
+    workingDir 'src/main/native/deflater/igzip_042/igzip'
+    commandLine 'make', 'clean'
+}
+
+clean.dependsOn(cleanNativeLib)
