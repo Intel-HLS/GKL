@@ -14,7 +14,7 @@ jfieldID FID_inputBufferLength;
 jfieldID FID_endOfStream;
 jfieldID FID_finished;
 
-JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_init
+JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_init
 (JNIEnv* env, jclass cls) {
   FID_lz_stream = env->GetFieldID(cls, "lz_stream", "J");
   FID_inputBuffer = env->GetFieldID(cls, "inputBuffer", "[B");
@@ -23,7 +23,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_init
   FID_finished = env->GetFieldID(cls, "finished", "Z");
 }
 
-JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_resetNative
+JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 (JNIEnv* env, jobject obj) {
   LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
   
@@ -37,7 +37,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_deflater_IntelDeflater_resetNative
   DBG("lz_stream = 0x%lx", (long)lz_stream);
 }
 
-JNIEXPORT jint JNICALL Java_com_intel_gkl_deflater_IntelDeflater_deflate
+JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
 (JNIEnv * env, jobject obj, jbyteArray outputBuffer, jint outputBufferLength) {
   LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
   jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inputBuffer);

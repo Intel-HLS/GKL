@@ -1,4 +1,4 @@
-package com.intel.gkl.deflater;
+package com.intel.gkl.compression;
 
 import java.io.File;
 import java.util.zip.Deflater;

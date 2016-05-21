@@ -3,9 +3,6 @@ plugins {
     id "maven"
 }
 
-group = "com.intel"
-version = 0.1
-
 repositories {
     mavenCentral()
 }
@@ -44,12 +41,12 @@ test {
 task buildNativeLib(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
-    workingDir 'src/main/native/deflater'
+    workingDir 'src/main/native/compression'
     commandLine './build'
     if (OperatingSystem.current().isLinux()) {
-        outputs.files('src/main/native/deflater/libIntelGKL.so')
+        outputs.files('src/main/native/compression/libIntelGKL.so')
     } else if (OperatingSystem.current().isMacOsX()) {
-        outputs.files('src/main/native/deflater/libIntelGKL.dylib')
+        outputs.files('src/main/native/compression/libIntelGKL.dylib')
     }
 
     // always run this task
@@ -72,8 +69,12 @@ buildNativeLib.finalizedBy copyNativeLib
 task cleanNativeLib(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
-    workingDir 'src/main/native/deflater/igzip_042/igzip'
+    workingDir 'src/main/native/compression/igzip_042/igzip'
     commandLine 'make', 'clean'
 }
 
 clean.dependsOn(cleanNativeLib)
+
+group = "com.intel"
+version = "1.0.0"
+jar.baseName = "intel-gkl"

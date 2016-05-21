@@ -1,9 +1,8 @@
-package com.intel.gkl.deflater;
+package com.intel.gkl.compression;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
 
-import java.util.Arrays;
 import java.util.Random;
 import java.util.zip.Inflater;
 
