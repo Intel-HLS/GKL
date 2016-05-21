@@ -7,7 +7,7 @@ make
 cd -
 
 # build GKL shared library
-javah -o IntelDeflater.h -cp ../../java com.intel.gkl.deflater.IntelDeflater
+javah -o IntelDeflater.h -cp ../../java com.intel.gkl.compression.IntelDeflater
 
 os=$(uname)
 if [[ $os == "Linux" ]]; then
