@@ -9,19 +9,14 @@ repositories {
 
 dependencies {
     compile 'org.testng:testng:6.9.9'
+    compile 'commons-io:commons-io:2.4'
+    compile 'org.broadinstitute:gatk-native-bindings:0.0.2'
+    compile 'org.apache.logging.log4j:log4j-core:2.5'
 }
 
-import org.gradle.internal.os.OperatingSystem
 
 test {
     useTestNG()
-
-    // remove this after implementing load library
-    if (OperatingSystem.current().isLinux()) {
-        environment 'LD_LIBRARY_PATH', "$compileJava.destinationDir/com/intel/gkl/native/linux/64"
-    } else if (OperatingSystem.current().isMacOsX()) {
-        environment 'DYLD_LIBRARY_PATH', "$compileJava.destinationDir/com/intel/gkl/native/mac/64"
-    }
 
     testLogging {
         if (!System.env.CI.toString().toBoolean()) {
@@ -37,6 +32,8 @@ test {
     // always rerun tests
     outputs.upToDateWhen { false } 
 }
+
+import org.gradle.internal.os.OperatingSystem
 
 task buildNativeLib(type: Exec) {
     // hide stdout, but print stderr

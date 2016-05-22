@@ -20,11 +20,14 @@ public class DeflaterUnitTest {
     @Test()
     public void randomDNATest() {
         final int LEN = 64*1024;
-        final IntelDeflater deflater = new IntelDeflater();
-
         final byte[] input = new byte[LEN];
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
+
+        final boolean isSupported = IntelDeflater.load();
+        Assert.assertTrue(isSupported);
+
+        final IntelDeflater deflater = new IntelDeflater();
 
         for (int i = 0; i < 10; i++) {
             randomDNA(input);
