@@ -1,10 +1,30 @@
 package com.intel.gkl.compression;
 
+import com.intel.gkl.Utils;
+
 import java.io.File;
 import java.util.zip.Deflater;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 public class IntelDeflater extends Deflater {
-    private final static String GKL_LIB_NAME = "IntelGKL";
+
+    private final static Logger logger = LogManager.getLogger(IntelDeflater.class);
+
+    private static boolean isSupported = false;
+
+    public static boolean load() {
+        return load(null);
+    }
+
+    public static boolean load(File tmpDir) {
+        isSupported = Utils.load(tmpDir);
+        if (isSupported) {
+            init();
+        }
+        return isSupported;
+    }
 
     private native static void init();
     private native void resetNative();
@@ -16,40 +36,12 @@ public class IntelDeflater extends Deflater {
     private boolean endOfStream;
     private boolean finished;
 
-    static {
-        System.loadLibrary("IntelGKL");
-        init();
-    }
+    public IntelDeflater(int level, boolean nowrap) {}
 
-    public boolean load(File tmpDir) {
-        try {
-            System.loadLibrary(GKL_LIB_NAME);
-            System.out.printf("Loaded from library path: ", System.mapLibraryName(GKL_LIB_NAME));
-        } catch (UnsatisfiedLinkError e) {
-            String pathInJar = "/lib" + "/linux" + "/" + System.mapLibraryName(GKL_LIB_NAME);
-            System.out.printf("Extract from jar: ", pathInJar);
-        } catch (final Exception e) {
-            return false;
-        }
-
-        init();
-
-        return true;
-    }
-
-    public IntelDeflater(int level, boolean nowrap) throws Exception {
-        // currently only supports level 1 and nowrap == true
-        if (level != 1 && !nowrap) {
-            throw new Exception("Not supported");
-        }
-        reset();
-    }
-
-    public IntelDeflater() {
-        reset();
-    }
+    public IntelDeflater() {}
 
     public void reset() {
+        logger.debug("Reset deflater");
         resetNative();
         inputBuffer = null;
         inputBufferLength = 0;
