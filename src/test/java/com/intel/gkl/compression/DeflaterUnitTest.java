@@ -1,7 +1,7 @@
 package com.intel.gkl.compression;
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.Test;
 
 import java.util.Random;
 import java.util.zip.Inflater;
@@ -24,7 +24,7 @@ public class DeflaterUnitTest {
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
 
-        final boolean isSupported = IntelDeflater.load();
+        final boolean isSupported = new IntelDeflater().load();
         Assert.assertTrue(isSupported);
 
         final IntelDeflater deflater = new IntelDeflater();
