@@ -63,7 +63,11 @@ task cleanNativeLib(type: Exec) {
 clean.dependsOn(cleanNativeLib)
 
 group = "com.intel"
-jar.baseName = "intel-gkl"
+jar {
+    baseName = "intel-gkl"
+    from "LICENSE"
+    exclude "log4j2.xml"
+}
 
 final isRelease = Boolean.getBoolean("release")
 version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".dirty", "")
