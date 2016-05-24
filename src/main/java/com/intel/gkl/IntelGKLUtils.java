@@ -9,10 +9,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-public class Utils {
-    private final static Logger logger = LogManager.getLogger(Utils.class);
+public class IntelGKLUtils {
+    private final static Logger logger = LogManager.getLogger(IntelGKLUtils.class);
     private final static String GKL_LIB_NAME = "IntelGKL";
-    private final static boolean isMac = System.getProperty("os.name", "unknown").toLowerCase().startsWith("mac");
     private static boolean isLoaded = false;
 
     public static synchronized boolean load(File tempDir) {
@@ -26,13 +25,13 @@ public class Utils {
             try {
                 // try to extract from jar file
                 String filename = System.mapLibraryName(GKL_LIB_NAME);
-                String jarPath = "native/" + (isMac ? "mac/64/" : "linux/64/");
+                String jarPath = "native/" +  filename;
 
-                URL inputUrl = Utils.class.getResource(jarPath + filename);
+                URL inputUrl = IntelGKLUtils.class.getResource(jarPath);
                 File temp = File.createTempFile(FilenameUtils.getBaseName(filename),
                         "." + FilenameUtils.getExtension(filename), tempDir);
 
-                logger.debug("Extracted jar:%s%s to %s\n", jarPath, filename, temp.getAbsolutePath());
+                logger.debug(() -> String.format("Extracted jar:%s to %s\n", jarPath, temp.getAbsolutePath()));
 
                 FileUtils.copyURLToFile(inputUrl, temp);
                 temp.deleteOnExit();

@@ -1,6 +1,7 @@
 plugins {
     id "java"
     id "maven"
+    id 'com.palantir.git-version' version '0.5.2'
 }
 
 repositories {
@@ -40,11 +41,7 @@ task buildNativeLib(type: Exec) {
     standardOutput = new ByteArrayOutputStream()
     workingDir 'src/main/native/compression'
     commandLine './build'
-    if (OperatingSystem.current().isLinux()) {
-        outputs.files('src/main/native/compression/libIntelGKL.so')
-    } else if (OperatingSystem.current().isMacOsX()) {
-        outputs.files('src/main/native/compression/libIntelGKL.dylib')
-    }
+    outputs.files('src/main/native/compression/libIntelGKL.so', 'src/main/native/compression/libIntelGKL.dylib')
 
     // always run this task
     outputs.upToDateWhen {false}
@@ -54,11 +51,7 @@ compileJava.dependsOn(buildNativeLib)
 
 task copyNativeLib(type: Copy) {
     from buildNativeLib.outputs.files
-    if (OperatingSystem.current().isLinux()) {
-        into "$compileJava.destinationDir/com/intel/gkl/native/linux/64"
-    } else if (OperatingSystem.current().isMacOsX()) {
-        into "$compileJava.destinationDir/com/intel/gkl/native/mac/64"
-    }
+    into "$compileJava.destinationDir/com/intel/gkl/native"
 }
 
 buildNativeLib.finalizedBy copyNativeLib
@@ -73,5 +66,7 @@ task cleanNativeLib(type: Exec) {
 clean.dependsOn(cleanNativeLib)
 
 group = "com.intel"
-version = "1.0.0"
 jar.baseName = "intel-gkl"
+
+final isRelease = Boolean.getBoolean("release")
+version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".dirty", "")

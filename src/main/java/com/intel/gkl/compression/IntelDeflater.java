@@ -1,25 +1,26 @@
 package com.intel.gkl.compression;
 
-import com.intel.gkl.Utils;
+import com.intel.gkl.IntelGKLUtils;
 
 import java.io.File;
 import java.util.zip.Deflater;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 
-public class IntelDeflater extends Deflater {
+public class IntelDeflater extends Deflater implements NativeLibrary {
 
     private final static Logger logger = LogManager.getLogger(IntelDeflater.class);
 
-    private static boolean isSupported = false;
+    private boolean isSupported = false;
 
-    public static boolean load() {
+    public boolean load() {
         return load(null);
     }
 
-    public static boolean load(File tmpDir) {
-        isSupported = Utils.load(tmpDir);
+    public boolean load(File tmpDir) {
+        isSupported = IntelGKLUtils.load(tmpDir);
         if (isSupported) {
             init();
         }
