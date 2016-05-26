@@ -78,7 +78,13 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         finished = false;
     }
 
-    public void setInput(byte[] b, int off, int len) {
+    public void setInput(byte[] b, int off, int len) throws NullPointerException {
+        if(b == null) {
+            throw new NullPointerException("Input is null");
+        }
+        if(len <= 0) {
+            throw new NullPointerException("Input buffer length is zero.");
+        }
         inputBuffer = b;
         inputBufferLength = len;
     }
