@@ -54,9 +54,13 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_init
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 (JNIEnv* env, jobject obj) {
   LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
-  
-  if (lz_stream == 0) {
-    lz_stream = (LZ_Stream2*)malloc(sizeof(LZ_Stream2));
+
+  jclass Exception = env->FindClass("java/lang/Exception");
+      if (lz_stream == 0) {
+        lz_stream = (LZ_Stream2*)malloc(sizeof(LZ_Stream2));
+        if ( lz_stream == NULL ) {
+                env->ThrowNew(Exception,"Memory allocation error");
+            }
     env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
   }
   
