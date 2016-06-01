@@ -1,6 +1,6 @@
 plugins {
-    id "java"
-    id "maven"
+    id 'java'
+    id 'maven'
     id 'com.palantir.git-version' version '0.5.2'
 }
 
@@ -9,10 +9,12 @@ repositories {
 }
 
 dependencies {
-    compile 'org.testng:testng:6.9.9'
     compile 'commons-io:commons-io:2.4'
     compile 'org.broadinstitute:gatk-native-bindings:0.0.2'
+    compile 'org.apache.logging.log4j:log4j-api:2.5'
     compile 'org.apache.logging.log4j:log4j-core:2.5'
+
+    testCompile 'org.testng:testng:6.9.9'
 }
 
 test {
@@ -56,8 +58,8 @@ buildNativeLib.finalizedBy copyNativeLib
 task cleanNativeLib(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
-    workingDir 'src/main/native/compression/igzip_042/igzip'
-    commandLine 'make', 'clean'
+    workingDir 'src/main/native/compression'
+    commandLine './clean'
 }
 
 clean.dependsOn(cleanNativeLib)
