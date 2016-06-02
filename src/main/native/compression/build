@@ -7,10 +7,10 @@ make
 cd -
 
 # build otc_zlib
-cd otc_zlib
-./configure --static
-make static
-cd -
+#cd otc_zlib
+#./configure --static
+#make static
+#cd -
 
 # build GKL shared library
 javah -o IntelDeflater.h -cp ../../java com.intel.gkl.compression.IntelDeflater
