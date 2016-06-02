@@ -8,7 +8,8 @@ cd -
 
 # build otc_zlib
 cd otc_zlib
-./configure --static
+make clean
+CFLAGS="-fPIC" ./configure --static
 make static
 cd -
 
@@ -18,9 +19,9 @@ javah -o IntelDeflater.h -cp ../../java com.intel.gkl.compression.IntelDeflater
 os=$(uname)
 if [[ $os == "Linux" ]]; then
 
-g++ -z noexecstack -shared -fPIC -O3 -I$IGZIP/igzip/c_code/ -I$IGZIP/include \
+g++ -z noexecstack -shared -Wl,--whole-archive -fPIC -O3 -I$IGZIP/igzip/c_code/ -I$IGZIP/include \
     -I$JAVA_HOME/include -I$JAVA_HOME/include/linux \
-    IntelDeflater.cc $IGZIP/igzip/libigzip0c.a -o libIntelGKL.so
+    IntelDeflater.cc $IGZIP/igzip/libigzip0c.a otc_zlib/libz.a -Wl,--no-whole-archive -o libIntelGKL.so
 
 elif [[ $os == "Darwin" ]]; then
 
