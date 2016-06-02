@@ -37,6 +37,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+/**
+ *This class provides support for Utilities for compression libraries support.
+ *The shared library libIntelGKL is packaged as a jar files and its path is retireved
+ *if the  GKL_USE_LIB_PATH variable is set. This utility class implements the load function
+ *to load the library path for the packaged jar file.
+ */
+
+
 public class IntelGKLUtils {
     private final static Logger logger = LogManager.getLogger(IntelGKLUtils.class);
     private final static String GKL_USE_LIB_PATH = "GKL_USE_LIB_PATH";

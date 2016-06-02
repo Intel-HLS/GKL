@@ -26,6 +26,63 @@
  * 	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+
+/**
+ * This is a copy of java.util.zip.Deflater from OpenJDK 7, with the following changes:
+ * - package and class name changed
+ * - static block to load libIntelGKL library
+ * - extends java.util.zip.Deflater so that IntelDeflater object can be used as regular Deflater object.
+ *   Note however that all methods of Deflater are overridden.
+ *
+ * The shared library is packaged is a jar file and is loaded when GKL_USE_LIB_PATH is set.
+ *
+ *
+ * The rest of this document is copied verbatim from the original OpenJDK file.
+ *
+ * This class provides support for general purpose compression using the
+ * popular ZLIB compression library. The ZLIB compression library was
+ * initially developed as part of the PNG graphics standard and is not
+ * protected by patents. It is fully described in the specifications at
+ * the <a href="package-summary.html#package_description">java.util.zip
+ * package description</a>.
+ *
+ * <p>The following code fragment demonstrates a trivial compression
+ * and decompression of a string using <tt>IntelDeflater</tt> and
+ * <tt>Inflater</tt>.
+ *
+ * <blockquote><pre>
+ * try {
+ *     // Encode a String into bytes
+ *     String inputString = "blahblahblah";
+ *     byte[] input = inputString.getBytes("UTF-8");
+ *
+ *     // Compress the bytes
+ *     byte[] output = new byte[100];
+ *     IntelDeflater compresser = new IntelDeflater();
+ *     compresser.setInput(input);
+ *     compresser.finish();
+ *     int compressedDataLength = compresser.deflate(output);
+ *     compresser.end();
+ *
+ *     // Decompress the bytes
+ *     Inflater decompresser = new Inflater();
+ *     decompresser.setInput(output, 0, compressedDataLength);
+ *     byte[] result = new byte[100];
+ *     int resultLength = decompresser.inflate(result);
+ *     decompresser.end();
+ *
+ *     // Decode the bytes into a String
+ *     String outputString = new String(result, 0, resultLength, "UTF-8");
+ * } catch(java.io.UnsupportedEncodingException ex) {
+ *     // handle
+ * } catch (java.util.zip.DataFormatException ex) {
+ *     // handle
+ * }
+ * </pre></blockquote>
+ *
+ * @see         java.util.zip.Inflater
+ */
+
 package com.intel.gkl.compression;
 
 import com.intel.gkl.IntelGKLUtils;
@@ -78,6 +135,15 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         finished = false;
     }
 
+    /**
+     * Sets input data for compression. This should be called whenever
+     * needsInput() returns true indicating that more input data is required.
+     * @param b the input data bytes
+     * @param off the start offset of the data
+     * @param len the length of the data
+     * @see IntelDeflater#needsInput
+     */
+
     public void setInput(byte[] b, int off, int len) throws NullPointerException {
         if(b == null) {
             throw new NullPointerException("Input is null");
@@ -89,13 +155,39 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         inputBufferLength = len;
     }
 
+    /**
+     * When called, indicates that compression should end with the current
+     * contents of the input buffer.
+     */
+
     public void finish() {
         endOfStream = true;
     }
 
+    /**
+     * Compresses the input data and fills specified buffer with compressed
+     * data. Returns actual number of bytes of compressed data. A return value
+     * of 0 indicates that {@link #needsInput() needsInput} should be called
+     * in order to determine if more input data is required.
+     *
+     * @param b the buffer for the compressed data
+     * @param off the start offset of the data
+     * @param len the maximum number of bytes of compressed data
+     * @return the actual number of bytes of compressed data written to the
+     *         output buffer
+     */
+
     public int deflate(byte[] b, int off, int len) {
         return deflate(b, len);
     }
+
+
+    /**
+     * Returns true if the end of the compressed data output stream has
+     * been reached.
+     * @return true if the end of the compressed data output stream has
+     * been reached
+     */
 
     public boolean finished() {
         return finished;
