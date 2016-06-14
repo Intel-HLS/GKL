@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 IGZIP=igzip_042
+ZLIB=otc_zlib
 
-# build igzip library
 cd $IGZIP/igzip
 make clean
 cd -
 
-# build zlib
-cd zlib
+cd $ZLIB
 make clean
 cd -
+
+rm -f *.o

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 IGZIP=igzip_042
+ZLIB=otc_zlib
 
 # build igzip library
 cd $IGZIP/igzip
@@ -7,7 +8,7 @@ make
 cd -
 
 # build otc_zlib
-cd otc_zlib
+cd $ZLIB
 make clean
 CFLAGS="-fPIC" ./configure --static
 make static
@@ -16,21 +17,6 @@ cd -
 # build GKL shared library
 javah -o IntelDeflater.h -cp ../../java com.intel.gkl.compression.IntelDeflater
 
-os=$(uname)
-if [[ $os == "Linux" ]]; then
-
-g++ -z noexecstack -shared -Wl,--whole-archive -fPIC -O3 -I$IGZIP/igzip/c_code/ -I$IGZIP/include \
-    -I$JAVA_HOME/include -I$JAVA_HOME/include/linux \
-    IntelDeflater.cc $IGZIP/igzip/libigzip0c.a otc_zlib/libz.a -Wl,--no-whole-archive -o libIntelGKL.so
-
-elif [[ $os == "Darwin" ]]; then
-
-g++ -shared -fPIC -O3 -I$IGZIP/igzip/c_code/ -I$IGZIP/include \
-    -I$JAVA_HOME/include -I$JAVA_HOME/include/Darwin \
-    IntelDeflater.cc $IGZIP/igzip/libigzip0c.a -o libIntelGKL.dylib
-
-else
-
-echo "OS not supported" 1>&2
-
-fi
+g++ -c -fPIC -O3 -I$IGZIP/igzip/c_code/ -I$IGZIP/include \
+    -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I$JAVA_HOME/include/Darwin \
+    IntelDeflater.cc

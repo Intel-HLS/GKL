@@ -46,7 +46,7 @@ public class DeflaterUnitTest {
         }
     }
 
-    @Test()
+    @Test(enabled = true)
     public void randomDNATest() {
         final int LEN = 64*1024;
         final byte[] input = new byte[LEN];
