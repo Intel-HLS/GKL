@@ -73,6 +73,11 @@ public class IntelGKLUtils {
             // try to extract from classpath
             String resourcePath = "native/" +  System.mapLibraryName(GKL_LIB_NAME);
             URL inputUrl = IntelGKLUtils.class.getResource(resourcePath);
+            if (inputUrl == null) {
+                logger.warn("Unable to find Intel GKL library: " + resourcePath);
+                return false;
+            }
+
             logger.info(String.format("Trying to load Intel GKL library from:\n\t%s", inputUrl.toString()));
 
             File temp = File.createTempFile(FilenameUtils.getBaseName(resourcePath),
@@ -93,4 +98,10 @@ public class IntelGKLUtils {
         return true;
     }
 
+    static final String TEST_RESOURCES_PATH = System.getProperty("user.dir") + "/src/test/resources/";
+    static final String TEST_RESOURCES_ABSPATH = new File(TEST_RESOURCES_PATH).getAbsolutePath() + "/";
+
+    public static String pathToTestResource(String filename) {
+        return TEST_RESOURCES_ABSPATH + filename;
+    }
 }

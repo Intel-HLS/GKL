@@ -5,6 +5,7 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -38,9 +39,9 @@ test {
 task buildNativeLib(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
-    workingDir 'src/main/native/compression'
+    workingDir 'src/main/native'
     commandLine './build'
-    outputs.files('src/main/native/compression/libIntelGKL.so', 'src/main/native/compression/libIntelGKL.dylib')
+    outputs.files('src/main/native/libIntelGKL.so', 'src/main/native/libIntelGKL.dylib')
 
     // always run this task
     outputs.upToDateWhen {false}
@@ -58,7 +59,7 @@ buildNativeLib.finalizedBy copyNativeLib
 task cleanNativeLib(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
-    workingDir 'src/main/native/compression'
+    workingDir 'src/main/native'
     commandLine './clean'
 }
 

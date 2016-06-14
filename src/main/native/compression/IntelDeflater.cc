@@ -79,7 +79,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
   jboolean endOfStream = env->GetBooleanField(obj, FID_endOfStream);
   jint compressionLevel = env->GetIntField(obj, FID_compressionLevel);
 
-  if( (compressionLevel == 1) ) {
+  if(compressionLevel == 1) {
 
   //if( (__builtin_cpu_supports("sse"))) {
   

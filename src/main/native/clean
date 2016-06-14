@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+IGZIP=compression/igzip_042
+ZLIB=compression/otc_zlib
+
+cd compression
+make clean
+cd -
+
+cd $IGZIP/igzip
+make clean
+cd -
+
+cd $ZLIB
+make clean
+cd -
+
+cd pairhmm
+make clean
+cd -
+
+rm -f libIntelGKL.so
+
