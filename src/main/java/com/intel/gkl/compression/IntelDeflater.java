@@ -121,10 +121,27 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     private int inputBufferLength;
     private boolean endOfStream;
     private boolean finished;
+    private int compressionLevel;
 
-    public IntelDeflater(int level, boolean nowrap) {}
+    
 
-    public IntelDeflater() {}
+     /**
+     * Creates a new compressor using the specified compression level.
+     * Compressed data will be generated in ZLIB format.
+     * @param level the compression level (0-9)
+     */
+    public IntelDeflater(int level) {
+        setLevel(level);
+        compressionLevel = level;
+    }
+
+    /**
+     * Creates a new compressor with the default compression level.
+     * Compressed data will be generated in ZLIB format.
+     */
+    public IntelDeflater() {
+        setLevel(DEFAULT_COMPRESSION);
+    }
 
     public void reset() {
         logger.debug("Reset deflater");
@@ -177,7 +194,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      *         output buffer
      */
 
-    public int deflate(byte[] b, int off, int len) {
+    public int deflate(byte[] b, int off, int len ) {
         return deflate(b, len);
     }
 

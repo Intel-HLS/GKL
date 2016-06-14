@@ -55,7 +55,7 @@ public class DeflaterUnitTest {
         final boolean isSupported = new IntelDeflater().load();
         Assert.assertTrue(isSupported);
 
-        final IntelDeflater deflater = new IntelDeflater();
+        final IntelDeflater deflater = new IntelDeflater(1);
 
         for (int i = 0; i < 10; i++) {
             randomDNA(input);
