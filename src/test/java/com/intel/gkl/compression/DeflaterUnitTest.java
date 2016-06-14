@@ -33,6 +33,7 @@ import org.testng.annotations.Test;
 
 import java.util.Random;
 import java.util.zip.Inflater;
+import java.util.zip.Deflater;
 
 public class DeflaterUnitTest {
 
@@ -53,11 +54,13 @@ public class DeflaterUnitTest {
         final byte[] result = new byte[LEN];
 
         final boolean isSupported = new IntelDeflater().load();
+
         Assert.assertTrue(isSupported);
 
         final IntelDeflater deflater = new IntelDeflater(1);
+        //final Deflater deflater = new Deflater(1, false);
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             randomDNA(input);
             deflater.reset();
             deflater.setInput(input, 0, input.length);
@@ -71,6 +74,8 @@ public class DeflaterUnitTest {
             System.out.printf("%d bytes compressed to %d bytes : %2.2f%% compression\n",
                     LEN, compressedBytes, 100.0 - 100.0 * compressedBytes / LEN);
 
+           
+
             Inflater inflater = new Inflater(true);
             try {
                 inflater.setInput(compressed, 0, compressedBytes);
@@ -79,6 +84,7 @@ public class DeflaterUnitTest {
             } catch (java.util.zip.DataFormatException e) {
                 e.printStackTrace();
             }
+           
 
             Assert.assertEquals(input, result);
         }

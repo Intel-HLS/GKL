@@ -115,14 +115,31 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     private native static void init();
     private native void resetNative();
     private native int deflate(byte[] b, int len);
+    
 
     private long lz_stream;
     private byte[] inputBuffer;
     private int inputBufferLength;
     private boolean endOfStream;
     private boolean finished;
-    private int compressionLevel;
+    private int compressionLevel, strategy;
 
+
+    
+     /**
+     * Creates a new compressor using the specified compression level.
+     * If 'nowrap' is true then the ZLIB header and checksum fields will
+     * not be used in order to support the compression format used in
+     * both GZIP and PKZIP.
+     * @param level the compression level (0-9)
+     * @param nowrap if true then use GZIP compatible compression
+     */
+
+    public IntelDeflater(int level, boolean nowrap) {
+        setLevel(level);
+        compressionLevel = level;
+        strategy = DEFAULT_STRATEGY;   
+    }
     
 
      /**
@@ -208,5 +225,24 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
 
     public boolean finished() {
         return finished;
+    }
+
+    /**
+     * Closes the compressor and discards any unprocessed input.
+     * This method should be called when the compressor is no longer
+     * being used, but will also be called automatically by the
+     * finalize() method. Once this method is called, the behavior
+     * of the IntelDeflater object is undefined.
+     */
+    @Override
+    public void end() {
+        
+    }
+
+    /**
+     * Closes the compressor when garbage is collected.
+     */
+    protected void finalize() {
+        end();
     }
 }

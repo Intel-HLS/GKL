@@ -49,6 +49,7 @@
 
 /* @(#) $Id$ */
 
+#include <stdlib.h>
 #include "deflate.h"
 
 #if defined(CHECK_SSE2) || defined(USE_SSE4_2_CRC_HASH) || defined(USE_QUICK)
@@ -361,6 +362,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
 #ifdef HAVE_PCLMULQDQ
     window_padding = 8;
 #endif
+   
 
     s->window = (Bytef *) ZALLOC(strm, s->w_size + window_padding, 2*sizeof(Byte));
     s->prev   = (Posf *)  ZALLOC(strm, s->w_size, sizeof(Pos));
