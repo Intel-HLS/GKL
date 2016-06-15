@@ -56,6 +56,15 @@ task copyNativeLib(type: Copy) {
 
 buildNativeLib.finalizedBy copyNativeLib
 
+task buildMac(type: Exec) {
+    workingDir '.'
+    commandLine 'scripts/buildMac.sh', project.ext.properties.mac
+
+    onlyIf {project.hasProperty('mac')}
+}
+
+copyNativeLib.finalizedBy buildMac
+
 task cleanNativeLib(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
