@@ -118,7 +118,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
   
     LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
 
-    fprintf(stdout, "CPU SSE4 = %d", __builtin_cpu_supports("sse4.2"));
+//    fprintf(stdout, "CPU SSE4 = %d", __builtin_cpu_supports("sse4.2"));
   
     DBG("lz_stream = 0x%lx", (long)lz_stream);
 
