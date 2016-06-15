@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'maven'
+    id 'signing'
     id 'com.palantir.git-version' version '0.5.2'
 }
 
@@ -18,23 +19,9 @@ dependencies {
     testCompile 'org.testng:testng:6.9.9'
 }
 
-test {
-    useTestNG()
-
-    testLogging {
-        if (!System.env.CI.toString().toBoolean()) {
-            events "passed", "skipped", "failed", "standardOut", "standardError"
-        }
-        afterSuite { desc, result ->
-            if (!desc.parent) { // will match the outermost suite
-                println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
-            }
-        }
-    }
-
-    // always rerun tests
-    outputs.upToDateWhen { false } 
-}
+//===================================================================
+// build
+//===================================================================
 
 task buildNativeLib(type: Exec) {
     // hide stdout, but print stderr
@@ -56,14 +43,14 @@ task copyNativeLib(type: Copy) {
 
 buildNativeLib.finalizedBy copyNativeLib
 
-task buildMac(type: Exec) {
+task buildOnMac(type: Exec) {
     workingDir '.'
     commandLine 'scripts/buildMac.sh', project.ext.properties.mac
 
     onlyIf {project.hasProperty('mac')}
 }
 
-copyNativeLib.finalizedBy buildMac
+copyNativeLib.finalizedBy buildOnMac
 
 task cleanNativeLib(type: Exec) {
     // hide stdout, but print stderr
@@ -74,12 +61,100 @@ task cleanNativeLib(type: Exec) {
 
 clean.dependsOn(cleanNativeLib)
 
+//===================================================================
+// test
+//===================================================================
+
+test {
+    useTestNG()
+
+    testLogging {
+        if (!System.env.CI.toString().toBoolean()) {
+            events "passed", "skipped", "failed", "standardOut", "standardError"
+        }
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                println "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+            }
+        }
+    }
+
+    // always rerun tests
+    outputs.upToDateWhen { false }
+}
+
+//===================================================================
+// release
+//===================================================================
+
+final isRelease = Boolean.getBoolean("release")
+version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".dirty", "")
+
 group = "com.intel"
+
 jar {
     baseName = "intel-gkl"
+    // include LICENSE file in jar
     from "LICENSE"
     exclude "log4j2.xml"
 }
 
-final isRelease = Boolean.getBoolean("release")
-version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".dirty", "")
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    doFirst {
+        println "Attempting to upload version:$version"
+    }
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
+            }
+
+            pom.project {
+                name 'Intel Genomics Kernel Library (GKL)'
+                packaging 'jar'
+                description 'Genomics compute kernels optimized for Intel Architecture'
+                url 'https://github.com/Intel-HLS/GKL'
+
+                scm {
+                    connection 'scm:git@github.com:Intel-HLS/GKL.git'
+                    developerConnection 'scm:git@github.com:Intel-HLS/GKL.git'
+                    url 'scm:git@github.com:Intel-HLS/GKL.git'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'https://github.com/Intel-HLS/GKL/blob/master/LICENSE'
+                        distribution 'repo'
+                    }
+                }
+            }
+        }
+    }
+}
