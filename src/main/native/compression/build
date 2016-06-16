@@ -10,7 +10,7 @@ cd -
 # build otc_zlib
 cd $ZLIB
 make clean
-CFLAGS="-fPIC" ./configure --static
+CFLAGS="-O3 -fPIC" ./configure --static
 make static
 cd -
 

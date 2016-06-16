@@ -82,12 +82,11 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
   } else {
     
     z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
- 
 
-    jclass Exception = env->FindClass("java/lang/Exception");
     if (lz_stream == 0) {
       lz_stream = (z_stream*)malloc(sizeof(z_stream));
       if ( lz_stream == NULL ) {
+        jclass Exception = env->FindClass("java/lang/Exception");
         env->ThrowNew(Exception,"Memory allocation error");
       }
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
@@ -98,8 +97,8 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
     lz_stream->zfree = 0;
     lz_stream->opaque = 0;
     ret = deflateInit(lz_stream, compressionLevel);
-    if(ret == Z_OK) fprintf(stdout,"init ok\n");
-    fflush(stdout);
+//    if(ret == Z_OK) fprintf(stdout,"init ok\n");
+//    fflush(stdout);
     DBG("lz_stream = 0x%lx", (long)lz_stream);  
   }
 }
@@ -145,7 +144,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
 
     long bytes_out = outputBufferLength - lz_stream->avail_out;
 
-    fprintf(stdout,"Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
+//    fprintf(stdout,"Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
 
     DBG("Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
 
@@ -187,7 +186,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
 
     int bytes_out = outputBufferLength - lz_stream->avail_out;
 
-    fprintf(stdout,"Compression ratio = %2.2f\n", 100.0 - (100.0 * bytes_out / bytes_in));
+//    fprintf(stdout,"Compression ratio = %2.2f\n", 100.0 - (100.0 * bytes_out / bytes_in));
 
     DBG("Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
 
