@@ -84,21 +84,22 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
     z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
 
     if (lz_stream == 0) {
-      lz_stream = (z_stream*)malloc(sizeof(z_stream));
+      lz_stream = (z_stream*)calloc(1, sizeof(z_stream));
       if ( lz_stream == NULL ) {
         jclass Exception = env->FindClass("java/lang/Exception");
         env->ThrowNew(Exception,"Memory allocation error");
       }
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
+      
+      lz_stream->zalloc = 0;
+      lz_stream->zfree = 0;
+      lz_stream->opaque = 0;
+      deflateInit(lz_stream, compressionLevel);
     }
- 
-    int ret;
-    lz_stream->zalloc = 0;
-    lz_stream->zfree = 0;
-    lz_stream->opaque = 0;
-    ret = deflateInit(lz_stream, compressionLevel);
-//    if(ret == Z_OK) fprintf(stdout,"init ok\n");
-//    fflush(stdout);
+   else {
+      deflateReset(lz_stream);
+    }
+
     DBG("lz_stream = 0x%lx", (long)lz_stream);  
   }
 }
@@ -116,8 +117,6 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
   if(compressionLevel == 1) {
   
     LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
-
-//    fprintf(stdout, "CPU SSE4 = %d", __builtin_cpu_supports("sse4.2"));
   
     DBG("lz_stream = 0x%lx", (long)lz_stream);
 
@@ -216,7 +215,24 @@ Java_com_intel_gkl_compression_IntelDeflater_end(JNIEnv *env, jobject obj)
   jint compressionLevel = env->GetIntField(obj, FID_compressionLevel);
   z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
   if (compressionLevel !=1) {
-    if (deflateEnd(lz_stream));
+      deflateEnd(lz_stream);
   }
 
+}
+
+
+JNIEXPORT void JNICALL
+Java_com_intel_gkl_compression_IntelDeflater_reset(JNIEnv *env, jobject obj)
+{
+
+  jint compressionLevel = env->GetIntField(obj, FID_compressionLevel);
+
+  if(compressionLevel ==1) {
+        LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
+	init_stream(lz_stream);
+  }
+  else {
+      z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
+      deflateReset(lz_stream); 
+  }
 }
