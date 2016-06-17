@@ -35,7 +35,7 @@ task buildNativeLib(type: Exec) {
     outputs.files('src/main/native/libIntelGKL.so', 'src/main/native/libIntelGKL.dylib')
 
     // always run this task
-    //outputs.upToDateWhen {false}
+    outputs.upToDateWhen {false}
 }
 
 compileJava.dependsOn(buildNativeLib)
