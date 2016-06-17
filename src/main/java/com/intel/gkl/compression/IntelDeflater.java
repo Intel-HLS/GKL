@@ -115,6 +115,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     private native static void init();
     private native void resetNative();
     private native int deflate(byte[] b, int len);
+   
     
 
     private long lz_stream;
@@ -189,6 +190,9 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         inputBufferLength = len;
     }
 
+
+
+    
     /**
      * When called, indicates that compression should end with the current
      * contents of the input buffer.
