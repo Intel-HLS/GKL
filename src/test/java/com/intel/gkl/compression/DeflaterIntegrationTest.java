@@ -61,9 +61,9 @@ public class DeflaterIntegrationTest {
         log.info("input filesize = " + inputFile.length());
         log.info("deflater level, time (sec), filesize");
 
-        int loopCount = 4;
+        int loopCount = 1;
         for (DeflaterFactory deflaterFactory : deflaterFactories) {
-            for (int compressionLevel = 1; compressionLevel < 10; compressionLevel++) {
+            for (int compressionLevel = 0; compressionLevel < 10; compressionLevel++) {
                 for (int loop = 0; loop < loopCount; loop++) {
 
                     long totalRecords = 0;
