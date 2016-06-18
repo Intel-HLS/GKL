@@ -35,18 +35,7 @@ public class DeflaterIntegrationTest {
         readerFactory = readerFactory.enable(SamReaderFactory.Option.EAGERLY_DECODE);
 
         // deflater factory for Intel GKL compression
-        final DeflaterFactory intelDeflaterFactory = new DeflaterFactory() {
-            public Deflater makeDeflater(final int compressionLevel, final boolean nowrap) {
-                boolean intelDeflaterSupported = new IntelDeflater().load();
-                if (intelDeflaterSupported) {
-                    if ((compressionLevel == 1 && nowrap) || compressionLevel != 1) {
-                        return new IntelDeflater(compressionLevel, nowrap);
-                    }
-                }
-
-                return new Deflater(compressionLevel, nowrap);
-            }
-        };
+        final DeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
 
         // deflater factory for Java zip deflater
         final DeflaterFactory javaDeflaterFactory= new DeflaterFactory() {

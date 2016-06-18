@@ -96,6 +96,7 @@ public class PairHmmUnitTest {
         }
 
         s.close();
+        pairHmm.done();
     }
 
     @Test(enabled = false)
@@ -162,6 +163,7 @@ public class PairHmmUnitTest {
         }
 
         s.close();
+        pairHmm.done();
     }
 
 

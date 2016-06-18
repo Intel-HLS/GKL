@@ -17,9 +17,9 @@ dependencies {
     compile 'org.broadinstitute:gatk-native-bindings:0.0.2'
     compile 'org.apache.logging.log4j:log4j-api:2.5'
     compile 'org.apache.logging.log4j:log4j-core:2.5'
+    compile 'com.github.samtools:htsjdk:2.4.1-36-g313bf83-SNAPSHOT'
+//    compile 'com.github.samtools:htsjdk:2.4.1'
 
-    testCompile 'com.github.samtools:htsjdk:2.4.1-36-g313bf83-SNAPSHOT'
-//    testCompile 'com.github.samtools:htsjdk:2.4.1'
     testCompile 'org.testng:testng:6.9.9'
 }
 
