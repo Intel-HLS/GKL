@@ -35,8 +35,13 @@ extern "C" {
 #include "zconf.h"
 }
 
-#define DBG(M, ...)
-//#define DBG(M, ...)  fprintf(stdout, "[DEBUG] (%s %s:%d) " M "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define DEF_MEM_LEVEL 8
+
+#ifdef DEBUG
+#  define DBG(M, ...)  fprintf(stdout, "[DEBUG] (%s %s:%d) " M "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#else
+#  define DBG(M, ...)
+#endif
 
 static jfieldID FID_lz_stream;
 static jfieldID FID_inputBuffer;
@@ -44,9 +49,11 @@ static jfieldID FID_inputBufferLength;
 static jfieldID FID_endOfStream;
 static jfieldID FID_finished;
 static jfieldID FID_finish;
-static jfieldID FID_compressionLevel;
+static jfieldID FID_level;
 
-
+/**
+ *  Cache the Java field IDs. Called once when the native library is loaded. 
+ */
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_init
 (JNIEnv* env, jclass cls) {
   FID_lz_stream = env->GetFieldID(cls, "lz_stream", "J");
@@ -55,21 +62,25 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_init
   FID_endOfStream = env->GetFieldID(cls, "endOfStream", "Z");
   FID_finished = env->GetFieldID(cls, "finished", "Z");
   FID_finish = env->GetFieldID(cls, "finish", "Z");
-  FID_compressionLevel = env->GetFieldID(cls,"compressionLevel","I");
+  FID_level = env->GetFieldID(cls,"level","I");
 }
 
+/**
+ *  Reset the compressor to prepare for new input data. If the stream structure
+ *  does not exists yet, it is allocated.
+ */
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
-(JNIEnv* env, jobject obj) {
+(JNIEnv* env, jobject obj, jboolean nowrap) {
  
-  jint compressionLevel = env->GetIntField(obj, FID_compressionLevel);
+  jint level = env->GetIntField(obj, FID_level);
 
-  if(compressionLevel == 1) {
+  if(level == 1) {
     LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
 
-    jclass Exception = env->FindClass("java/lang/Exception");
     if (lz_stream == 0) {
       lz_stream = (LZ_Stream2*)malloc(sizeof(LZ_Stream2));
       if ( lz_stream == NULL ) {
+        jclass Exception = env->FindClass("java/lang/Exception");
         env->ThrowNew(Exception,"Memory allocation error");
       }
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
@@ -79,7 +90,8 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
     lz_stream->end_of_stream = 0;
   
     DBG("lz_stream = 0x%lx", (long)lz_stream);
-  } else {
+  }
+  else {
     
     z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
 
@@ -94,9 +106,12 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
       lz_stream->zalloc = 0;
       lz_stream->zfree = 0;
       lz_stream->opaque = 0;
-      deflateInit(lz_stream, compressionLevel);
+      deflateInit(lz_stream, level);
+      deflateInit2(lz_stream, level,  Z_DEFLATED,
+                   nowrap ? -MAX_WBITS : MAX_WBITS,
+                   DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
     }
-   else {
+    else {
       deflateReset(lz_stream);
     }
 
@@ -105,16 +120,19 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 }
 
 
+/**
+ *  Deflate the data.
+ */
 JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
 (JNIEnv * env, jobject obj, jbyteArray outputBuffer, jint outputBufferLength) {
  
   jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inputBuffer);
   jint inputBufferLength = env->GetIntField(obj, FID_inputBufferLength);
   jboolean endOfStream = env->GetBooleanField(obj, FID_endOfStream);
-  jint compressionLevel = env->GetIntField(obj, FID_compressionLevel);
+  jint level = env->GetIntField(obj, FID_level);
   jboolean finish = env->GetBooleanField(obj, FID_finish);
 
-  if(compressionLevel == 1) {
+  if(level == 1) {
   
     LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
   
@@ -140,13 +158,9 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
 
     // compress and update lz_stream state
     fast_lz(lz_stream);
-
     long bytes_out = outputBufferLength - lz_stream->avail_out;
 
-//    fprintf(stdout,"Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
-
     DBG("Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
-
     DBG("avail_in = %d", lz_stream->avail_in);
     DBG("avail_out = %d", lz_stream->avail_out);
     DBG("total_out = %d", lz_stream->total_out);
@@ -178,17 +192,12 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
     int bytes_in = inputBufferLength;
 
     DBG("Compressing");
-    int ret;
+
     // compress and update lz_stream state
-
-    ret = deflate(lz_stream, Z_FINISH);
-
+    int ret = deflate(lz_stream, Z_FINISH);
     int bytes_out = outputBufferLength - lz_stream->avail_out;
 
-//    fprintf(stdout,"Compression ratio = %2.2f\n", 100.0 - (100.0 * bytes_out / bytes_in));
-
     DBG("Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
-
     DBG("avail_in = %d", lz_stream->avail_in);
     DBG("avail_out = %d", lz_stream->avail_out);
     DBG("total_out = %d", lz_stream->total_out);
@@ -197,42 +206,23 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
     env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
     env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
 
-
-    if ( (ret == Z_STREAM_END) && (lz_stream->avail_in == 0) ) 
-    {
+    if (ret == Z_STREAM_END && lz_stream->avail_in == 0) { 
       env->SetLongField(obj, FID_finished, true);
     }
 
     return bytes_out;
   }
-  
 }
 
-
+/**
+ *  Close the compressor and reclaim memory
+ */
 JNIEXPORT void JNICALL
 Java_com_intel_gkl_compression_IntelDeflater_end(JNIEnv *env, jobject obj)
 {
-  jint compressionLevel = env->GetIntField(obj, FID_compressionLevel);
+  jint level = env->GetIntField(obj, FID_level);
   z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
-  if (compressionLevel !=1) {
-      deflateEnd(lz_stream);
-  }
-
-}
-
-
-JNIEXPORT void JNICALL
-Java_com_intel_gkl_compression_IntelDeflater_reset(JNIEnv *env, jobject obj)
-{
-
-  jint compressionLevel = env->GetIntField(obj, FID_compressionLevel);
-
-  if(compressionLevel ==1) {
-        LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
-	init_stream(lz_stream);
-  }
-  else {
-      z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
-      deflateReset(lz_stream); 
+  if (level != 1) {
+    deflateEnd(lz_stream);
   }
 }

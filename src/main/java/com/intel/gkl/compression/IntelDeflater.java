@@ -113,7 +113,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     }
 
     private native static void init();
-    private native void resetNative();
+    private native void resetNative(boolean nowrap);
     private native int deflate(byte[] b, int len);
    
     
@@ -123,7 +123,9 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     private int inputBufferLength;
     private boolean endOfStream;
     private boolean finished;
-    private int compressionLevel, strategy;
+    private int level;
+    private int strategy;
+    private boolean nowrap;
 
 
     
@@ -137,8 +139,11 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      */
 
     public IntelDeflater(int level, boolean nowrap) {
-        setLevel(level);
-        compressionLevel = level;
+        if ((level < 0 || level > 9) && level != DEFAULT_COMPRESSION) {
+            throw new IllegalArgumentException("Invalid compression level");
+        }
+        this.level = level;
+        this.nowrap = nowrap;
         strategy = DEFAULT_STRATEGY;   
     }
     
@@ -149,8 +154,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      * @param level the compression level (0-9)
      */
     public IntelDeflater(int level) {
-        setLevel(level);
-        compressionLevel = level;
+        this(level, false);
     }
 
     /**
@@ -158,12 +162,12 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      * Compressed data will be generated in ZLIB format.
      */
     public IntelDeflater() {
-        setLevel(DEFAULT_COMPRESSION);
+        this(DEFAULT_COMPRESSION, false);
     }
 
     public void reset() {
         logger.debug("Reset deflater");
-        resetNative();
+        resetNative(nowrap);
         inputBuffer = null;
         inputBufferLength = 0;
         endOfStream = false;

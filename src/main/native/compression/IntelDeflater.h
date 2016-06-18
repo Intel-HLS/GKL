@@ -40,10 +40,10 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_init
 /*
  * Class:     com_intel_gkl_compression_IntelDeflater
  * Method:    resetNative
- * Signature: ()V
+ * Signature: (Z)V
  */
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jboolean);
 
 /*
  * Class:     com_intel_gkl_compression_IntelDeflater
