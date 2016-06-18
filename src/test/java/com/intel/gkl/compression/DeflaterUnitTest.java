@@ -53,12 +53,10 @@ public class DeflaterUnitTest {
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
 
-        final boolean isSupported = new IntelDeflater().load();
+        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+        final Deflater deflater = intelDeflaterFactory.makeDeflater(1, true);
 
-        Assert.assertTrue(isSupported);
-
-        final IntelDeflater deflater = new IntelDeflater(1);
-        //final Deflater deflater = new Deflater(1, false);
+        Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
 
         for (int i = 0; i < 2; i++) {
             randomDNA(input);
