@@ -1,5 +1,6 @@
 package com.intel.gkl.compression;
 
+import com.intel.gkl.IntelGKLUtils;
 import htsjdk.samtools.*;
 import htsjdk.samtools.util.zip.DeflaterFactory;
 import org.apache.logging.log4j.LogManager;
@@ -19,8 +20,9 @@ import java.util.zip.Deflater;
 public class DeflaterIntegrationTest {
 
     private final static Logger log = LogManager.getLogger(DeflaterIntegrationTest.class);
-    private final static String INPUT_FILE =
-            "/home/gspowley/work/gatk4/release/gatk/src/test/resources/large/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam";
+//    private final static String INPUT_FILE =
+//            "/home/gspowley/work/gatk4/release/gatk/src/test/resources/large/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam";
+    private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
 
     @Test(enabled = true)
     public void integrationTest() throws IOException {
