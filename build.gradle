@@ -6,10 +6,10 @@ plugins {
 }
 
 repositories {
-    // share local repo
-    maven { url uri('/home/gspowley/.m2/repository/') }
+//    maven { url uri('/home/gspowley/.m2/repository/') }
     mavenLocal()
     mavenCentral()
+    maven { url "https://artifactory.broadinstitute.org/artifactory/libs-snapshot/" }
 }
 
 dependencies {
@@ -49,7 +49,7 @@ buildNativeLib.finalizedBy copyNativeLib
 
 task buildOnMac(type: Exec) {
     workingDir '.'
-    commandLine 'scripts/buildMac.sh', project.ext.properties.mac
+    commandLine 'scripts/buildOnMac.sh', project.ext.properties.mac
 
     onlyIf {project.hasProperty('mac')}
 }
@@ -120,6 +120,7 @@ artifacts {
 }
 
 signing {
+    required { isRelease && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }
 

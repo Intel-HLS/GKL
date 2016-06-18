@@ -3,7 +3,6 @@
 mac=$1
 linux=$(hostname -A | xargs echo)
 dir=$(pwd)
-branch=$(git symbolic-ref --short HEAD)
 native='build/classes/main/com/intel/gkl/native'
 
 # run bash script on mac
@@ -28,7 +27,6 @@ cd \$work
 # clone repo from linux
 git clone ssh://$linux/$dir
 cd GKL
-git checkout $branch
 
 # build and test
 ./gradlew test
