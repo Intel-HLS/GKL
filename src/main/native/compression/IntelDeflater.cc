@@ -54,7 +54,7 @@ static jfieldID FID_level;
 /**
  *  Cache the Java field IDs. Called once when the native library is loaded. 
  */
-JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_init
+JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_initNative
 (JNIEnv* env, jclass cls) {
   FID_lz_stream = env->GetFieldID(cls, "lz_stream", "J");
   FID_inputBuffer = env->GetFieldID(cls, "inputBuffer", "[B");
@@ -103,13 +103,16 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
       }
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
       
-      lz_stream->zalloc = 0;
-      lz_stream->zfree = 0;
-      lz_stream->opaque = 0;
-      deflateInit(lz_stream, level);
-      deflateInit2(lz_stream, level,  Z_DEFLATED,
-                   nowrap ? -MAX_WBITS : MAX_WBITS,
-                   DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+      lz_stream->zalloc = Z_NULL;
+      lz_stream->zfree = Z_NULL;
+      lz_stream->opaque = Z_NULL;
+      int ret = deflateInit2(lz_stream, level,  Z_DEFLATED,
+                             nowrap ? -MAX_WBITS : MAX_WBITS,
+                             DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+      if (ret != Z_OK) {
+        jclass Exception = env->FindClass("java/lang/Exception");
+        env->ThrowNew(Exception,"IntelDeflater init error");
+      }
     }
     else {
       deflateReset(lz_stream);
@@ -123,7 +126,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 /**
  *  Deflate the data.
  */
-JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
+JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNative
 (JNIEnv * env, jobject obj, jbyteArray outputBuffer, jint outputBufferLength) {
  
   jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inputBuffer);
@@ -218,7 +221,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
  *  Close the compressor and reclaim memory
  */
 JNIEXPORT void JNICALL
-Java_com_intel_gkl_compression_IntelDeflater_end(JNIEnv *env, jobject obj)
+Java_com_intel_gkl_compression_IntelDeflater_endNative(JNIEnv *env, jobject obj)
 {
   jint level = env->GetIntField(obj, FID_level);
   z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);

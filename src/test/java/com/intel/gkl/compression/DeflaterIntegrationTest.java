@@ -20,8 +20,6 @@ import java.util.zip.Deflater;
 public class DeflaterIntegrationTest {
 
     private final static Logger log = LogManager.getLogger(DeflaterIntegrationTest.class);
-//    private final static String INPUT_FILE =
-//            "/home/gspowley/work/gatk4/release/gatk/src/test/resources/large/CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam";
     private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
 
     @Test(enabled = true)
@@ -88,6 +86,60 @@ public class DeflaterIntegrationTest {
                     for (final SAMRecord expected : expectedFile) {
                         SAMRecord generated = generatedIterator.next();
                         assert(expected.toString().equals(generated.toString()));
+                    }
+                }
+            }
+        }
+    }
+
+
+    @Test(enabled = false)
+    public void stressTest() throws IOException {
+        final File inputFile = new File(INPUT_FILE);
+        final File outputFile = File.createTempFile("output", ".bam");
+        outputFile.deleteOnExit();
+
+        SamReaderFactory readerFactory =
+                SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT);
+        readerFactory = readerFactory.enable(SamReaderFactory.Option.EAGERLY_DECODE);
+
+        // deflater factory for Intel GKL compression
+        final DeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+
+        // create list of deflater factories
+        List<DeflaterFactory> deflaterFactories = new ArrayList<DeflaterFactory>();
+        deflaterFactories.add(intelDeflaterFactory);
+
+        log.info("input filesize = " + inputFile.length());
+        log.info("deflater level, time (sec), filesize");
+
+        int loopCount = 0;
+        for (DeflaterFactory deflaterFactory : deflaterFactories) {
+            while (true) {
+                loopCount++;
+//            for (int loop = 0; loop < loopCount; loop++) {
+                for (int compressionLevel = 0; compressionLevel < 10; compressionLevel++) {
+
+                    long totalRecords = 0;
+                    try (final SamReader reader = readerFactory.open(inputFile)) {
+                        final SAMFileHeader header = reader.getFileHeader();
+                        final SAMFileWriterFactory writerFactory = new SAMFileWriterFactory();
+                        writerFactory.setCompressionLevel(compressionLevel);
+                        writerFactory.setDeflaterFactory(deflaterFactory);
+                        final SAMFileWriter writer = writerFactory.makeBAMWriter(header, true, outputFile);
+
+                        long totalTime = 0;
+                        for (final SAMRecord record : reader) {
+                            final long start = System.currentTimeMillis();
+                            writer.addAlignment(record);
+                            totalTime += System.currentTimeMillis() - start;
+                            totalRecords++;
+                        }
+
+                        writer.close();
+
+                        log.info(String.format("PROFILE %d %d %.3f %d",
+                                loopCount, compressionLevel, totalTime / 1000.0, outputFile.length()));
                     }
                 }
             }
