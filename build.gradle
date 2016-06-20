@@ -135,11 +135,13 @@ uploadArchives {
 //            repository(url: uri('testMaven'))
             repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
                 authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
+                proxy(host: "proxy-us.intel.com", port: 912, type: 'https')
             }
 
 //            snapshotRepository(url: uri('testMavenSnapshot'))
             snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
                 authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
+                proxy(host: "proxy-us.intel.com", port: 912, type: 'https')
             }
 
             pom.project {
