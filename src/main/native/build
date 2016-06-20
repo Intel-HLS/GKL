@@ -2,7 +2,8 @@
 
 COMPRESSION=compression
 IGZIP=$COMPRESSION/igzip_042
-OTC_ZLIB=$COMPRESSION/otc_zlib
+#ZLIB=$COMPRESSION/otc_zlib
+ZLIB=$COMPRESSION/zlib-1.2.8
 PAIRHMM=pairhmm
 
 cd pairhmm
@@ -17,14 +18,14 @@ os=$(uname)
 if [[ $os == "Linux" ]]; then
 
 g++ -z noexecstack -shared -fPIC -O3 -static-libgcc -static-libstdc++ \
-    $COMPRESSION/IntelDeflater.o $IGZIP/igzip/libigzip0c.a $OTC_ZLIB/libz.a \
+    $COMPRESSION/IntelDeflater.o $IGZIP/igzip/libigzip0c.a $ZLIB/libz.a \
     $PAIRHMM/IntelPairHmm.o \
     -o libIntelGKL.so
 
 elif [[ $os == "Darwin" ]]; then
 
 g++ -shared -fPIC -O3 \
-    $COMPRESSION/IntelDeflater.o $IGZIP/igzip/libigzip0c.a $OTC_ZLIB/libz.a \
+    $COMPRESSION/IntelDeflater.o $IGZIP/igzip/libigzip0c.a $ZLIB/libz.a \
     $PAIRHMM/IntelPairHmm.o \
     -o libIntelGKL.dylib
 

@@ -1,0 +1,4 @@
+Makefile
+zconf.h
+configure.log
+zlib.pc
