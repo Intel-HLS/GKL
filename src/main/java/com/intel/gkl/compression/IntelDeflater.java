@@ -107,15 +107,16 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     public boolean load(File tmpDir) {
         isSupported = IntelGKLUtils.load(tmpDir);
         if (isSupported) {
-            init();
+            initNative();
         }
         return isSupported;
     }
 
-    private native static void init();
+    private native static void initNative();
     private native void resetNative(boolean nowrap);
-    private native int deflate(byte[] b, int len);
-   
+    private native int deflateNative(byte[] b, int len);
+    private native void endNative();
+
     
 
     private long lz_stream;
@@ -140,7 +141,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
 
     public IntelDeflater(int level, boolean nowrap) {
         if ((level < 0 || level > 9) && level != DEFAULT_COMPRESSION) {
-            throw new IllegalArgumentException("Invalid compression level");
+            throw new IllegalArgumentException("Illegal compression level");
         }
         this.level = level;
         this.nowrap = nowrap;
@@ -220,7 +221,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      */
 
     public int deflate(byte[] b, int off, int len ) {
-        return deflate(b, len);
+        return deflateNative(b, len);
     }
 
 
@@ -244,7 +245,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      */
     @Override
     public void end() {
-        
+        endNative();
     }
 
     /**

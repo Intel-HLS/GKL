@@ -18,7 +18,6 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.5'
     compile 'org.apache.logging.log4j:log4j-core:2.5'
     compile 'com.github.samtools:htsjdk:2.4.1-36-g313bf83-SNAPSHOT'
-//    compile 'com.github.samtools:htsjdk:2.4.1'
 
     testCompile 'org.testng:testng:6.9.9'
 }
@@ -48,10 +47,11 @@ task copyNativeLib(type: Copy) {
 buildNativeLib.finalizedBy copyNativeLib
 
 task buildOnMac(type: Exec) {
+    String mac_host = project.ext.properties.mac_host ? project.ext.properties.mac_host : "gkl-mac"
     workingDir '.'
-    commandLine 'scripts/buildOnMac.sh', project.ext.properties.mac
+    commandLine 'scripts/buildOnMac.sh', mac_host
 
-    onlyIf {project.hasProperty('mac')}
+    onlyIf {project.hasProperty('mac') || project.hasProperty('mac_host') || gradle.taskGraph.hasTask(uploadArchives)}
 }
 
 copyNativeLib.finalizedBy buildOnMac
@@ -91,7 +91,7 @@ test {
 // release
 //===================================================================
 
-final isRelease = Boolean.getBoolean("release")
+final isRelease = project.hasProperty("release")
 version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".dirty", "")
 
 group = "com.intel"
@@ -120,7 +120,7 @@ artifacts {
 }
 
 signing {
-    required { isRelease && gradle.taskGraph.hasTask("uploadArchives") }
+    required { isRelease && gradle.taskGraph.hasTask(uploadArchives) }
     sign configurations.archives
 }
 
@@ -132,10 +132,12 @@ uploadArchives {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
+//            repository(url: uri('testMaven'))
             repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
                 authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
             }
 
+//            snapshotRepository(url: uri('testMavenSnapshot'))
             snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
                 authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
             }
@@ -145,18 +147,37 @@ uploadArchives {
                 packaging 'jar'
                 description 'Genomics compute kernels optimized for Intel Architecture'
                 url 'https://github.com/Intel-HLS/GKL'
-
                 scm {
                     connection 'scm:git@github.com:Intel-HLS/GKL.git'
                     developerConnection 'scm:git@github.com:Intel-HLS/GKL.git'
                     url 'scm:git@github.com:Intel-HLS/GKL.git'
                 }
-
                 licenses {
                     license {
                         name 'MIT License'
-                        url 'https://github.com/Intel-HLS/GKL/blob/master/LICENSE'
+                        url 'https://opensource.org/licenses/MIT'
                         distribution 'repo'
+                    }
+                    license {
+                        name 'BSD 3-Clause'
+                        url 'https://opensource.org/licenses/BSD-3-Clause'
+                        distribution 'repo'
+                    }
+                    license {
+                        name 'Zlib License'
+                        url 'https://opensource.org/licenses/Zlib'
+                        distribution 'repo'
+                    }
+
+                }
+                developers {
+                    developer {
+                        name = "George Powley"
+                        email = "george.s.powley@intel.com"
+                    }
+                    developer {
+                        name = "Priya Vaidya"
+                        email = "priya.n.vaidya@intel.com"
                     }
                 }
             }

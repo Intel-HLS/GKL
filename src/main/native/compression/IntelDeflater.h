@@ -31,10 +31,10 @@ extern "C" {
 #define com_intel_gkl_compression_IntelDeflater_FULL_FLUSH 3L
 /*
  * Class:     com_intel_gkl_compression_IntelDeflater
- * Method:    init
+ * Method:    initNative
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_init
+JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_initNative
   (JNIEnv *, jclass);
 
 /*
@@ -47,11 +47,19 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 
 /*
  * Class:     com_intel_gkl_compression_IntelDeflater
- * Method:    deflate
+ * Method:    deflateNative
  * Signature: ([BI)I
  */
-JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflate
+JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNative
   (JNIEnv *, jobject, jbyteArray, jint);
+
+/*
+ * Class:     com_intel_gkl_compression_IntelDeflater
+ * Method:    endNative
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_endNative
+  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }
