@@ -6,8 +6,3 @@ jdk:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y yasm
-  - git clone https://github.com/gspowley/gatk-native-bindings
-  - cd gatk-native-bindings
-  - git checkout gp_gkl_pairhmm
-  - ./gradlew install
-  - cd -
