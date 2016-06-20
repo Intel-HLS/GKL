@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/Intel-HLS/GKL.svg?branch=master)](https://travis-ci.org/Intel-HLS/GKL)
 
-# Intel Genomics Kernel Library (GKL)
+# Genomics Kernel Library (GKL)
 This repository contains optimized versions of compute kernels used in genomics applications like
 [GATK](https://github.com/broadinstitute/gatk) and [HTSJDK](https://github.com/samtools/htsjdk). These kernels are
 optimized to run on Intel Architecture under 64-bit Linux and Mac OSX.
