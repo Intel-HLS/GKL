@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 IGZIP=igzip_042
-ZLIB=otc_zlib
+#ZLIB=otc_zlib
+ZLIB=zlib-1.2.8
 
 # build igzip library
 cd $IGZIP/igzip
