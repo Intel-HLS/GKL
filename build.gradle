@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     compile 'commons-io:commons-io:2.4'
-    compile 'org.broadinstitute:gatk-native-bindings:0.0.2'
+    compile 'org.broadinstitute:gatk-native-bindings:0.0.3'
     compile 'org.apache.logging.log4j:log4j-api:2.5'
     compile 'org.apache.logging.log4j:log4j-core:2.5'
     compile 'com.github.samtools:htsjdk:2.4.1-36-g313bf83-SNAPSHOT'
@@ -132,15 +132,15 @@ uploadArchives {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-            repository(url: uri('testMaven'))
-//            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-//                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
-//            }
+//            repository(url: uri('testMaven'))
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
+            }
 
-            snapshotRepository(url: uri('testMavenSnapshot'))
-//            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-//                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
-//            }
+//            snapshotRepository(url: uri('testMavenSnapshot'))
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
+            }
 
             pom.project {
                 name 'Intel Genomics Kernel Library (GKL)'
