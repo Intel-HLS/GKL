@@ -217,6 +217,8 @@ local unsigned std2_longest_match(deflate_state *z_const s, IPos cur_match)
 		 * more often for insufficient lookahead.
 		 */
 		Assert(scan[2] == match[2], "scan[2]?");
+		if (scan[2] != match[2])
+			continue;
 		scan++;
 		match++;
 

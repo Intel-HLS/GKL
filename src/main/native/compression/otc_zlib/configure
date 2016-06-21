@@ -842,11 +842,13 @@ case "${ARCH}" in
             CRC_FOLDING_lo=""
         fi
 
-        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
-        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+#        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+#        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+        CFLAGS="${CFLAGS} -DUSE_MEDIUM"
+        SFLAGS="${SFLAGS} -DUSE_MEDIUM"
 
-        DEFLATE_QUICK_o="deflate_quick.o"
-        DEFLATE_QUICK_lo="deflate_quick.lo"
+#        DEFLATE_QUICK_o="deflate_quick.o"
+#        DEFLATE_QUICK_lo="deflate_quick.lo"
     ;;
     i386 | i486 | i586 | i686)
         OBJC="${OBJC} x86.o"
@@ -888,11 +890,13 @@ case "${ARCH}" in
             CRC_FOLDING_lo=""
         fi
 
-        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
-        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+#        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+#        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+        CFLAGS="${CFLAGS} -DUSE_MEDIUM"
+        SFLAGS="${SFLAGS} -DUSE_MEDIUM"
 
-        DEFLATE_QUICK_o="deflate_quick.o"
-        DEFLATE_QUICK_lo="deflate_quick.lo"
+#        DEFLATE_QUICK_o="deflate_quick.o"
+#        DEFLATE_QUICK_lo="deflate_quick.lo"
     ;;
 esac
 
