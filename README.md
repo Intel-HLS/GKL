@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Intel-HLS/GKL.svg?branch=master)](https://travis-ci.org/Intel-HLS/GKL)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.intel.gkl/gkl/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.intel.gkl/gkl)
 
 # Genomics Kernel Library (GKL)
 This repository contains optimized versions of compute kernels used in genomics applications like
