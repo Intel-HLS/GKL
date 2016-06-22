@@ -94,10 +94,10 @@ test {
 final isRelease = project.hasProperty("release")
 version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".dirty", "")
 
-group = "com.intel"
+group = "com.intel.gkl"
 
 jar {
-    baseName = "intel-gkl"
+    baseName = "gkl"
     // include LICENSE file in jar
     from "LICENSE"
     exclude "log4j2.xml"
@@ -124,10 +124,9 @@ signing {
     sign configurations.archives
 }
 
+signArchives.doFirst { println "Version: $version" }
+
 uploadArchives {
-    doFirst {
-        println "Attempting to upload version:$version"
-    }
     repositories {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
