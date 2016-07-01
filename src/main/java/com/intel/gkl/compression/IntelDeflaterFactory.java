@@ -10,11 +10,10 @@ import java.util.zip.Deflater;
 public class IntelDeflaterFactory extends DeflaterFactory {
 
     private final static Logger logger = LogManager.getLogger(IntelDeflaterFactory.class);
-    private boolean usingIntelDeflater;
-    private File tmpDir;
+    private boolean intelDeflaterSupported;
 
     public IntelDeflaterFactory(File tmpDir) {
-        this.tmpDir = tmpDir;
+        intelDeflaterSupported = new IntelDeflater().load(tmpDir);
     }
 
     public IntelDeflaterFactory() {
@@ -22,19 +21,16 @@ public class IntelDeflaterFactory extends DeflaterFactory {
     }
 
     public Deflater makeDeflater(final int compressionLevel, final boolean nowrap) {
-        boolean intelDeflaterSupported = new IntelDeflater().load(tmpDir);
         if (intelDeflaterSupported) {
             if ((compressionLevel == 1 && nowrap) || compressionLevel != 1) {
-                usingIntelDeflater = true;
                 return new IntelDeflater(compressionLevel, nowrap);
             }
         }
         logger.warn("IntelDeflater is not supported, using Java.util.zip.Deflater");
-        usingIntelDeflater = false;
         return new Deflater(compressionLevel, nowrap);
     }
 
     public boolean usingIntelDeflater() {
-        return usingIntelDeflater;
+        return intelDeflaterSupported;
     }
 }

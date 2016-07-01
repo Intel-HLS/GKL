@@ -2,8 +2,8 @@
 
 COMPRESSION=compression
 IGZIP=$COMPRESSION/igzip_042
-#ZLIB=$COMPRESSION/otc_zlib
-ZLIB=$COMPRESSION/zlib-1.2.8
+ZLIB=$COMPRESSION/otc_zlib
+#ZLIB=$COMPRESSION/zlib-1.2.8
 PAIRHMM=pairhmm
 
 cd pairhmm
