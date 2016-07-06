@@ -50,44 +50,42 @@ public class DeflaterIntegrationTest {
         log.info("input filesize = " + inputFile.length());
         log.info("deflater level, time (sec), filesize");
 
-        int loopCount = 1;
         for (DeflaterFactory deflaterFactory : deflaterFactories) {
             for (int compressionLevel = 0; compressionLevel < 10; compressionLevel++) {
-                for (int loop = 0; loop < loopCount; loop++) {
 
-                    long totalRecords = 0;
-                    try (final SamReader reader = readerFactory.open(inputFile)) {
-                        final SAMFileHeader header = reader.getFileHeader();
-                        final SAMFileWriterFactory writerFactory = new SAMFileWriterFactory();
-                        writerFactory.setCompressionLevel(compressionLevel);
-                        writerFactory.setDeflaterFactory(deflaterFactory);
-                        final SAMFileWriter writer = writerFactory.makeBAMWriter(header, true, outputFile);
+                long totalRecords = 0;
+                try (final SamReader reader = readerFactory.open(inputFile)) {
+                    final SAMFileHeader header = reader.getFileHeader();
+                    final SAMFileWriterFactory writerFactory = new SAMFileWriterFactory();
+                    writerFactory.setCompressionLevel(compressionLevel);
+                    writerFactory.setDeflaterFactory(deflaterFactory);
+                    final SAMFileWriter writer = writerFactory.makeBAMWriter(header, true, outputFile);
 
-                        long totalTime = 0;
-                        for (final SAMRecord record : reader) {
-                            final long start = System.currentTimeMillis();
-                            writer.addAlignment(record);
-                            totalTime += System.currentTimeMillis() - start;
-                            totalRecords++;
-                        }
-
-                        writer.close();
-
-                        log.info(String.format("PROFILE %d %.3f %d",
-                                compressionLevel, totalTime / 1000.0, outputFile.length()));
+                    long totalTime = 0;
+                    for (final SAMRecord record : reader) {
+                        final long start = System.currentTimeMillis();
+                        writer.addAlignment(record);
+                        totalTime += System.currentTimeMillis() - start;
+                        totalRecords++;
                     }
 
-                    final SamReader expectedFile = readerFactory.open(inputFile);
-                    final SamReader generatedFile = readerFactory.open(outputFile);
+                    writer.close();
 
-                    log.info("Checking generated output. Total records = " + totalRecords);
-
-                    Iterator<SAMRecord> generatedIterator = generatedFile.iterator();
-                    for (final SAMRecord expected : expectedFile) {
-                        SAMRecord generated = generatedIterator.next();
-                        assert(expected.toString().equals(generated.toString()));
-                    }
+                    log.info(String.format("PROFILE %d %.3f %d",
+                            compressionLevel, totalTime / 1000.0, outputFile.length()));
                 }
+
+                final SamReader expectedFile = readerFactory.open(inputFile);
+                final SamReader generatedFile = readerFactory.open(outputFile);
+
+                log.info("Checking generated output. Total records = " + totalRecords);
+
+                Iterator<SAMRecord> generatedIterator = generatedFile.iterator();
+                for (final SAMRecord expected : expectedFile) {
+                    SAMRecord generated = generatedIterator.next();
+                    assert(expected.toString().equals(generated.toString()));
+                }
+
             }
         }
     }
