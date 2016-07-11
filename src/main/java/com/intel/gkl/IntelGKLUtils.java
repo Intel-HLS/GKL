@@ -49,10 +49,54 @@ public class IntelGKLUtils {
     private final static Logger logger = LogManager.getLogger(IntelGKLUtils.class);
     private final static String GKL_USE_LIB_PATH = "GKL_USE_LIB_PATH";
     private final static String GKL_LIB_NAME = "IntelGKL";
+    private final static Boolean runningOnMac =
+            System.getProperty("os.name", "unknown").toLowerCase().startsWith("mac");
+
     private static boolean isLoaded = false;
 
+
+    /**
+     * Check if AVX is supported and enabled on the CPU
+     *
+     * @return {@code true} if AVX is supported and enabled on the CPU, {@code false} otherwise
+     */
+    private static Boolean isAvxSupported() {
+        // use a grep command to check for AVX support
+        // grep exit code = 0 if a match was found
+        final String command = runningOnMac ? "sysctl -a | grep machdep.cpu.features | grep -i avx" :
+                "grep -i avx /proc/cpuinfo";
+        try {
+            Process process = new ProcessBuilder("/bin/sh", "-c", command).start();
+            if (process.waitFor() != 0) {
+                logger.warn("Error starting process to check for AVX support : " + command);
+                return false;
+            }
+            if (process.exitValue() != 0) {
+                logger.info("AVX is not supported on this system : " + command);
+                return false;
+            }
+        }
+        catch (InterruptedException | IOException e) {
+            logger.warn("Error running command to check for AVX support : " + command);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Tries to load the GKL shared library. If AVX is not supported, it returns {@code false} without
+     * trying to load the library.
+     *
+     * If GKL is loaded from a jar file, the shared library file is extracted to the
+     * {@code tempDir} directory first.
+     *
+     * @param tempDir directory where the shared library file is extracted
+     * @return {@code true} if GKL loaded successfully, {@code false} otherwise
+     */
     public static synchronized boolean load(File tempDir) {
         if (isLoaded) { return true; }
+
+        if (!isAvxSupported()) { return false; }
 
         // try to load from Java library path if GKL_USE_LIB_PATH env var is defined
         if (System.getenv(GKL_USE_LIB_PATH) != null) {

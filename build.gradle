@@ -72,6 +72,9 @@ clean.dependsOn(cleanNativeLib)
 test {
     useTestNG()
 
+    // propagate system properties to test JVM
+    systemProperties = System.getProperties()
+
     testLogging {
         if (!System.env.CI.toString().toBoolean()) {
             events "passed", "skipped", "failed", "standardOut", "standardError"
