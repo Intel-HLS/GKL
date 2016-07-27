@@ -7,7 +7,7 @@ ZLIB=otc_zlib
 cd $IGZIP
 make clean
 ./autogen.sh
-./configure CFLAGS="-fPIC" --prefix=/home/pnvaidya/GKL/src/main/native/compression/isa-l-master/usr --libdir=/home/pnvaidya/GKL/src/main/native/compression/isa-l-master/lib
+./configure CFLAGS="-fPIC" --prefix=$IGZIP/usr --libdir=$IGZIP/lib
 make
 make install
 cd -
