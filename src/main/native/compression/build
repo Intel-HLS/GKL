@@ -3,11 +3,12 @@ IGZIP=isa-l-master
 ZLIB=otc_zlib
 #ZLIB=zlib-1.2.8
 
+
 # build igzip library
 cd $IGZIP
 make clean
 ./autogen.sh
-./configure CFLAGS="-fPIC" --prefix=$IGZIP/usr --libdir=$IGZIP/lib
+./configure CFLAGS="-fPIC" --prefix=$PWD/usr --libdir=$PWD/lib
 make
 make install
 cd -
