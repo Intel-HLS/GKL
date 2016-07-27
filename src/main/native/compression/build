@@ -6,6 +6,8 @@ ZLIB=otc_zlib
 
 # build igzip library
 cd $IGZIP
+rm -r $PWD/usr
+rm -r $PWD/lib
 make clean
 ./autogen.sh
 ./configure CFLAGS="-fPIC" --prefix=$PWD/usr --libdir=$PWD/lib
