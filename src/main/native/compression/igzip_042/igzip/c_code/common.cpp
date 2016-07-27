@@ -46,10 +46,10 @@ extern const UINT64 huff_hdr_extra;
 extern const UINT32 huff_hdr_count;
 extern const UINT32 huff_hdr_extra_bits;
 
-extern "C" void fast_lz2_body(LZ_Stream2 *stream) asm("fast_lz2_body");
-extern "C" void fast_lz2_finish(LZ_Stream2 *stream) asm("fast_lz2_finish");
+extern "C" void fast_lz2_body(LZ_Stream2 *stream);
+extern "C" void fast_lz2_finish(LZ_Stream2 *stream);
 extern "C" void _fast_lz(LZ_Stream2 *stream);
-extern "C" void init_stream(LZ_Stream2 *stream) asm("init_stream");
+extern "C" void init_stream(LZ_Stream2 *stream);
 extern "C" void dummy(UINT32 x);
 extern "C" UINT32 crc_512to32(UINT32 *crc);
 //extern "C" void init_crc(UINT32 *crc_ptr);

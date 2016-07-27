@@ -28,18 +28,10 @@ INCLUDE_DIRS := . c_code ../include
 
 INCLUDES := $(foreach i,$(INCLUDE_DIRS),-I $i)
 
-OS = $(shell uname)
-ifeq ($(OS), Linux)
-    ASMFLAGS := -f x64 -f elf64 -X gnu -g dwarf2 -D LINUX $(INCLUDES)
-else ifeq ($(OS), Darwin)
-    ASMFLAGS := -f macho32 -f macho64 -X gnu -D LINUX $(INCLUDES)
-else
-    $(error Unsupported OS"
-endif
-
 CXX := g++
 CC  := gcc
 CXXFLAGS := -g -D LINUX $(INCLUDES) -O2
+ASMFLAGS := -f x64 -f elf64 -X gnu -g dwarf2 -D LINUX $(INCLUDES)
 LDFLAGS += -g
 
 lib_obj_files := \

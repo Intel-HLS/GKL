@@ -31,11 +31,6 @@
 #ifndef __OPTIONS_ASM__
 #define __OPTIONS_ASM__
 
-// options for HTSJDK
-#define MAJOR_VERSION IGZIP0C
-#define GENOME_BAM
-#define ONLY_DEFLATE
-
 // Options:dir
 // c - Use PCLMULQDQ for CRC calc
 // m - reschedule mem reads

@@ -21,10 +21,12 @@ public class DeflaterIntegrationTest {
 
     private final static Logger log = LogManager.getLogger(DeflaterIntegrationTest.class);
     private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
+    //private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("CEUTrio.HiSeq.WGS.b37.NA12878.20.21.bam");
 
     @Test(enabled = true)
     public void integrationTest() throws IOException {
-        final File inputFile = new File(INPUT_FILE);
+        final String filename = System.getProperty("input", INPUT_FILE);
+        final File inputFile = new File(filename);
         final File outputFile = File.createTempFile("output", ".bam");
         outputFile.deleteOnExit();
 

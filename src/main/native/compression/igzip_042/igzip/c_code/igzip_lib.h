@@ -46,5 +46,5 @@ typedef struct {
 } LZ_Stream2;
 
 
-void init_stream(LZ_Stream2 *stream) asm("init_stream");
+void init_stream(LZ_Stream2 *stream);
 void fast_lz(LZ_Stream2 *stream);

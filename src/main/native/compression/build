@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
-IGZIP=igzip_042
+IGZIP=isa-l-master
 ZLIB=otc_zlib
 #ZLIB=zlib-1.2.8
 
 # build igzip library
-cd $IGZIP/igzip
+cd $IGZIP
+make clean
+./autogen.sh
+./configure CFLAGS="-fPIC" --prefix=/home/pnvaidya/GKL/src/main/native/compression/isa-l-master/usr --libdir=/home/pnvaidya/GKL/src/main/native/compression/isa-l-master/lib
 make
+make install
 cd -
 
 # build otc_zlib
 cd $ZLIB
 make clean
 CFLAGS="-O3 -fPIC" ./configure --static
-make static
+make
+
 cd -
 
 # build GKL shared library
