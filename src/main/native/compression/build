@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
-IGZIP=igzip_042
+IGZIP=isa-l-master
 ZLIB=otc_zlib
 #ZLIB=zlib-1.2.8
 
+
 # build igzip library
-cd $IGZIP/igzip
+cd $IGZIP
+rm -r $PWD/usr
+rm -r $PWD/lib
+make clean
+./autogen.sh
+./configure CFLAGS="-fPIC" --prefix=$PWD/usr --libdir=$PWD/lib
 make
+make install
 cd -
 
 # build otc_zlib
 cd $ZLIB
 make clean
 CFLAGS="-O3 -fPIC" ./configure --static
-make static
+make
+
 cd -
 
 # build GKL shared library
