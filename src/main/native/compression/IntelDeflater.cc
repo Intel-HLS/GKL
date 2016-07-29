@@ -30,9 +30,9 @@
 #include "IntelDeflater.h"
 
 extern "C" {
-#include "igzip_lib.h"
 #include "zlib.h"
 #include "zconf.h"
+#include "igzip_lib.h"
 }
 
 #define DEF_MEM_LEVEL 8
@@ -75,10 +75,10 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
   jint level = env->GetIntField(obj, FID_level);
 
   if(level == 1) {
-    LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
+    isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
 
     if (lz_stream == 0) {
-      lz_stream = (LZ_Stream2*)malloc(sizeof(LZ_Stream2));
+      lz_stream = (isal_zstream*)malloc(sizeof(isal_zstream));
       if ( lz_stream == NULL ) {
         jclass Exception = env->FindClass("java/lang/Exception");
         env->ThrowNew(Exception,"Memory allocation error");
@@ -86,7 +86,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
     }
   
-    init_stream(lz_stream);
+    isal_deflate_init(lz_stream);
     lz_stream->end_of_stream = 0;
   
     DBG("lz_stream = 0x%lx", (long)lz_stream);
@@ -137,7 +137,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 
   if(level == 1) {
   
-    LZ_Stream2* lz_stream = (LZ_Stream2*)env->GetLongField(obj, FID_lz_stream);
+    isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
   
     DBG("lz_stream = 0x%lx", (long)lz_stream);
 
@@ -160,7 +160,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
     DBG("Compressing");
 
     // compress and update lz_stream state
-    fast_lz(lz_stream);
+    isal_deflate_stateless(lz_stream);
     long bytes_out = outputBufferLength - lz_stream->avail_out;
 
     DBG("Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
