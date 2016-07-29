@@ -1,0 +1,11 @@
+prefix=/home/pnvaidya/work/GKL/src/main/native/compression/isa-l-master/usr
+exec_prefix=${prefix}
+libdir=/home/pnvaidya/work/GKL/src/main/native/compression/isa-l-master/lib
+includedir=${prefix}/include
+
+Name: libisal
+Description: Library for storage systems
+Version: 2.16.0
+Libs: -L${libdir} -lisal
+Libs.private:
+Cflags: -I${includedir}

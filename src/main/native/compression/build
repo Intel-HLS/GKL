@@ -1,18 +1,42 @@
 #!/usr/bin/env bash
-IGZIP=igzip_042
+IGZIP=isa-l-master
 ZLIB=otc_zlib
 #ZLIB=zlib-1.2.8
 
 # build igzip library
-cd $IGZIP/igzip
+
+os=$(uname)
+if [[ $os == "Linux" ]]; then
+
+cd $IGZIP
+make clean
+./autogen.sh
+./configure CFLAGS="-fPIC" --prefix=$(pwd)/usr --libdir=$(pwd)/lib
 make
+make install
 cd -
 
-# build otc_zlib
+elif [[ $os == "Darwin" ]]; then 
+
+make clean
+./autogen.sh
+./configure -target=darwin CFLAGS="-fPIC" --prefix=$(pwd)/usr --libdir=$(pwd)/lib
+make
+make install 
+cd - 
+
+else 
+
+echo "OS not supported" 1>&2
+
+fi
+
+#build otc_zlib
 cd $ZLIB
 make clean
 CFLAGS="-O3 -fPIC" ./configure --static
-make static
+make
+
 cd -
 
 # build GKL shared library
