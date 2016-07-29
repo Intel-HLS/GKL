@@ -1,0 +1,11 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=/home/pnvaidya/isa-l-master/isa-l-master/lib
+includedir=${prefix}/include
+
+Name: libisal
+Description: Library for storage systems
+Version: 2.16.0
+Libs: -L${libdir} -lisal
+Libs.private:
+Cflags: -I${includedir}

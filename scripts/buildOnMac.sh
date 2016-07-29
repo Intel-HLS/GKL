@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 mac=$1
-linux=$(hostname -A | xargs echo)
+linux=$(hostname | xargs echo)
 dir=$(pwd)
 native='build/classes/main/com/intel/gkl/native'
 
