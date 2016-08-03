@@ -5,6 +5,7 @@ tmp/
 *.dylib
 *.o
 *.a
+*.lo
 
 #================================================================================
 # from https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
