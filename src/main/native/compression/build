@@ -18,6 +18,7 @@ cd -
 
 elif [[ $os == "Darwin" ]]; then 
 
+cd $IGZIP
 make clean
 ./autogen.sh
 ./configure -target=darwin CFLAGS="-fPIC" --prefix=$(pwd)/usr --libdir=$(pwd)/lib
