@@ -28,10 +28,15 @@ if [[ $os == "Linux" ]]; then
 
 g++ -z noexecstack -shared -fPIC -O3 -static-libgcc -static-libstdc++ \
     $COMPRESSION/IntelDeflater.o $IGZIP/lib/libisal.a $ZLIB/libz.a \
+    $PAIRHMM/IntelPairHmm_omp.o \
+    ftz/ftz.o -fopenmp \
+    -o libIntelGKL_omp.so
+
+g++ -z noexecstack -shared -fPIC -O3 -static-libgcc -static-libstdc++ \
+    $COMPRESSION/IntelDeflater.o $IGZIP/lib/libisal.a $ZLIB/libz.a \
     $PAIRHMM/IntelPairHmm.o \
     ftz/ftz.o \
     -o libIntelGKL.so
-
 
 elif [[ $os == "Darwin" ]]; then
 

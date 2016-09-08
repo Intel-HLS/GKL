@@ -1,3 +1,6 @@
+#ifdef linux
+#include <omp.h>
+#endif
 #include <vector>
 #include <math.h>
 #include "IntelPairHmm.h"
@@ -29,7 +32,10 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   javaData.init(env, readDataHolder, haplotypeDataHolder);
 
   g_use_double = use_double;
-  g_max_threads = max_threads;
+  
+  #ifdef OMP
+  g_max_threads = std::min((int)max_threads, omp_get_max_threads());
+  #endif
 
   // enable FTZ
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
@@ -63,6 +69,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
   
   //==================================================================
   // calcutate pairHMM
+  #pragma omp parallel for schedule(dynamic, 1) num_threads(g_max_threads)
   for (int i = 0; i < testcases.size(); i++) {
     double result_final = 0;
 

@@ -49,6 +49,7 @@ public class IntelGKLUtils {
     private final static Logger logger = LogManager.getLogger(IntelGKLUtils.class);
     private final static String GKL_USE_LIB_PATH = "GKL_USE_LIB_PATH";
     private final static String GKL_LIB_NAME = "IntelGKL";
+    private final static String GKL_OMP_LIB_NAME = "IntelGKL_omp";
     private final static Boolean runningOnMac =
             System.getProperty("os.name", "unknown").toLowerCase().startsWith("mac");
 
@@ -83,6 +84,25 @@ public class IntelGKLUtils {
         return true;
     }
 
+    private static void tryLoad(String resourcePath, File tempDir) throws UnsatisfiedLinkError, IOException {
+        URL inputUrl = IntelGKLUtils.class.getResource(resourcePath);
+        if (inputUrl == null) {
+            logger.warn("Unable to find Intel GKL library: " + resourcePath);
+            throw new IOException();
+        }
+
+        logger.info(String.format("Trying to load Intel GKL library from:\n\t%s", inputUrl.toString()));
+
+        File temp = File.createTempFile(FilenameUtils.getBaseName(resourcePath),
+                "." + FilenameUtils.getExtension(resourcePath), tempDir);
+        FileUtils.copyURLToFile(inputUrl, temp);
+        temp.deleteOnExit();
+        logger.debug(String.format("Extracted Intel GKL to %s\n", temp.getAbsolutePath()));
+
+        System.load(temp.getAbsolutePath());
+        logger.info("Intel GKL library loaded from classpath.");
+    }
+
     /**
      * Tries to load the GKL shared library. If AVX is not supported, it returns {@code false} without
      * trying to load the library.
@@ -113,33 +133,30 @@ public class IntelGKLUtils {
             }
         }
 
+        // try to load OpenMP version of GKL
+        try {
+            tryLoad("native/" + System.mapLibraryName(GKL_OMP_LIB_NAME), tempDir);
+            isLoaded = true;
+            return true;
+        } catch (UnsatisfiedLinkError ule) {
+            logger.warn("Unable to load OpenMP Intel GKL library. Ensure OpenMP is installed on this platform.");
+        } catch (IOException ioe) {
+            logger.warn("Unable to load OpenMP Intel GKL library. OpenMP is not supported on this platform.");
+        }
+
+        // try to load non-OpenMP version of GKL
         try {
             // try to extract from classpath
-            String resourcePath = "native/" +  System.mapLibraryName(GKL_LIB_NAME);
-            URL inputUrl = IntelGKLUtils.class.getResource(resourcePath);
-            if (inputUrl == null) {
-                logger.warn("Unable to find Intel GKL library: " + resourcePath);
-                return false;
-            }
-
-            logger.info(String.format("Trying to load Intel GKL library from:\n\t%s", inputUrl.toString()));
-
-            File temp = File.createTempFile(FilenameUtils.getBaseName(resourcePath),
-                    "." + FilenameUtils.getExtension(resourcePath), tempDir);
-            FileUtils.copyURLToFile(inputUrl, temp);
-            temp.deleteOnExit();
-            logger.debug(String.format("Extracted Intel GKL to %s\n", temp.getAbsolutePath()));
-
-            System.load(temp.getAbsolutePath());
-            logger.info("Intel GKL library loaded from classpath.");
+            tryLoad("native/" + System.mapLibraryName(GKL_LIB_NAME), tempDir);
+            isLoaded = true;
+            return true;
+        } catch (UnsatisfiedLinkError ule) {
+            logger.warn("Unable to load Intel GKL library.");
+            return false;
         } catch (IOException ioe) {
-            // not supported
             logger.warn("Unable to load Intel GKL library.");
             return false;
         }
-
-        isLoaded = true;
-        return true;
     }
 
     static final String TEST_RESOURCES_PATH = System.getProperty("user.dir") + "/src/test/resources/";
