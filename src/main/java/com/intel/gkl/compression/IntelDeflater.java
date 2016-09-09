@@ -28,7 +28,7 @@
 
 
 /**
- * This is a copy of java.util.zip.Deflater from OpenJDK 7, with the following changes:
+ * This is based on java.util.zip.Deflater class from OpenJDK 7, with the following changes:
  * - package and class name changed
  * - static block to load libIntelGKL library
  * - extends java.util.zip.Deflater so that IntelDeflater object can be used as regular Deflater object.

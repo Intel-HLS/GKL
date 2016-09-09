@@ -28,16 +28,13 @@
 
 
 /**
- * This is a copy of java.util.zip.Deflater from OpenJDK 7, with the following changes:
+ * This is based on java.util.zip.Inflater class from OpenJDK 7, with the following changes:
  * - package and class name changed
  * - static block to load libIntelGKL library
  * - extends java.util.zip.Inflater so that IntelInflater object can be used as regular Inflater object.
  *   Note however that all methods of Inflater are overridden.
  *
  * The shared library is packaged is a jar file and is loaded when GKL_USE_LIB_PATH is set.
- *
- *
- * The rest of this document is copied verbatim from the original OpenJDK file.
  *
  * This class provides support for general purpose compression using the
  * popular ZLIB compression library. The ZLIB compression library was
