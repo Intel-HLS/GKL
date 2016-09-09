@@ -27,6 +27,8 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
 #include "IntelDeflater.h"
 
 extern "C" {
@@ -35,7 +37,11 @@ extern "C" {
 #include "igzip_lib.h"
 }
 
+
+
 #define DEF_MEM_LEVEL 8
+//#define DEBUG
+//#define profile
 
 #ifdef DEBUG
 #  define DBG(M, ...)  fprintf(stdout, "[DEBUG] (%s %s:%d) " M "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
@@ -51,6 +57,8 @@ static jfieldID FID_finished;
 static jfieldID FID_finish;
 static jfieldID FID_level;
 
+
+
 /**
  *  Cache the Java field IDs. Called once when the native library is loaded. 
  */
@@ -63,6 +71,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_initNative
   FID_finished = env->GetFieldID(cls, "finished", "Z");
   FID_finish = env->GetFieldID(cls, "finish", "Z");
   FID_level = env->GetFieldID(cls,"level","I");
+
 }
 
 /**
@@ -85,11 +94,11 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
       }
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
     }
-  
+
     isal_deflate_init(lz_stream);
     lz_stream->end_of_stream = 0;
   
-    DBG("lz_stream = 0x%lx", (long)lz_stream);
+   // DBG("lz_stream = 0x%lx", (long)lz_stream);
   }
   else {
     
@@ -118,10 +127,40 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
       deflateReset(lz_stream);
     }
 
-    DBG("lz_stream = 0x%lx", (long)lz_stream);  
+
   }
 }
 
+
+/**
+* Generate Dynamic Huffman tables
+*/
+
+JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuffman
+(JNIEnv * env, jobject obj) {
+
+      jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inputBuffer);
+
+      jint level = env->GetIntField(obj, FID_level);
+
+      if(level == 1) {
+      isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
+
+      jbyte* input = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
+
+      struct isal_huff_histogram *histogram;
+      struct isal_hufftables *hufftables_custom;
+
+     // malloc(histogram, sizeof(isal_huff_histogram));
+      memset(histogram, 0, sizeof(isal_huff_histogram));
+      isal_update_histogram((unsigned char*)input, 64*1024, histogram);
+      isal_create_hufftables(hufftables_custom, histogram);
+      lz_stream->hufftables = hufftables_custom;
+
+      env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
+      env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
+      }
+}
 
 /**
  *  Deflate the data.
@@ -138,8 +177,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
   if(level == 1) {
   
     isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
-  
-    DBG("lz_stream = 0x%lx", (long)lz_stream);
+
 
     jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
     jbyte* next_out = (jbyte*)env->GetPrimitiveArrayCritical(outputBuffer, 0);
@@ -150,23 +188,23 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
     lz_stream->next_out = (UINT8*)next_out;
     lz_stream->avail_out = outputBufferLength;
 
-    DBG("end_of_stream = %d", lz_stream->end_of_stream);
-    DBG("avail_in = %d", lz_stream->avail_in);
-    DBG("avail_out = %d", lz_stream->avail_out);
-    DBG("total_out = %d", lz_stream->total_out);
-
     int bytes_in = inputBufferLength;
 
-    DBG("Compressing");
-
+#ifdef profile
+struct timeval  tv1, tv2;
+gettimeofday(&tv1, NULL);
+#endif
     // compress and update lz_stream state
     isal_deflate_stateless(lz_stream);
+#ifdef profile
+    gettimeofday(&tv2, NULL);
+
+    DBG ("Total time = %f seconds\n",
+             (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+             (double) (tv2.tv_sec - tv1.tv_sec));
+#endif
     long bytes_out = outputBufferLength - lz_stream->avail_out;
 
-    DBG("Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
-    DBG("avail_in = %d", lz_stream->avail_in);
-    DBG("avail_out = %d", lz_stream->avail_out);
-    DBG("total_out = %d", lz_stream->total_out);
 
     // release buffers
     env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
@@ -194,16 +232,22 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
       
     int bytes_in = inputBufferLength;
 
-    DBG("Compressing");
 
+#ifdef profile
+struct timeval  tv1, tv2;
+gettimeofday(&tv1, NULL);
+#endif
     // compress and update lz_stream state
     int ret = deflate(lz_stream, Z_FINISH);
-    int bytes_out = outputBufferLength - lz_stream->avail_out;
+ #ifdef profile
+     gettimeofday(&tv2, NULL);
 
-    DBG("Compression ratio = %2.2f", 100.0 - (100.0 * bytes_out / bytes_in));
-    DBG("avail_in = %d", lz_stream->avail_in);
-    DBG("avail_out = %d", lz_stream->avail_out);
-    DBG("total_out = %d", lz_stream->total_out);
+     DBG ("Total time = %f seconds\n",
+              (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+              (double) (tv2.tv_sec - tv1.tv_sec));
+ #endif
+
+    int bytes_out = outputBufferLength - lz_stream->avail_out;
 
     // release buffers
     env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);

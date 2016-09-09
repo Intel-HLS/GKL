@@ -1,6 +1,6 @@
-prefix=/home/pnvaidya/work/GKL/src/main/native/compression/isa-l-master/usr
+prefix=/home/pnvaidya/GKL/src/main/native/compression/isa-l-master/usr
 exec_prefix=${prefix}
-libdir=/home/pnvaidya/work/GKL/src/main/native/compression/isa-l-master/lib
+libdir=/home/pnvaidya/GKL/src/main/native/compression/isa-l-master/lib
 includedir=${prefix}/include
 
 Name: libisal
