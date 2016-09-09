@@ -2,7 +2,7 @@
 IGZIP=isa-l-master
 ZLIB=otc_zlib
 #ZLIB=zlib-1.2.8
-
+#ZLIB=zlib-inflate
 # build igzip library
 
 os=$(uname)
@@ -43,6 +43,13 @@ cd -
 # build GKL shared library
 javah -o IntelDeflater.h -cp ../../java com.intel.gkl.compression.IntelDeflater
 
-g++ -c -fPIC -O3 -I$IGZIP/igzip/c_code/ -I$IGZIP/include \
+g++ -c -fPIC -O3 -I$IGZIP/include/ -I$ZLIB \
     -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I$JAVA_HOME/include/Darwin \
     IntelDeflater.cc
+
+# build GKL shared library
+javah -o IntelInflater.h -cp ../../java com.intel.gkl.compression.IntelInflater
+
+g++ -c -fPIC -O3 -I$IGZIP/include/ -I$IGZIP/igzip/ -I$ZLIB \
+    -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -I$JAVA_HOME/include/Darwin \
+    IntelInflater.cc
