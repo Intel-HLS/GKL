@@ -31,8 +31,8 @@
  * This is a copy of java.util.zip.Deflater from OpenJDK 7, with the following changes:
  * - package and class name changed
  * - static block to load libIntelGKL library
- * - extends java.util.zip.Deflater so that IntelDeflater object can be used as regular Deflater object.
- *   Note however that all methods of Deflater are overridden.
+ * - extends java.util.zip.Inflater so that IntelInflater object can be used as regular Inflater object.
+ *   Note however that all methods of Inflater are overridden.
  *
  * The shared library is packaged is a jar file and is loaded when GKL_USE_LIB_PATH is set.
  *
@@ -46,57 +46,35 @@
  * the <a href="package-summary.html#package_description">java.util.zip
  * package description</a>.
  *
- * <p>The following code fragment demonstrates a trivial compression
- * and decompression of a string using <tt>IntelDeflater</tt> and
- * <tt>Inflater</tt>.
  *
- * <blockquote><pre>
- * try {
- *     // Encode a String into bytes
- *     String inputString = "blahblahblah";
- *     byte[] input = inputString.getBytes("UTF-8");
  *
- *     // Compress the bytes
- *     byte[] output = new byte[100];
- *     IntelDeflater compresser = new IntelDeflater();
- *     compresser.setInput(input);
- *     compresser.finish();
- *     int compressedDataLength = compresser.deflate(output);
- *     compresser.end();
- *
- *     // Decompress the bytes
- *     Inflater decompresser = new Inflater();
- *     decompresser.setInput(output, 0, compressedDataLength);
- *     byte[] result = new byte[100];
- *     int resultLength = decompresser.inflate(result);
- *     decompresser.end();
- *
- *     // Decode the bytes into a String
- *     String outputString = new String(result, 0, resultLength, "UTF-8");
- * } catch(java.io.UnsupportedEncodingException ex) {
- *     // handle
- * } catch (java.util.zip.DataFormatException ex) {
- *     // handle
- * }
- * </pre></blockquote>
- *
- * @see         java.util.zip.Inflater
+ * @see         java.util.zip.Deflater
  */
 
 package com.intel.gkl.compression;
 
+
 import com.intel.gkl.IntelGKLUtils;
 
 import java.io.File;
-import java.util.zip.Deflater;
+import java.util.zip.Inflater;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 
-public class IntelDeflater extends Deflater implements NativeLibrary {
 
-    private final static Logger logger = LogManager.getLogger(IntelDeflater.class);
+/**
+ * Created by pnvaidya on 8/30/16.
+ */
+
+
+public class IntelInflater extends Inflater implements NativeLibrary {
+
+
+
+    private final static Logger logger = LogManager.getLogger(IntelInflater.class);
 
     private boolean isSupported = false;
 
@@ -112,70 +90,52 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         return isSupported;
     }
 
-    private native static void initNative();
-    private native void resetNative(boolean nowrap);
-    private native int deflateNative(byte[] b, int len);
-    private native void endNative();
-    private native void generateHuffman();
-
-    
 
     private long lz_stream;
     private byte[] inputBuffer;
     private int inputBufferLength;
     private boolean endOfStream;
     private boolean finished;
-    private int level;
-    private int strategy;
     private boolean nowrap;
 
+    private static native void initNative();
+    private native void resetNative(boolean nowrap);
+    private native int inflateNative( byte[] b, int len);
+    private native void endNative();
 
 
-    
-     /**
+
+    /**
      * Creates a new compressor using the specified compression level.
      * If 'nowrap' is true then the ZLIB header and checksum fields will
      * not be used in order to support the compression format used in
      * both GZIP and PKZIP.
-     * @param level the compression level (0-9)
      * @param nowrap if true then use GZIP compatible compression
      */
 
-    public IntelDeflater(int level, boolean nowrap) {
-        if ((level < 0 || level > 9) && level != DEFAULT_COMPRESSION) {
-            throw new IllegalArgumentException("Illegal compression level");
-        }
-        this.level = level;
+    public IntelInflater(boolean nowrap) {
+      //  initFieldsNative();
         this.nowrap = nowrap;
-        strategy = DEFAULT_STRATEGY;   
     }
-    
 
-     /**
-     * Creates a new compressor using the specified compression level.
-     * Compressed data will be generated in ZLIB format.
-     * @param level the compression level (0-9)
-     */
-    public IntelDeflater(int level) {
-        this(level, false);
-    }
 
     /**
-     * Creates a new compressor with the default compression level.
+     * Creates a new compressor using the specified compression level.
      * Compressed data will be generated in ZLIB format.
      */
-    public IntelDeflater() {
-        this(DEFAULT_COMPRESSION, false);
+    public IntelInflater() {
+        this(false);
     }
 
+
     public void reset() {
-        logger.debug("Reset deflater");
+        //logger.debug("Reset inflater");
+
         resetNative(nowrap);
         inputBuffer = null;
         inputBufferLength = 0;
         endOfStream = false;
         finished = false;
-
     }
 
     /**
@@ -184,7 +144,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      * @param b the input data bytes
      * @param off the start offset of the data
      * @param len the length of the data
-     * @see IntelDeflater
+     * @see IntelDeflater#needsInput
      */
 
     public void setInput(byte[] b, int off, int len) throws NullPointerException {
@@ -196,8 +156,9 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         }
         inputBuffer = b;
         inputBufferLength = len;
-
     }
+
+
 
 
     /**
@@ -206,7 +167,6 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      */
 
     public void finish() {
-
         endOfStream = true;
     }
 
@@ -223,9 +183,20 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      *         output buffer
      */
 
-    public int deflate(byte[] b, int off, int len ) {
+    public int inflate (byte[] b, int off, int len ) {
+        return inflateNative(b, len);
+    }
 
-        return deflateNative(b, len);
+
+    /**
+     * Returns true if the end of the compressed data output stream has
+     * been reached.
+     * @return true if the end of the compressed data output stream has
+     * been reached
+     */
+
+    public int inflate (byte[] b ) {
+        return inflateNative( b, 0);
     }
 
 

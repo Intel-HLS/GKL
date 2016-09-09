@@ -28,8 +28,10 @@
 
 package com.intel.gkl.compression;
 
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import com.intel.gkl.compression.IntelInflater;
 
 import java.util.Random;
 import java.util.zip.Inflater;
@@ -48,13 +50,18 @@ public class DeflaterUnitTest {
 
     @Test(enabled = true)
     public void randomDNATest() {
-        final int LEN = 64*1024;
+        final int LEN = 60*1024*1024;
         final byte[] input = new byte[LEN];
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
 
+        final boolean isSupported = new IntelInflater().load();
+        Assert.assertTrue(isSupported);
+
         final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
         final Deflater deflater = intelDeflaterFactory.makeDeflater(1, true);
+
+        //final Deflater deflater = new Deflater(4,false);
 
         Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
 
@@ -72,17 +79,20 @@ public class DeflaterUnitTest {
             System.out.printf("%d bytes compressed to %d bytes : %2.2f%% compression\n",
                     LEN, compressedBytes, 100.0 - 100.0 * compressedBytes / LEN);
 
-           
-
-            Inflater inflater = new Inflater(true);
+            long totalTime = 0;
+            //Inflater inflater = new Inflater(true);
+            final Inflater inflater = new IntelInflater(true);
             try {
+                inflater.reset();
                 inflater.setInput(compressed, 0, compressedBytes);
-                inflater.inflate(result);
+                final long start = System.currentTimeMillis();
+                inflater.inflate(result, 0, LEN);
+                totalTime = System.currentTimeMillis() - start;
+                System.out.printf("%d\n",totalTime);
                 inflater.end();
             } catch (java.util.zip.DataFormatException e) {
                 e.printStackTrace();
             }
-           
 
             Assert.assertEquals(input, result);
         }
