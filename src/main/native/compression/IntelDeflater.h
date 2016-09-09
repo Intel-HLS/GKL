@@ -61,6 +61,14 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_endNative
   (JNIEnv *, jobject);
 
+/*
+ * Class:     com_intel_gkl_compression_IntelDeflater
+ * Method:    generateHuffman
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuffman
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

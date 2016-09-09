@@ -24,7 +24,9 @@ public class DeflaterIntegrationTest {
 
     @Test(enabled = true)
     public void integrationTest() throws IOException {
-        final File inputFile = new File(INPUT_FILE);
+        final String filename = System.getProperty("input", INPUT_FILE);
+        final File inputFile = new File(filename);
+        //final File inputFile = new File(INPUT_FILE);
         final File outputFile = File.createTempFile("output", ".bam");
         outputFile.deleteOnExit();
 
