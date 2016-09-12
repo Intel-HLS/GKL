@@ -31,10 +31,13 @@ task buildNativeLib(type: Exec) {
     standardOutput = new ByteArrayOutputStream()
     workingDir 'src/main/native'
     commandLine './build'
-    outputs.files('src/main/native/libIntelGKL.so', 'src/main/native/libIntelGKL.dylib')
+    outputs.files('src/main/native/libIntelGKL.so', 'src/main/native/libIntelGKL_omp.so', 'src/main/native/libIntelGKL.dylib')
 
     // always run this task
     outputs.upToDateWhen {false}
+
+    // skip this task if the skip property is defined: "gradle -Pskip"
+    onlyIf {!project.hasProperty('skip')}
 }
 
 compileJava.dependsOn(buildNativeLib)
