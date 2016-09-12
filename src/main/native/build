@@ -3,7 +3,6 @@
 COMPRESSION=compression
 IGZIP=$COMPRESSION/isa-l-master
 ZLIB=$COMPRESSION/otc_zlib
-#ZLIB=$COMPRESSION/zlib-1.2.8
 PAIRHMM=pairhmm
 
 cd ftz
@@ -21,19 +20,14 @@ cd -
 os=$(uname)
 if [[ $os == "Linux" ]]; then
 
-#g++ -z noexecstack -shared -fPIC -O3 -static-libgcc -static-libstdc++ \
-#    $COMPRESSION/IntelDeflater.o $IGZIP/igzip/libigzip0c.a $ZLIB/libz.a \
-#    $PAIRHMM/IntelPairHmm.o \
-#    -o libIntelGKL.so
-
 g++ -z noexecstack -shared -fPIC -O3 -static-libgcc -static-libstdc++ \
-    $COMPRESSION/IntelDeflater.o $IGZIP/lib/libisal.a $ZLIB/libz.a \
+    $COMPRESSION/IntelDeflater.o $COMPRESSION/IntelInflater.o $IGZIP/lib/libisal.a $ZLIB/libz.a \
     $PAIRHMM/IntelPairHmm_omp.o \
     ftz/ftz.o -fopenmp \
     -o libIntelGKL_omp.so
 
 g++ -z noexecstack -shared -fPIC -O3 -static-libgcc -static-libstdc++ \
-    $COMPRESSION/IntelDeflater.o $IGZIP/lib/libisal.a $ZLIB/libz.a \
+    $COMPRESSION/IntelDeflater.o $COMPRESSION/IntelInflater.o $IGZIP/lib/libisal.a $ZLIB/libz.a \
     $PAIRHMM/IntelPairHmm.o \
     ftz/ftz.o \
     -o libIntelGKL.so
@@ -41,7 +35,7 @@ g++ -z noexecstack -shared -fPIC -O3 -static-libgcc -static-libstdc++ \
 elif [[ $os == "Darwin" ]]; then
 
 g++ -shared -fPIC -O3 \
-    $COMPRESSION/IntelDeflater.o $IGZIP/lib/libisal.a $ZLIB/libz.a \
+    $COMPRESSION/IntelDeflater.o $COMPRESSION/IntelInflater.o $IGZIP/lib/libisal.a $ZLIB/libz.a \
     $PAIRHMM/IntelPairHmm.o \
     ftz/ftz.o \
     -o libIntelGKL.dylib

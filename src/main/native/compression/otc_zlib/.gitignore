@@ -3,3 +3,7 @@ zconf.h
 configure.log
 zlib.pc
 a.out
+example
+example64
+minigzip
+minigzip64

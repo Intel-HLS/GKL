@@ -1,0 +1,11 @@
+.libs/
+Makefile
+autom4te.cache/requests
+config.log
+config.status
+isa-l.h
+lib/
+libisal.la
+libisal.pc
+libtool
+usr/
