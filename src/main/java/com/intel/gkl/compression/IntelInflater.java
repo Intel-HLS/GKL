@@ -27,27 +27,6 @@
  */
 
 
-/**
- * This is based on java.util.zip.Inflater class from OpenJDK 7, with the following changes:
- * - package and class name changed
- * - static block to load libIntelGKL library
- * - extends java.util.zip.Inflater so that IntelInflater object can be used as regular Inflater object.
- *   Note however that all methods of Inflater are overridden.
- *
- * The shared library is packaged is a jar file and is loaded when GKL_USE_LIB_PATH is set.
- *
- * This class provides support for general purpose compression using the
- * popular ZLIB compression library. The ZLIB compression library was
- * initially developed as part of the PNG graphics standard and is not
- * protected by patents. It is fully described in the specifications at
- * the <a href="package-summary.html#package_description">java.util.zip
- * package description</a>.
- *
- *
- *
- * @see         java.util.zip.Deflater
- */
-
 package com.intel.gkl.compression;
 
 
