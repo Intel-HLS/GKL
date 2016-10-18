@@ -31,7 +31,7 @@ OS = $(shell uname)
 ifeq ($(OS), Linux)
 ISAL_LIB: $(EXE);cd isa-l-master;make clean;./autogen.sh;export CFLAGS="-fPIC";./configure --prefix=$(CURDIR)/isa-l-master/usr --libdir=$(CURDIR)/isa-l-master/lib;make;make install;cd -
 else ifeq ($(OS), Darwin)
-ISAL_LIB: $(EXE);cd isa-l-master;make clean;./autogen.sh;export CFLAGS="-fPIC";./configure -target=arwin --prefix=$(CURDIR)/isa-l-master/usr --libdir=$(CURDIR)/isa-l-master/lib;make;make install;cd -
+ISAL_LIB: $(EXE);cd isa-l-master;make clean;./autogen.sh;export CFLAGS="-fPIC";./configure -target=darwin --prefix=$(CURDIR)/isa-l-master/usr --libdir=$(CURDIR)/isa-l-master/lib;make;make install;cd -
 else
     $(error "Unsupported OS")
 endif
