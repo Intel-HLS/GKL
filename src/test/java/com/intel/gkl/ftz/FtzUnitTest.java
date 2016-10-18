@@ -12,6 +12,7 @@ public class FtzUnitTest {
         FTZ ftz = new FTZ();
         assert(ftz.isSupported());
 
+
         log.info("Test setting FTZ");
         boolean value = false;
         ftz.setFlushToZero(true);

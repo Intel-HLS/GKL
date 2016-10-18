@@ -42,17 +42,24 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     private final static Logger logger = LogManager.getLogger(IntelDeflater.class);
 
     private boolean isSupported = false;
+    private static final String libFileName = "GKL_compression";
+
 
     public boolean load() {
-        return load(null);
+        return load(null, libFileName);
     }
 
-    public boolean load(File tmpDir) {
-        isSupported = IntelGKLUtils.load(tmpDir);
-        if (isSupported) {
-            initNative();
-        }
-        return isSupported;
+    public boolean load(File tempDir) {
+        return load(tempDir, libFileName);
+    }
+
+    public boolean load(File tmpDir, String libFileName) {
+            if(isSupported) return true;
+            isSupported = IntelGKLUtils.load(tmpDir, libFileName);
+            if (isSupported) {
+                initNative();
+            }
+            return isSupported;
     }
 
     private native static void initNative();

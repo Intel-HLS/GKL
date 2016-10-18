@@ -8,11 +8,13 @@ import org.broadinstitute.gatk.nativebindings.pairhmm.ReadDataHolder;
 
 import java.io.File;
 
-public class IntelPairHmm implements PairHMMNativeBinding {
+/**
+ * Created by pnvaidya on 10/12/16.
+ */
+public class IntelPairHmm_omp implements PairHMMNativeBinding {
 
-    private final String libFileName = "GKL_pairHMM";
+    private final String libFileName = "GKL_pairHMM_omp";
     private static boolean isLoaded = false;
-
     /**
      * Load native library using system temp directory to store the shared object.
      *
@@ -22,15 +24,16 @@ public class IntelPairHmm implements PairHMMNativeBinding {
         return load(null, libFileName);
     }
 
-    public boolean load(File tempDir) {
-        return load(tempDir, libFileName);
-    }
     /**
      * Load native library using tmpDir to store the shared object.
      *
-     * @param tmpDir the directory used to store a copy of the shared object
+     * @param tempDir the directory used to store a copy of the shared object
      * @return true if IntelPairHmm is supported on the platform
      */
+
+    public boolean load(File tempDir) {
+        return load(tempDir, libFileName);
+    }
 
     public boolean load(File tmpDir, String libFileName) {
         if(!isLoaded) {
@@ -46,7 +49,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
      * @param args the args used to configure native PairHMM
      */
 
-
+    @Override
     public void initialize(PairHMMNativeArguments args) {
         initNative(ReadDataHolder.class, HaplotypeDataHolder.class, false, 100);
     }
@@ -86,3 +89,4 @@ public class IntelPairHmm implements PairHMMNativeBinding {
 
     private native void doneNative();
 }
+
