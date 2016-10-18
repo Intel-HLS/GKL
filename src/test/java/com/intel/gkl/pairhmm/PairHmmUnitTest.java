@@ -58,7 +58,6 @@ public class PairHmmUnitTest {
         final boolean isSupported = new IntelPairHmm_omp().load();
         Assert.assertTrue(isSupported);
 
-
         final PairHMMNativeArguments args = new PairHMMNativeArguments();
         args.maxNumberOfThreads = 10;
         args.useDoublePrecision = false;
@@ -99,7 +98,6 @@ public class PairHmmUnitTest {
         final PairHMMNativeArguments args = new PairHMMNativeArguments();
         args.maxNumberOfThreads = 1;
         args.useDoublePrecision = false;
-
         pairHmm.initialize(args);
 
         // data structures
