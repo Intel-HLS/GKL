@@ -22,7 +22,7 @@ OBJ = $(SRC:.cc=.o)
 
 all: OTC_ZLIB ISAL_LIB javah $(TARGET) $(LIB_TARGET)
 
-OTC_ZLIB: $(EXE);cd otc_zlib;make clean;export CFLAGS="=fPIC";./configure --static;make;cd -
+OTC_ZLIB: $(EXE);cd otc_zlib;make clean;export CFLAGS="-fPIC";./configure --static;make;cd -
 
 ISAL_LIB: $(EXE);cd isa-l-master;make clean;./autogen.sh;export CFLAGS="-fPIC";./configure --prefix=$(CURDIR)/isa-l-master/usr --libdir=$(CURDIR)/isa-l-master/lib;make;make install;cd -
 
