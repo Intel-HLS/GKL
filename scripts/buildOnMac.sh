@@ -12,7 +12,7 @@ ssh $mac 'bash -s' <<EOF
 # run finish on EXIT
 function finish {
   # copy dylib back to linux
-  scp ./$native/libIntelGKL.dylib $linux:$dir/$native
+  scp ./$native/*.dylib $linux:$dir/$native
   rm -rf \$work
 }
 trap finish EXIT
