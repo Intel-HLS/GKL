@@ -10,24 +10,44 @@ import java.io.File;
 
 public class IntelPairHmm implements PairHMMNativeBinding {
 
+    public static String libFileName = "GKL_pairHMM";
+    public static boolean isLoaded = false;
+
     /**
      * Load native library using system temp directory to store the shared object.
      *
      * @return true if IntelPairHmm is supported on the platform
      */
     public boolean load() {
-        return load(null);
+        return load(null, libFileName);
     }
 
+    public boolean load(File tempDir) {
+        return load(tempDir, libFileName);
+    }
     /**
      * Load native library using tmpDir to store the shared object.
      *
      * @param tmpDir the directory used to store a copy of the shared object
      * @return true if IntelPairHmm is supported on the platform
      */
-    @Override
-    public boolean load(File tmpDir) {
-        return IntelGKLUtils.load(tmpDir);
+
+    public boolean load(File tmpDir, String libFileName) {
+        if(!isLoaded) {
+            isLoaded = IntelGKLUtils.load(tmpDir, libFileName);
+            return isLoaded;
+        }
+        return true;
+    }
+
+    public static void setLibFileName(String newlibFileName)
+    {
+        libFileName = newlibFileName;
+    }
+
+    public static void setIsLoaded(boolean flag)
+    {
+        isLoaded = flag;
     }
 
     /**
@@ -36,9 +56,9 @@ public class IntelPairHmm implements PairHMMNativeBinding {
      * @param args the args used to configure native PairHMM
      */
 
-    @Override
+
     public void initialize(PairHMMNativeArguments args) {
-        initNative(ReadDataHolder.class, HaplotypeDataHolder.class, false, 100);
+        initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads);
     }
 
     /**
