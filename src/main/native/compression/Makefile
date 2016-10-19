@@ -14,7 +14,7 @@ else ifeq ($(OS), Darwin)
     #build isa-l-master
 	TARGET = IntelInflater.o IntelDeflater.o
 	LIB_TARGET = ../libGKL_compression.dylib
-	LINKFLAGS= -z noexecstack -shared -static-libstdc++
+	LINKFLAGS= -shared -static-libstdc++
 else
     $(error "Unsupported OS")
 endif
@@ -22,9 +22,9 @@ endif
 SRC = $(wildcard *.cc)
 OBJ = $(SRC:.cc=.o)
 
-all: OTC_ZLIB ISAL_LIB javah $(TARGET) $(LIB_TARGET)
+all: OTC_LIB ISAL_LIB javah $(TARGET) $(LIB_TARGET)
 
-OTC_ZLIB: $(EXE);cd otc_zlib;make clean;export CFLAGS="-fPIC";./configure --static;make;cd -
+OTC_LIB: $(EXE);cd otc_zlib;make clean;export CFLAGS="-fPIC";./configure --static;make;cd -
 
 
 OS = $(shell uname)

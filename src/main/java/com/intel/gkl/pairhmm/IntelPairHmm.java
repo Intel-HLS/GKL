@@ -29,6 +29,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
      * Load native library using tmpDir to store the shared object.
      *
      * @param tmpDir the directory used to store a copy of the shared object
+     * @param libFileName library name to be loaded
      * @return true if IntelPairHmm is supported on the platform
      */
 

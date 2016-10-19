@@ -11,7 +11,7 @@ ifeq ($(OS), Linux)
 	LINKFLAGS= -shared -static-libgcc -static-libstdc++
 else ifeq ($(OS), Darwin)
 	TARGET = IntelPairHmm.h IntelPairHmm.o
-	LIB_TARGET = ../libGKL_pairHMM.dylib
+	LIB_TARGET = ../libGKL_pairHMM.dylib ../libGKL_pairHMM_omp.dylib
 	LINKFLAGS= -shared -static-libstdc++
 else
     $(error "Unsupported OS")
