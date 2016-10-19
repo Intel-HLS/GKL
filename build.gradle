@@ -44,6 +44,7 @@ task copyNativeLib(type: Copy) {
     from 'src/main/native'
     into 'build/classes/main/com/intel/gkl/native'
     include '*.so'
+    include '*.dylib'
 }
 
 buildNativeLib.finalizedBy copyNativeLib

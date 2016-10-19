@@ -91,6 +91,7 @@ public class IntelGKLUtils {
      * {@code tempDir} directory first.
      *
      * @param tempDir directory where the shared library file is extracted
+     * @param libFileName name of the library file to be loaded
      * @return {@code true} if GKL loaded successfully, {@code false} otherwise
      */
     public static synchronized boolean load(File tempDir, String libFileName) {
