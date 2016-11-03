@@ -57,6 +57,8 @@ public class PairHmmUnitTest {
 
         String operSys = System.getProperty("os.name").toLowerCase();
         final boolean isLinux;
+        System.out.printf("%s\n",operSys);
+
         if(operSys.contains("nix") || operSys.contains("nux")  || operSys.contains("aix") ) isLinux = true;
         else isLinux = false;
         if(!isLinux)
