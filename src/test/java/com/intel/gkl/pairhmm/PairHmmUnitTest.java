@@ -2,6 +2,7 @@ package com.intel.gkl.pairhmm;
 
 import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.pairhmm.IntelPairHmm;
+import com.intel.gkl.pairhmm.IntelPairHmmOMP;
 import org.broadinstitute.gatk.nativebindings.pairhmm.HaplotypeDataHolder;
 import org.broadinstitute.gatk.nativebindings.pairhmm.PairHMMNativeArguments;
 import org.broadinstitute.gatk.nativebindings.pairhmm.PairHMMNativeBinding;
