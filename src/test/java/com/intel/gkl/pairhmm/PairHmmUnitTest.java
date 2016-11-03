@@ -91,7 +91,7 @@ public class PairHmmUnitTest {
         Assert.assertEquals(likelihoodArray[0], expectedResult, 1e-5, "Likelihood not in expected range.");
     }
 
-    
+
     @Test(enabled = true)
     public void dataFileTest() {
         // load native library
