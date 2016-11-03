@@ -57,7 +57,6 @@ public class PairHmmUnitTest {
 
         final boolean isSupported = new IntelPairHmmOMP().load();
         if(!isSupported) {
-            simpleTest();
             return;
         }
         else {
