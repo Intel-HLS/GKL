@@ -56,10 +56,10 @@ public class PairHmmUnitTest {
     public void omp_Test() {
 
         String operSys = System.getProperty("os.name").toLowerCase();
-        final boolean isMAC;
-        if(operSys.contains("nix") || operSys.contains("nux")  || operSys.contains("aix") ) isMAC = false;
-        else isMAC = true;
-        if(!isMAC)
+        final boolean isLinux;
+        if(operSys.contains("nix") || operSys.contains("nux")  || operSys.contains("aix") ) isLinux = true;
+        else isLinux = false;
+        if(!isLinux)
         {
             final boolean Supported = new IntelPairHmm().load();
             final IntelPairHmm pairHmm = new IntelPairHmm();
