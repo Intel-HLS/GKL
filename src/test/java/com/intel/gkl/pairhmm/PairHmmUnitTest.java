@@ -20,10 +20,12 @@ public class PairHmmUnitTest {
 
     @Test(enabled = true)
     public void simpleTest() {
-        final boolean isSupported = new IntelPairHmm().load();
-        Assert.assertTrue(isSupported);
 
         final IntelPairHmm pairHmm = new IntelPairHmm();
+
+        final boolean isloaded = new IntelPairHmm().load();
+        Assert.assertTrue(isloaded);
+
         final PairHMMNativeArguments args = new PairHMMNativeArguments();
         args.maxNumberOfThreads = 1;
         args.useDoublePrecision = false;
