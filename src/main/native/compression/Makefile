@@ -8,12 +8,12 @@ OS = $(shell uname)
 ifeq ($(OS), Linux)
     #build isa-l-master
 	TARGET = IntelDeflater.o IntelInflater.o
-	LIB_TARGET = ../libGKL_compression.so
+	LIB_TARGET = ../libgkl_compression.so
 	LINKFLAGS= -z noexecstack -shared -static-libgcc -static-libstdc++
 else ifeq ($(OS), Darwin)
     #build isa-l-master
 	TARGET = IntelInflater.o IntelDeflater.o
-	LIB_TARGET = ../libGKL_compression.dylib
+	LIB_TARGET = ../libgkl_compression.dylib
 	LINKFLAGS= -shared -static-libstdc++
 else
     $(error "Unsupported OS")

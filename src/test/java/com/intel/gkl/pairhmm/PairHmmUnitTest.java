@@ -54,8 +54,8 @@ public class PairHmmUnitTest {
 
     @Test(enabled = true)
     public void omp_Test() {
-        final IntelPairHmm_omp pairHmm = new IntelPairHmm_omp();
-        final boolean isSupported = new IntelPairHmm_omp().load();
+        final IntelPairHmmOMP pairHmm = new IntelPairHmmOMP();
+        final boolean isSupported = new IntelPairHmmOMP().load();
         Assert.assertTrue(isSupported);
 
         final PairHMMNativeArguments args = new PairHMMNativeArguments();

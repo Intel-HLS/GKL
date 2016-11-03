@@ -53,7 +53,7 @@ public class IntelInflater extends Inflater implements NativeLibrary {
     private final static Logger logger = LogManager.getLogger(IntelInflater.class);
 
     private boolean isSupported = false;
-    private static final String libFileName = "GKL_compression";
+    private static final String libFileName = "gkl_compression";
 
     public boolean load() {
         return load(null, libFileName);

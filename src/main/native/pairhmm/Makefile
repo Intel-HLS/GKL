@@ -7,7 +7,7 @@ OUTPUT_OPTION=-MMD -MP -o $@
 OS = $(shell uname)
 ifeq ($(OS), Linux)
 	TARGET = IntelPairHmm.h IntelPairHmm.o IntelPairHmm_omp.o
-	LIB_TARGET = ../libGKL_pairHMM.so ../libGKL_pairHMM_omp.so
+	LIB_TARGET = ../libgkl_pairhmm.so ../libgkl_pairhmm_omp.so
 	LINKFLAGS= -shared -static-libgcc -static-libstdc++
 else ifeq ($(OS), Darwin)
 	TARGET = IntelPairHmm.h IntelPairHmm.o
@@ -23,7 +23,9 @@ DEP = $(SRC:.cc=.d)
 
 all: $(TARGET) $(LIB_TARGET)
 
-$(LIB_TARGET): $(OBJ); $(CXX) $(CPPFLAGS) $(LINKFLAGS) -o $@ $^
+../libgkl_pairhmm_omp.so: IntelPairHmm_omp.o; $(CXX) $(CPPFLAGS_OMP) $(LINKFLAGS) -o $@ $^
+
+../libgkl_pairhmm.so: IntelPairHmm.o; $(CXX) $(CPPFLAGS) $(LINKFLAGS) -o $@ $^
 
 IntelPairHmm.h: ../../java/com/intel/gkl/pairhmm/IntelPairHmm.java
 	javah -o IntelPairHmm.h -cp ../../java com.intel.gkl.pairhmm.IntelPairHmm
@@ -34,5 +36,5 @@ IntelPairHmm_omp.o: $(SRC)
 -include $(DEP)
 
 clean:
-	rm -f $(OBJ) $(DEP) $(TARGET) $(LINK_TARGET)
+	rm -f $(OBJ) $(DEP) $(TARGET) $(LIB_TARGET)
 

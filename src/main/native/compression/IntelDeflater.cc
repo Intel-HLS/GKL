@@ -37,7 +37,10 @@ extern "C" {
 #include "igzip_lib.h"
 }
 
+static struct isal_huff_histogram histogram;
+static struct isal_hufftables hufftables_custom;
 
+static bool huffman=false;
 
 #define DEF_MEM_LEVEL 8
 //#define DEBUG
@@ -134,6 +137,8 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 
 /**
 * Generate Dynamic Huffman tables
+* This function will be called only if we are implementing the fully dynamic huffman implementation which is not set as default in current implementation
+* current implementation we use semi-dynamic huffman with tables generated using only first 64k block of stream
 */
 
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuffman
@@ -151,7 +156,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuff
       struct isal_huff_histogram *histogram;
       struct isal_hufftables *hufftables_custom;
 
-     // malloc(histogram, sizeof(isal_huff_histogram));
       memset(histogram, 0, sizeof(isal_huff_histogram));
       isal_update_histogram((unsigned char*)input, 64*1024, histogram);
       isal_create_hufftables(hufftables_custom, histogram);
@@ -191,20 +195,32 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
     int bytes_in = inputBufferLength;
 
 #ifdef profile
-struct timeval  tv1, tv2;
-gettimeofday(&tv1, NULL);
+    struct timeval  tv1, tv2;
+    gettimeofday(&tv1, NULL);
 #endif
     // compress and update lz_stream state
+    // Generate the dynamic huff tables using the first buffer of the stream
+    if(huffman == false)
+       {
+         memset(&histogram, 0, sizeof(histogram));
+         isal_update_histogram((unsigned char*)next_in,inputBufferLength, &histogram);
+         isal_create_hufftables(&hufftables_custom, &histogram);
+         lz_stream->flush = SYNC_FLUSH;
+         huffman = true;
+       }
+
+    // compress and update lz_stream state
+    lz_stream->hufftables = &hufftables_custom;
     isal_deflate_stateless(lz_stream);
+
 #ifdef profile
     gettimeofday(&tv2, NULL);
-
     DBG ("Total time = %f seconds\n",
              (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
              (double) (tv2.tv_sec - tv1.tv_sec));
 #endif
-    long bytes_out = outputBufferLength - lz_stream->avail_out;
 
+    long bytes_out = outputBufferLength - lz_stream->avail_out;
 
     // release buffers
     env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
@@ -234,11 +250,12 @@ gettimeofday(&tv1, NULL);
 
 
 #ifdef profile
-struct timeval  tv1, tv2;
-gettimeofday(&tv1, NULL);
+    struct timeval  tv1, tv2;
+    gettimeofday(&tv1, NULL);
 #endif
     // compress and update lz_stream state
     int ret = deflate(lz_stream, Z_FINISH);
+
  #ifdef profile
      gettimeofday(&tv2, NULL);
 

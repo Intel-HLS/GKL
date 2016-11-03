@@ -23,12 +23,12 @@ public class DeflaterProfile {
     private final static Logger log = LogManager.getLogger(DeflaterIntegrationTest.class);
     private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void profileTest() throws IOException {
         final String filename = System.getProperty("input", INPUT_FILE);
         final File inputFile = new File(filename);
         final File outputFile = File.createTempFile("output", ".bam");
-        outputFile.deleteOnExit();
+        //outputFile.deleteOnExit();
 
         SamReaderFactory readerFactory =
                 SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT);
@@ -54,9 +54,10 @@ public class DeflaterProfile {
 
         fileWriter.write("level, time(sec), filesize\n");
 
-        int loopCount = Integer.parseInt(System.getProperty("loop", "10"));
+        //int loopCount = Integer.parseInt(System.getProperty("loop", "10"));
+        int loopCount = 1;
         for (DeflaterFactory deflaterFactory : deflaterFactories) {
-            for (int compressionLevel = 0; compressionLevel < 10; compressionLevel++) {
+            for (int compressionLevel = 1; compressionLevel < 2; compressionLevel++) {
                 log.info(String.format("Level %d", compressionLevel));
                 long totalTime = 0;
                 for (int loop = 0; loop < loopCount; loop++) {

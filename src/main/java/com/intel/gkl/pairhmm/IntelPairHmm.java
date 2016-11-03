@@ -10,7 +10,7 @@ import java.io.File;
 
 public class IntelPairHmm implements PairHMMNativeBinding {
 
-    public static String libFileName = "GKL_pairHMM";
+    public static String libFileName = "gkl_pairhmm";
     public static boolean isLoaded = false;
 
     /**
@@ -59,6 +59,12 @@ public class IntelPairHmm implements PairHMMNativeBinding {
 
 
     public void initialize(PairHMMNativeArguments args) {
+        if(args == null)
+        {
+            args = new PairHMMNativeArguments();
+            args.useDoublePrecision = false;
+            args.maxNumberOfThreads = 1;
+        }
         initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads);
     }
 
