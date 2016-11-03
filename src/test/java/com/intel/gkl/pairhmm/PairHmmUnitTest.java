@@ -23,7 +23,7 @@ public class PairHmmUnitTest {
 
         final IntelPairHmm pairHmm = new IntelPairHmm();
 
-        final boolean isloaded = pairHmm.load();
+        final boolean isloaded = pairHmm.load(null,"gkl_pairhmm");
         Assert.assertTrue(isloaded);
 
         final PairHMMNativeArguments args = new PairHMMNativeArguments();
