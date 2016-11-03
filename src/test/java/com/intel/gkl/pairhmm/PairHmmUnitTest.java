@@ -123,7 +123,7 @@ public class PairHmmUnitTest {
         }
     }
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void dataFileTest() {
         // load native library
         final boolean isSupported = new IntelPairHmm().load();
