@@ -11,7 +11,7 @@ ifeq ($(OS), Linux)
 	LINKFLAGS= -shared -static-libgcc -static-libstdc++
 else ifeq ($(OS), Darwin)
 	TARGET = IntelPairHmm.h IntelPairHmm.o
-	LIB_TARGET = ../libGKL_pairHMM.dylib ../libGKL_pairHMM_omp.dylib
+	LIB_TARGET = ../libgkl_pairhmm.dylib ../libgkl_pairhmm_omp.dylib
 	LINKFLAGS= -shared -static-libstdc++
 else
     $(error "Unsupported OS")
@@ -23,9 +23,21 @@ DEP = $(SRC:.cc=.d)
 
 all: $(TARGET) $(LIB_TARGET)
 
+OS = $(shell uname)
+ifeq ($(OS), Linux)
 ../libgkl_pairhmm_omp.so: IntelPairHmm_omp.o; $(CXX) $(CPPFLAGS_OMP) $(LINKFLAGS) -o $@ $^
 
 ../libgkl_pairhmm.so: IntelPairHmm.o; $(CXX) $(CPPFLAGS) $(LINKFLAGS) -o $@ $^
+
+else ifeq ($(OS), Darwin)
+../libgkl_pairhmm_omp.dylib: IntelPairHmm_omp.o; $(CXX) $(CPPFLAGS_OMP) $(LINKFLAGS) -o $@ $^
+
+../libgkl_pairhmm.dylib: IntelPairHmm.o; $(CXX) $(CPPFLAGS) $(LINKFLAGS) -o $@ $^
+
+
+else
+    $(error "Unsupported OS")
+endif
 
 IntelPairHmm.h: ../../java/com/intel/gkl/pairhmm/IntelPairHmm.java
 	javah -o IntelPairHmm.h -cp ../../java com.intel.gkl.pairhmm.IntelPairHmm
