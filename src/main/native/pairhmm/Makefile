@@ -11,7 +11,7 @@ ifeq ($(OS), Linux)
 	LINKFLAGS= -shared -static-libgcc -static-libstdc++
 else ifeq ($(OS), Darwin)
 	TARGET = IntelPairHmm.h IntelPairHmm.o
-	LIB_TARGET = ../libgkl_pairhmm.dylib ../libgkl_pairhmm_omp.dylib
+	LIB_TARGET = ../libgkl_pairhmm.dylib
 	LINKFLAGS= -shared -static-libstdc++
 else
     $(error "Unsupported OS")
@@ -30,8 +30,6 @@ ifeq ($(OS), Linux)
 ../libgkl_pairhmm.so: IntelPairHmm.o; $(CXX) $(CPPFLAGS) $(LINKFLAGS) -o $@ $^
 
 else ifeq ($(OS), Darwin)
-../libgkl_pairhmm_omp.dylib: IntelPairHmm_omp.o; $(CXX) $(CPPFLAGS_OMP) $(LINKFLAGS) -o $@ $^
-
 ../libgkl_pairhmm.dylib: IntelPairHmm.o; $(CXX) $(CPPFLAGS) $(LINKFLAGS) -o $@ $^
 
 
