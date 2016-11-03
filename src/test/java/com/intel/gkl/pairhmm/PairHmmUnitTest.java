@@ -56,8 +56,11 @@ public class PairHmmUnitTest {
     @Test(enabled = true)
     public void omp_Test() {
 
-        boolean isSupported = new IntelPairHmmOMP().load();
-        if(!isSupported)
+        String operSys = System.getProperty("os.name").toLowerCase();
+        final boolean isMAC;
+        if(operSys.contains("mac")) isMAC = true;
+        else isMAC = false;
+        if(!isMAC)
         {
             final boolean Supported = new IntelPairHmm().load();
             final IntelPairHmm pairHmm = new IntelPairHmm();
@@ -91,8 +94,9 @@ public class PairHmmUnitTest {
         }
         else
         {
+            boolean Supported = new IntelPairHmmOMP().load();
             final IntelPairHmmOMP pairHmm = new IntelPairHmmOMP();
-            Assert.assertTrue(isSupported);
+            Assert.assertTrue(Supported);
             final PairHMMNativeArguments args = new PairHMMNativeArguments();
             args.maxNumberOfThreads = 10;
             args.useDoublePrecision = false;
