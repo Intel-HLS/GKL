@@ -55,36 +55,42 @@ public class PairHmmUnitTest {
     @Test(enabled = true)
     public void omp_Test() {
 
-        final IntelPairHmmOMP pairHmm = new IntelPairHmmOMP();
         final boolean isSupported = new IntelPairHmmOMP().load();
-        Assert.assertTrue(isSupported);
+        if(!isSupported) {
+            simpleTest();
+            return;
+        }
+        else {
+            final IntelPairHmmOMP pairHmm = new IntelPairHmmOMP();
+            Assert.assertTrue(isSupported);
 
-        final PairHMMNativeArguments args = new PairHMMNativeArguments();
-        args.maxNumberOfThreads = 10;
-        args.useDoublePrecision = false;
+            final PairHMMNativeArguments args = new PairHMMNativeArguments();
+            args.maxNumberOfThreads = 10;
+            args.useDoublePrecision = false;
 
-        pairHmm.initialize(args);
+            pairHmm.initialize(args);
 
-        ReadDataHolder[] readDataArray = new ReadDataHolder[1];
-        HaplotypeDataHolder[] haplotypeDataArray = new HaplotypeDataHolder[1];
-        double[] likelihoodArray = new double[1];
+            ReadDataHolder[] readDataArray = new ReadDataHolder[1];
+            HaplotypeDataHolder[] haplotypeDataArray = new HaplotypeDataHolder[1];
+            double[] likelihoodArray = new double[1];
 
-        // read data from file
-        haplotypeDataArray[0] = new HaplotypeDataHolder();
-        haplotypeDataArray[0].haplotypeBases = "ACGT".getBytes();
-        readDataArray[0] = new ReadDataHolder();
-        readDataArray[0].readBases = "ACGT".getBytes();
-        readDataArray[0].readQuals = "++++".getBytes();
-        readDataArray[0].insertionGOP = "++++".getBytes();
-        readDataArray[0].deletionGOP = "++++".getBytes();
-        readDataArray[0].overallGCP = "++++".getBytes();
-        double expectedResult = -6.022797e-01;
+            // read data from file
+            haplotypeDataArray[0] = new HaplotypeDataHolder();
+            haplotypeDataArray[0].haplotypeBases = "ACGT".getBytes();
+            readDataArray[0] = new ReadDataHolder();
+            readDataArray[0].readBases = "ACGT".getBytes();
+            readDataArray[0].readQuals = "++++".getBytes();
+            readDataArray[0].insertionGOP = "++++".getBytes();
+            readDataArray[0].deletionGOP = "++++".getBytes();
+            readDataArray[0].overallGCP = "++++".getBytes();
+            double expectedResult = -6.022797e-01;
 
-        // call pairHMM
-        pairHmm.computeLikelihoods(readDataArray, haplotypeDataArray, likelihoodArray);
+            // call pairHMM
+            pairHmm.computeLikelihoods(readDataArray, haplotypeDataArray, likelihoodArray);
 
-        // check result
-        Assert.assertEquals(likelihoodArray[0], expectedResult, 1e-5, "Likelihood not in expected range.");
+            // check result
+            Assert.assertEquals(likelihoodArray[0], expectedResult, 1e-5, "Likelihood not in expected range.");
+        }
     }
 
     @Test(enabled = true)
