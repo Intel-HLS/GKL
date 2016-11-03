@@ -57,8 +57,8 @@ public class PairHmmUnitTest {
 
         String operSys = System.getProperty("os.name").toLowerCase();
         final boolean isMAC;
-        if(operSys.contains("mac")) isMAC = true;
-        else isMAC = false;
+        if(operSys.contains("nix") || operSys.contains("nux")  || operSys.contains("aix") ) isMAC = false;
+        else isMAC = true;
         if(!isMAC)
         {
             final boolean Supported = new IntelPairHmm().load();
