@@ -58,7 +58,7 @@ public class PairHmmUnitTest {
     public void omp_Test() {
         final boolean isSupported = new IntelPairHmmOMP().load();
         if(!isSupported) {
-            final IntelPairHmm pairHmm = new IntelPairHmm();
+            IntelPairHmm pairHmm = new IntelPairHmm();
 
             final boolean isloaded = pairHmm.load();
             Assert.assertTrue(isloaded);
