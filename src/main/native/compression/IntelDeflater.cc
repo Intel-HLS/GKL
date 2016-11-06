@@ -28,6 +28,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+
 #include <sys/time.h>
 #include "IntelDeflater.h"
 
@@ -37,14 +38,10 @@ extern "C" {
 #include "igzip_lib.h"
 }
 
-static struct isal_huff_histogram histogram;
-static struct isal_hufftables hufftables_custom;
-
-static bool huffman=false;
-
 #define DEF_MEM_LEVEL 8
 //#define DEBUG
 //#define profile
+
 
 #ifdef DEBUG
 #  define DBG(M, ...)  fprintf(stdout, "[DEBUG] (%s %s:%d) " M "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
@@ -86,6 +83,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
  
   jint level = env->GetIntField(obj, FID_level);
 
+
   if(level == 1) {
     isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
 
@@ -95,10 +93,21 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
         jclass Exception = env->FindClass("java/lang/Exception");
         env->ThrowNew(Exception,"Memory allocation error");
       }
+
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
+       isal_deflate_init(lz_stream);
+       lz_stream->hufftables = 0x0;
+
+    }
+    else {
+     isal_hufftables *temp_huffman_pointer = lz_stream->hufftables;
+
+     DBG("lz_stream = 0x%lx", (long)temp_huffman_pointer);
+      isal_deflate_init(lz_stream);
+      lz_stream->hufftables = temp_huffman_pointer;
+
     }
 
-    isal_deflate_init(lz_stream);
     lz_stream->end_of_stream = 0;
   
    // DBG("lz_stream = 0x%lx", (long)lz_stream);
@@ -171,7 +180,9 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuff
  */
 JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNative
 (JNIEnv * env, jobject obj, jbyteArray outputBuffer, jint outputBufferLength) {
- 
+
+
+
   jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inputBuffer);
   jint inputBufferLength = env->GetIntField(obj, FID_inputBufferLength);
   jboolean endOfStream = env->GetBooleanField(obj, FID_endOfStream);
@@ -182,6 +193,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
   
     isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
 
+    isal_zstream stream;
 
     jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
     jbyte* next_out = (jbyte*)env->GetPrimitiveArrayCritical(outputBuffer, 0);
@@ -200,17 +212,22 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 #endif
     // compress and update lz_stream state
     // Generate the dynamic huff tables using the first buffer of the stream
-    if(huffman == false)
-       {
+  if(lz_stream->hufftables == 0x0)
+      {
+        struct isal_huff_histogram histogram;
+        struct isal_hufftables *hufftables_custom;
+
+         hufftables_custom = (isal_hufftables*) malloc(sizeof(isal_hufftables));
+
          memset(&histogram, 0, sizeof(histogram));
          isal_update_histogram((unsigned char*)next_in,inputBufferLength, &histogram);
-         isal_create_hufftables(&hufftables_custom, &histogram);
+         isal_create_hufftables(hufftables_custom, &histogram);
          lz_stream->flush = SYNC_FLUSH;
-         huffman = true;
+         lz_stream->hufftables = hufftables_custom;
+         DBG("lz_stream = 0x%lx", (long)hufftables_custom);
        }
 
     // compress and update lz_stream state
-    lz_stream->hufftables = &hufftables_custom;
     isal_deflate_stateless(lz_stream);
 
 #ifdef profile

@@ -146,7 +146,6 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         }
         inputBuffer = b;
         inputBufferLength = len;
-
     }
 
 
