@@ -1,5 +1,6 @@
 package com.intel.gkl.pairhmm;
 
+
 import com.intel.gkl.IntelGKLUtils;
 import org.broadinstitute.gatk.nativebindings.pairhmm.HaplotypeDataHolder;
 import org.broadinstitute.gatk.nativebindings.pairhmm.PairHMMNativeArguments;
@@ -10,14 +11,16 @@ import java.io.File;
 
 public class IntelPairHmm implements PairHMMNativeBinding {
 
-    public static String libFileName = "gkl_pairhmm";
-    public static boolean isLoaded = false;
-
-
     static {
         setLibFileName("gkl_pairhmm");
         setIsLoaded(false);
     }
+
+
+    public static String libFileName = "gkl_pairhmm";
+    public static boolean isLoaded = false;
+
+
     /**
      * Load native library using system temp directory to store the shared object.
      *
@@ -41,7 +44,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     public boolean load(File tmpDir, String libFileName) {
         if(!isLoaded) {
             isLoaded = IntelGKLUtils.load(tmpDir, libFileName);
-            if(isLoaded == false) libFileName = null; 
+            if(isLoaded == false) libFileName = null;
             return isLoaded;
         }
         return true;
