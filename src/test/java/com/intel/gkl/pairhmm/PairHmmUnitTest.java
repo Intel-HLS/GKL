@@ -59,7 +59,8 @@ public class PairHmmUnitTest {
         final boolean isSupported = new IntelPairHmmOMP().load();
         if(!isSupported) {
             final IntelPairHmm pairHmm = new IntelPairHmm();
-            pairHmm.setLibFileName("gkl_pairhmm");
+           
+
             final boolean isloaded = pairHmm.load();
             Assert.assertTrue(isloaded);
 
