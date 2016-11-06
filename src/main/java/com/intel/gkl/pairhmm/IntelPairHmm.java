@@ -13,11 +13,11 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     public static String libFileName = "gkl_pairhmm";
     public static boolean isLoaded = false;
 
-/*
+
     static {
         setLibFileName("gkl_pairhmm");
         setIsLoaded(false);
-    }*/
+    }
     /**
      * Load native library using system temp directory to store the shared object.
      *
@@ -41,6 +41,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     public boolean load(File tmpDir, String libFileName) {
         if(!isLoaded) {
             isLoaded = IntelGKLUtils.load(tmpDir, libFileName);
+            if(isLoaded == false) libFileName = null; 
             return isLoaded;
         }
         return true;
