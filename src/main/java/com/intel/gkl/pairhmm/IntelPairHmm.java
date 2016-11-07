@@ -11,9 +11,8 @@ import java.io.File;
 
 public class IntelPairHmm implements PairHMMNativeBinding {
 
-    static {
+    public IntelPairHmm () {
         setLibFileName("gkl_pairhmm");
-        setIsLoaded(false);
     }
 
 

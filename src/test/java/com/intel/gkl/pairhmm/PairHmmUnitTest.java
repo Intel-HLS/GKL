@@ -21,9 +21,9 @@ public class PairHmmUnitTest {
     @Test(enabled = true)
     public void simpleTest() {
 
-        final IntelPairHmm pairHmm = new IntelPairHmm();
+        final boolean isloaded = new IntelPairHmm().load();
 
-        final boolean isloaded = pairHmm.load();
+        final IntelPairHmm pairHmm = new IntelPairHmm();
         Assert.assertTrue(isloaded);
 
         final PairHMMNativeArguments args = new PairHMMNativeArguments();
