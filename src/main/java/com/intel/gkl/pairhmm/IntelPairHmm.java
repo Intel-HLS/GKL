@@ -44,7 +44,6 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     public boolean load(File tmpDir, String libFileName) {
         if(!isLoaded) {
             isLoaded = IntelGKLUtils.load(tmpDir, libFileName);
-            if(isLoaded == false) libFileName = null;
             return isLoaded;
         }
         return true;
