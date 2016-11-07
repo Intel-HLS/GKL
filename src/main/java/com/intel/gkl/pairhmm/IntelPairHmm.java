@@ -13,6 +13,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
 
     public IntelPairHmm () {
         setLibFileName("gkl_pairhmm");
+        setIsLoaded(false);
     }
 
 

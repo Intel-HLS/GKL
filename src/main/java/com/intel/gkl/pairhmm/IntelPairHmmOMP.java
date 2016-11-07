@@ -5,8 +5,7 @@ package com.intel.gkl.pairhmm;
  */
 public class IntelPairHmmOMP extends IntelPairHmm  {
 
-
-    static {
+   public IntelPairHmmOMP() {
         setLibFileName("gkl_pairhmm_omp");
         setIsLoaded(false);
     }
