@@ -1,6 +1,6 @@
 .libs/
 Makefile
-autom4te.cache/requests
+autom4te.cache/
 config.log
 config.status
 isa-l.h
@@ -9,3 +9,7 @@ libisal.la
 libisal.pc
 libtool
 usr/
+Makefile.in
+aclocal.m4
+configure
+build-aux/
