@@ -6,11 +6,11 @@ LDLIBS=
 OS = $(shell uname)
 ifeq ($(OS), Linux)
 	TARGET = ftz.o
-	LIB_TARGET = ../libGKL_FTZ.so
+	LIB_TARGET = ../libgkl_ftz.so
 	LINKFLAGS= -shared -static-libgcc -static-libstdc++
 else ifeq ($(OS), Darwin)
 	TARGET = ftz.o
-	LIB_TARGET = ../libGKL_FTZ.dylib
+	LIB_TARGET = ../libgkl_ftz.dylib
 	LINKFLAGS= -shared -static-libstdc++
 else
     $(error "Unsupported OS")

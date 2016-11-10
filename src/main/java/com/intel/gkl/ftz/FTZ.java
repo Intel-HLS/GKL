@@ -12,7 +12,7 @@ public class FTZ implements NativeLibrary {
     private final static Logger logger = LogManager.getLogger(FTZ.class);
 
     private boolean isGklLoaded;
-    private static final String libFileName = "GKL_FTZ";
+    private static final String libFileName = "gkl_ftz";
 
 
     public FTZ() {

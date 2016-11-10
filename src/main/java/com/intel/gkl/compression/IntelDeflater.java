@@ -42,7 +42,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     private final static Logger logger = LogManager.getLogger(IntelDeflater.class);
 
     private boolean isSupported = false;
-    private static final String libFileName = "GKL_compression";
+    private static final String libFileName = "gkl_compression";
 
 
     public boolean load() {
@@ -146,7 +146,6 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         }
         inputBuffer = b;
         inputBufferLength = len;
-
     }
 
 

@@ -30,7 +30,6 @@ task buildNativeLib(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
     workingDir 'src/main/native'
-    commandLine 'make clean'
     commandLine 'make'
     // always run this task
     outputs.upToDateWhen {false}
@@ -62,7 +61,7 @@ task cleanNativeLib(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
     workingDir 'src/main/native'
-    commandLine './clean'
+    commandLine 'make',  'clean'
 }
 
 clean.dependsOn(cleanNativeLib)
@@ -129,7 +128,7 @@ signing {
     sign configurations.archives
 }
 
-signArchives.doFirst { println "Version: $version" }
+install.doFirst { println "Version: $version" }
 
 uploadArchives {
     repositories {

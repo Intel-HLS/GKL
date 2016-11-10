@@ -108,6 +108,7 @@ public class IntelGKLUtils {
                 return true;
             } catch (UnsatisfiedLinkError ule) {
                 logger.warn("Unable to load Intel GKL library.");
+                return false;
 
             }
         }

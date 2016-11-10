@@ -6,6 +6,7 @@ tmp/
 *.o
 *.a
 *.lo
+.deps/
 
 #================================================================================
 # from https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore

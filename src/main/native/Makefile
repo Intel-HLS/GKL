@@ -4,8 +4,10 @@ SUBDIRS = ftz compression pairhmm
 
 subdirs: $(SUBDIRS)
 
-$(SUBDIRS):;$(MAKE) -C $@
+$(SUBDIRS):
+	$(MAKE) -C $@
 
 .PHONY: clean
 
-clean: ;rm -f *.so *.dylib
+clean:
+	rm -f *.so *.dylib
