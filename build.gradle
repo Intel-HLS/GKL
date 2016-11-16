@@ -6,7 +6,6 @@ plugins {
 }
 
 repositories {
-//    maven { url uri('/home/gspowley/.m2/repository/') }
     mavenLocal()
     mavenCentral()
     maven { url "https://artifactory.broadinstitute.org/artifactory/libs-snapshot/" }
@@ -25,28 +24,33 @@ dependencies {
 //===================================================================
 // build
 //===================================================================
+final nativeBuildDir = "$buildDir/native"
 
-task buildNativeLib(type: Exec) {
+task cmakeConfig(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
-    workingDir 'src/main/native'
-    commandLine 'make'
-    // always run this task
-    outputs.upToDateWhen {false}
-    // skip this task if the skip property is defined: "gradle -Pskip"
-    onlyIf {!project.hasProperty('skip')}
+    doFirst {mkdir nativeBuildDir}
+    workingDir nativeBuildDir
+    commandLine 'cmake', '-Wno-dev', projectDir
+    inputs.files 'CMakeLists.txt'
+    outputs.files "$nativeBuildDir/Makefile"
 }
 
-compileJava.dependsOn(buildNativeLib)
+task cmakeBuild(type: Exec) {
+    // hide stdout, but print stderr
+    standardOutput = new ByteArrayOutputStream()
+    workingDir nativeBuildDir
+    commandLine 'make', 'install'
+    // always run this task
+    outputs.upToDateWhen {false}
+}
 
 task copyNativeLib(type: Copy) {
-    from 'src/main/native'
-    into 'build/classes/main/com/intel/gkl/native'
+    from nativeBuildDir
+    into "$buildDir/classes/main/com/intel/gkl/native"
     include '*.so'
     include '*.dylib'
 }
-
-buildNativeLib.finalizedBy copyNativeLib
 
 task buildOnMac(type: Exec) {
     String mac_host = project.ext.properties.mac_host ? project.ext.properties.mac_host : "gkl-mac"
@@ -55,16 +59,10 @@ task buildOnMac(type: Exec) {
     onlyIf {project.hasProperty('mac') || project.hasProperty('mac_host') || gradle.taskGraph.hasTask(uploadArchives)}
 }
 
+compileJava.finalizedBy copyNativeLib
 copyNativeLib.finalizedBy buildOnMac
-
-task cleanNativeLib(type: Exec) {
-    // hide stdout, but print stderr
-    standardOutput = new ByteArrayOutputStream()
-    workingDir 'src/main/native'
-    commandLine 'make',  'clean'
-}
-
-clean.dependsOn(cleanNativeLib)
+copyNativeLib.dependsOn cmakeBuild
+cmakeBuild.dependsOn cmakeConfig
 
 //===================================================================
 // test
