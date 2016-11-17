@@ -232,7 +232,6 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
     /* Probality vectors */
     SIMD_TYPE pGAPM, pMM, pMX, pXX, pMY, pYY;
 
-    struct timeval start, end;
     NUMBER result_avx2;
     Context<NUMBER> ctx;
     UNION_TYPE rs , rsN;

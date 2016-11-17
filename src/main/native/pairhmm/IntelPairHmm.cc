@@ -1,4 +1,4 @@
-#ifdef linux
+#ifdef OMP
 #include <omp.h>
 #endif
 #include <vector>
@@ -32,6 +32,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   javaData.init(env, readDataHolder, haplotypeDataHolder);
 
   g_use_double = use_double;
+  g_max_threads = max_threads;
   
   #ifdef OMP
   g_max_threads = std::min((int)max_threads, omp_get_max_threads());
