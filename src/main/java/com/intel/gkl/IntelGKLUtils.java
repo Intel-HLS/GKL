@@ -45,7 +45,7 @@ import java.net.URL;
  */
 
 
-public class IntelGKLUtils {
+public final class IntelGKLUtils {
     private final static Logger logger = LogManager.getLogger(IntelGKLUtils.class);
     private final static String GKL_USE_LIB_PATH = "GKL_USE_LIB_PATH";
     private final static String GKL_LIB_NAME = "IntelGKL";
@@ -53,13 +53,12 @@ public class IntelGKLUtils {
     private final static Boolean runningOnMac =
             System.getProperty("os.name", "unknown").toLowerCase().startsWith("mac");
 
-
     /**
      * Check if AVX is supported and enabled on the CPU
      *
      * @return {@code true} if AVX is supported and enabled on the CPU, {@code false} otherwise
      */
-    private static Boolean isAvxSupported() {
+    public static Boolean isAvxSupported() {
         // use a grep command to check for AVX support
         // grep exit code = 0 if a match was found
         final String command = runningOnMac ? "sysctl -a | grep machdep.cpu.features | grep -i avx" :
@@ -82,70 +81,8 @@ public class IntelGKLUtils {
         return true;
     }
 
-
-    /**
-     * Tries to load the GKL shared library. If AVX is not supported, it returns {@code false} without
-     * trying to load the library.
-     *
-     * If GKL is loaded from a jar file, the shared library file is extracted to the
-     * {@code tempDir} directory first.
-     *
-     * @param tempDir directory where the shared library file is extracted
-     * @param libFileName name of the library file to be loaded
-     * @return {@code true} if GKL loaded successfully, {@code false} otherwise
-     */
-    public static synchronized boolean load(File tempDir, String libFileName) {
-
-        // try to load from Java library path if GKL_USE_LIB_PATH env var is defined
-        if (System.getenv(GKL_USE_LIB_PATH) != null) {
-            try {
-                String javaLibraryPath = System.getProperty("java.library.path");
-                logger.info(String.format("Trying to load Intel GKL library from: \n\t%s",
-                        javaLibraryPath.replaceAll(":", "\n\t")));
-                System.loadLibrary(libFileName);
-                logger.info("Intel GKL library loaded from Java library path.");
-
-                return true;
-            } catch (UnsatisfiedLinkError ule) {
-                logger.warn("Unable to load Intel GKL library.");
-                return false;
-
-            }
-        }
-
-        try {
-            // try to extract from classpath
-            String resourcePath = "native/" +  System.mapLibraryName(libFileName);
-            URL inputUrl = IntelGKLUtils.class.getResource(resourcePath);
-            if (inputUrl == null) {
-                logger.warn("Unable to find Intel GKL library: " + resourcePath);
-                return false;
-            }
-
-            logger.info(String.format("Trying to load Intel GKL library from:\n\t%s", inputUrl.toString()));
-
-            File temp = File.createTempFile(FilenameUtils.getBaseName(resourcePath),
-                    "." + FilenameUtils.getExtension(resourcePath), tempDir);
-            FileUtils.copyURLToFile(inputUrl, temp);
-            temp.deleteOnExit();
-            logger.debug(String.format("Extracted Intel GKL to %s\n", temp.getAbsolutePath()));
-
-            System.load(temp.getAbsolutePath());
-            logger.info("Intel GKL library loaded from classpath.");
-        } catch (IOException ioe) {
-            // not supported
-            logger.warn("Unable to load Intel GKL library.");
-            return false;
-        }
-
-
-        return true;
-    }
-
-
-
-    static final String TEST_RESOURCES_PATH = System.getProperty("user.dir") + "/src/test/resources/";
-    static final String TEST_RESOURCES_ABSPATH = new File(TEST_RESOURCES_PATH).getAbsolutePath() + "/";
+    private static final String TEST_RESOURCES_PATH = System.getProperty("user.dir") + "/src/test/resources/";
+    private static final String TEST_RESOURCES_ABSPATH = new File(TEST_RESOURCES_PATH).getAbsolutePath() + "/";
 
     public static String pathToTestResource(String filename) {
         return TEST_RESOURCES_ABSPATH + filename;

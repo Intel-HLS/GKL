@@ -5,6 +5,13 @@ plugins {
     id 'com.palantir.git-version' version '0.5.2'
 }
 
+compileJava {
+    options.compilerArgs = ['-proc:none', '-Xlint:all','-Werror','-Xdiags:verbose']
+}
+compileTestJava {
+    options.compilerArgs = ['-proc:none', '-Xlint:all','-Werror','-Xdiags:verbose']
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -21,6 +28,10 @@ dependencies {
     testCompile 'org.testng:testng:6.9.9'
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.2.1'
+}
+
 //===================================================================
 // build
 //===================================================================
@@ -32,7 +43,7 @@ task cmakeConfig(type: Exec) {
     doFirst {mkdir nativeBuildDir}
     workingDir nativeBuildDir
     commandLine 'cmake', '-Wno-dev', projectDir
-    inputs.files 'CMakeLists.txt'
+    inputs.files fileTree(projectDir) {include '**/CMakeLists.txt'}
     outputs.files "$nativeBuildDir/Makefile"
 }
 

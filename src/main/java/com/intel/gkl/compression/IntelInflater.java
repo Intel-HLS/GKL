@@ -26,58 +26,47 @@
  * 	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 package com.intel.gkl.compression;
-
 
 import com.intel.gkl.IntelGKLUtils;
 
 import java.io.File;
 import java.util.zip.Inflater;
 
+import com.intel.gkl.NativeLibraryLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
-
-
 
 /**
  * Created by pnvaidya on 8/30/16.
  */
 
 
-public class IntelInflater extends Inflater implements NativeLibrary {
-
-
-
+public final class IntelInflater extends Inflater implements NativeLibrary {
     private final static Logger logger = LogManager.getLogger(IntelInflater.class);
 
-    private boolean isSupported = false;
-    private static final String libFileName = "gkl_compression";
+    private static NativeLibraryLoader libraryLoader = new NativeLibraryLoader("gkl_compression");
+    private static boolean initialized = false;
 
-    public boolean load() {
-        return load(null, libFileName);
-    }
-
-    public boolean load(File tempDir) {
-        return load(tempDir, libFileName);
-    }
-
-    public boolean load(File tmpDir, String libFileName) {
-        if(isSupported) return true;
-        isSupported = IntelGKLUtils.load(tmpDir, libFileName);
-        if (isSupported) {
-
-            initNative();
+    @Override
+    public synchronized boolean load(File tempDir) {
+        if (!IntelGKLUtils.isAvxSupported()) {
+            return false;
         }
-        return isSupported;
+        if (!libraryLoader.load(tempDir)) {
+            return false;
+        }
+        if (!initialized) {
+            initNative();
+            initialized = true;
+        }
+        return true;
     }
-
 
     private long lz_stream;
     private byte[] inputBuffer;
     private int inputBufferLength;
-    private boolean endOfStream;
     private boolean finished;
     private boolean nowrap;
 
@@ -86,8 +75,6 @@ public class IntelInflater extends Inflater implements NativeLibrary {
     private native int inflateNative( byte[] b, int len);
     private native void endNative();
 
-
-
     /**
      * Creates a new compressor using the specified compression level.
      * If 'nowrap' is true then the ZLIB header and checksum fields will
@@ -95,12 +82,10 @@ public class IntelInflater extends Inflater implements NativeLibrary {
      * both GZIP and PKZIP.
      * @param nowrap if true then use GZIP compatible compression
      */
-
     public IntelInflater(boolean nowrap) {
       //  initFieldsNative();
         this.nowrap = nowrap;
     }
-
 
     /**
      * Creates a new compressor using the specified compression level.
@@ -110,14 +95,11 @@ public class IntelInflater extends Inflater implements NativeLibrary {
         this(false);
     }
 
-
+    @Override
     public void reset() {
-        //logger.debug("Reset inflater");
-
         resetNative(nowrap);
         inputBuffer = null;
         inputBufferLength = 0;
-        endOfStream = false;
         finished = false;
     }
 
@@ -129,7 +111,7 @@ public class IntelInflater extends Inflater implements NativeLibrary {
      * @param len the length of the data
      * @see IntelDeflater#needsInput
      */
-
+    @Override
     public void setInput(byte[] b, int off, int len) throws NullPointerException {
         if(b == null) {
             throw new NullPointerException("Input is null");
@@ -139,18 +121,6 @@ public class IntelInflater extends Inflater implements NativeLibrary {
         }
         inputBuffer = b;
         inputBufferLength = len;
-    }
-
-
-
-
-    /**
-     * When called, indicates that compression should end with the current
-     * contents of the input buffer.
-     */
-
-    public void finish() {
-        endOfStream = true;
     }
 
     /**
@@ -165,31 +135,29 @@ public class IntelInflater extends Inflater implements NativeLibrary {
      * @return the actual number of bytes of compressed data written to the
      *         output buffer
      */
-
+    @Override
     public int inflate (byte[] b, int off, int len ) {
         return inflateNative(b, len);
     }
 
-
     /**
      * Returns true if the end of the compressed data output stream has
      * been reached.
      * @return true if the end of the compressed data output stream has
      * been reached
      */
-
+    @Override
     public int inflate (byte[] b ) {
         return inflateNative( b, 0);
     }
 
-
     /**
      * Returns true if the end of the compressed data output stream has
      * been reached.
      * @return true if the end of the compressed data output stream has
      * been reached
      */
-
+    @Override
     public boolean finished() {
         return finished;
     }
@@ -204,12 +172,5 @@ public class IntelInflater extends Inflater implements NativeLibrary {
     @Override
     public void end() {
         endNative();
-    }
-
-    /**
-     * Closes the compressor when garbage is collected.
-     */
-    protected void finalize() {
-        end();
     }
 }

@@ -32,43 +32,37 @@ import com.intel.gkl.IntelGKLUtils;
 
 import java.io.File;
 import java.util.zip.Deflater;
+
+import com.intel.gkl.NativeLibraryLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
+public final class IntelDeflater extends Deflater implements NativeLibrary {
+    private static final Logger logger = LogManager.getLogger(IntelDeflater.class);
 
-public class IntelDeflater extends Deflater implements NativeLibrary {
+    private static final NativeLibraryLoader libraryLoader = new NativeLibraryLoader("gkl_compression");
+    private static boolean initialized = false;
 
-    private final static Logger logger = LogManager.getLogger(IntelDeflater.class);
-
-    private boolean isSupported = false;
-    private static final String libFileName = "gkl_compression";
-
-
-    public boolean load() {
-        return load(null, libFileName);
-    }
-
-    public boolean load(File tempDir) {
-        return load(tempDir, libFileName);
-    }
-
-    public boolean load(File tmpDir, String libFileName) {
-            if(isSupported) return true;
-            isSupported = IntelGKLUtils.load(tmpDir, libFileName);
-            if (isSupported) {
-                initNative();
-            }
-            return isSupported;
+    @Override
+    public synchronized boolean load(File tempDir) {
+        if (!IntelGKLUtils.isAvxSupported()) {
+            return false;
+        }
+        if (!libraryLoader.load(tempDir)) {
+            return false;
+        }
+        if (!initialized) {
+            initNative();
+            initialized = true;
+        }
+        return true;
     }
 
     private native static void initNative();
     private native void resetNative(boolean nowrap);
     private native int deflateNative(byte[] b, int len);
     private native void endNative();
-    private native void generateHuffman();
-
-    
 
     private long lz_stream;
     private byte[] inputBuffer;
@@ -78,9 +72,6 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     private int level;
     private int strategy;
     private boolean nowrap;
-
-
-
     
      /**
      * Creates a new compressor using the specified compression level.
@@ -90,16 +81,14 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      * @param level the compression level (0-9)
      * @param nowrap if true then use GZIP compatible compression
      */
-
     public IntelDeflater(int level, boolean nowrap) {
         if ((level < 0 || level > 9) && level != DEFAULT_COMPRESSION) {
             throw new IllegalArgumentException("Illegal compression level");
         }
         this.level = level;
         this.nowrap = nowrap;
-        strategy = DEFAULT_STRATEGY;   
+        strategy = DEFAULT_STRATEGY;
     }
-    
 
      /**
      * Creates a new compressor using the specified compression level.
@@ -118,6 +107,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         this(DEFAULT_COMPRESSION, false);
     }
 
+    @Override
     public void reset() {
         logger.debug("Reset deflater");
         resetNative(nowrap);
@@ -125,7 +115,6 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         inputBufferLength = 0;
         endOfStream = false;
         finished = false;
-
     }
 
     /**
@@ -136,7 +125,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      * @param len the length of the data
      * @see IntelDeflater
      */
-
+    @Override
     public void setInput(byte[] b, int off, int len) throws NullPointerException {
         if(b == null) {
             throw new NullPointerException("Input is null");
@@ -148,14 +137,12 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
         inputBufferLength = len;
     }
 
-
     /**
      * When called, indicates that compression should end with the current
      * contents of the input buffer.
      */
-
+    @Override
     public void finish() {
-
         endOfStream = true;
     }
 
@@ -171,12 +158,10 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      * @return the actual number of bytes of compressed data written to the
      *         output buffer
      */
-
+    @Override
     public int deflate(byte[] b, int off, int len ) {
-
         return deflateNative(b, len);
     }
-
 
     /**
      * Returns true if the end of the compressed data output stream has
@@ -184,7 +169,7 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
      * @return true if the end of the compressed data output stream has
      * been reached
      */
-
+    @Override
     public boolean finished() {
         return finished;
     }
@@ -199,12 +184,5 @@ public class IntelDeflater extends Deflater implements NativeLibrary {
     @Override
     public void end() {
         endNative();
-    }
-
-    /**
-     * Closes the compressor when garbage is collected.
-     */
-    protected void finalize() {
-        end();
     }
 }

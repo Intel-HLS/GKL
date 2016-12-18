@@ -9,9 +9,10 @@ public class FtzUnitTest {
 
     @Test(enabled = true)
     public void simpleTest() {
-        FTZ ftz = new FTZ();
-        assert(ftz.isSupported());
+        boolean ftzIsLoaded = new FTZ().load(null);
+        assert(ftzIsLoaded);
 
+        FTZ ftz = new FTZ();
 
         log.info("Test setting FTZ");
         boolean value = false;
@@ -31,7 +32,8 @@ public class FtzUnitTest {
 
         public void run() {
             FTZ ftz = new FTZ();
-            assert(ftz.isSupported());
+            ftz.load(null);
+            assert(ftz.isLoaded());
 
             ftzValue = ftz.getFlushToZero();
             log.info("Child thread FTZ = " + ftzValue);
@@ -41,7 +43,8 @@ public class FtzUnitTest {
     @Test(enabled = true)
     public void childThreadTest() {
         FTZ ftz = new FTZ();
-        assert (ftz.isSupported());
+        ftz.load(null);
+        assert (ftz.isLoaded());
 
         log.info("Parent setting FTZ = true");
 
