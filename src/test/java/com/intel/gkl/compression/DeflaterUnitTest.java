@@ -48,6 +48,12 @@ public class DeflaterUnitTest {
         }
     }
 
+    @Test(enabled = false)
+    public void loadLibrary() {
+        final boolean isSupported = new IntelDeflater().load(null);
+        Assert.assertTrue(isSupported);
+    }
+
     @Test(enabled = true)
     public void randomDNATest() {
         final int LEN = 60*1024*1024;
@@ -55,7 +61,7 @@ public class DeflaterUnitTest {
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
 
-        final boolean isSupported = new IntelInflater().load();
+        final boolean isSupported = new IntelInflater().load(null);
         Assert.assertTrue(isSupported);
 
         final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
@@ -97,5 +103,4 @@ public class DeflaterUnitTest {
             Assert.assertEquals(input, result);
         }
     }
-
 }

@@ -1,73 +1,31 @@
 package com.intel.gkl.ftz;
 
-import com.intel.gkl.IntelGKLUtils;
+import com.intel.gkl.NativeLibraryLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
 
-public class FTZ implements NativeLibrary {
+public final class FTZ implements NativeLibrary {
+    private static final Logger logger = LogManager.getLogger(FTZ.class);
+    private static final NativeLibraryLoader libraryLoader = new NativeLibraryLoader("gkl_ftz");
 
-    private final static Logger logger = LogManager.getLogger(FTZ.class);
-
-    private boolean isGklLoaded;
-    private static final String libFileName = "gkl_ftz";
-
-
-    public FTZ() {
-        this(null);
+    @Override
+    public synchronized boolean load(File tempDir) {
+        return libraryLoader.load(tempDir);
     }
 
-    public boolean load() {
-        return load(null, libFileName);
-    }
-
-    public boolean load(File tempDir) {
-        return load(tempDir, libFileName);
-    }
-
-    public boolean load(File tmpDir, String libFileName) {
-        isGklLoaded = IntelGKLUtils.load(tmpDir, libFileName);
-
-        if(isGklLoaded){
-            logger.warn("GKL Loaded.");
-            return true;
-        }
-
-        else {
-            logger.warn("FTZ control is not supported on this platform.");
-            return false;
-        }
-
-    }
-
-
-    public FTZ(File tmpDir) {
-        isGklLoaded = IntelGKLUtils.load(tmpDir, libFileName);
-
-        if(isGklLoaded){
-            logger.warn("GKL Loaded.");
-        }
-
-        if (!isGklLoaded) {
-            logger.warn("FTZ control is not supported on this platform.");
-        }
-
-    }
-
-    public boolean isSupported() {
-        return isGklLoaded;
+    public boolean isLoaded() {
+        return libraryLoader.isLoaded();
     }
 
     public boolean getFlushToZero() {
-        return isGklLoaded && getFlushToZeroNative();
+        return getFlushToZeroNative();
     }
 
     public void setFlushToZero(boolean value) {
-        if (isGklLoaded) {
-            setFlushToZeroNative(value);
-        }
+        setFlushToZeroNative(value);
     }
 
     private native boolean getFlushToZeroNative();

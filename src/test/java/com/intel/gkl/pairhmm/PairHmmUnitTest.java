@@ -21,7 +21,7 @@ public class PairHmmUnitTest {
     @Test(enabled = true)
     public void simpleTest() {
 
-        final boolean isloaded = new IntelPairHmm().load();
+        final boolean isloaded = new IntelPairHmm().load(null);
 
         final IntelPairHmm pairHmm = new IntelPairHmm();
         Assert.assertTrue(isloaded);
@@ -56,11 +56,11 @@ public class PairHmmUnitTest {
 
     @Test(enabled = true)
     public void omp_Test() {
-        final boolean isSupported = new IntelPairHmmOMP().load();
+        final boolean isSupported = new IntelPairHmmOMP().load(null);
 
         if(!isSupported) {
             IntelPairHmm pairHmm = new IntelPairHmm();
-            final boolean isloaded = new IntelPairHmm().load();
+            final boolean isloaded = new IntelPairHmm().load(null);
 
 
             Assert.assertTrue(isloaded);
@@ -128,7 +128,7 @@ public class PairHmmUnitTest {
     @Test(enabled = true)
     public void dataFileTest() {
         // load native library
-        final boolean isSupported = new IntelPairHmm().load();
+        final boolean isSupported = new IntelPairHmm().load(null);
         Assert.assertTrue(isSupported);
 
         // instantiate and initialize IntelPairHmm
@@ -185,7 +185,7 @@ public class PairHmmUnitTest {
     @Test(enabled = false)
     public void testDataFileBatchTest() {
         // load native library
-        final boolean isSupported = new IntelPairHmm().load();
+        final boolean isSupported = new IntelPairHmm().load(null);
         Assert.assertTrue(isSupported);
 
         // instantiate and initialize IntelPairHmm

@@ -1,7 +1,7 @@
 package com.intel.gkl.pairhmm;
 
-
 import com.intel.gkl.IntelGKLUtils;
+import com.intel.gkl.NativeLibraryLoader;
 import org.broadinstitute.gatk.nativebindings.pairhmm.HaplotypeDataHolder;
 import org.broadinstitute.gatk.nativebindings.pairhmm.PairHMMNativeArguments;
 import org.broadinstitute.gatk.nativebindings.pairhmm.PairHMMNativeBinding;
@@ -10,53 +10,22 @@ import org.broadinstitute.gatk.nativebindings.pairhmm.ReadDataHolder;
 import java.io.File;
 
 public class IntelPairHmm implements PairHMMNativeBinding {
+    private static NativeLibraryLoader libraryLoader;
 
-    public IntelPairHmm () {
-        setLibFileName("gkl_pairhmm");
-        setIsLoaded(false);
+    protected static void setLibraryName(String libraryName) {
+        libraryLoader = new NativeLibraryLoader(libraryName);
     }
 
-
-    public static String libFileName = "gkl_pairhmm";
-    public static boolean isLoaded = false;
-
-
-    /**
-     * Load native library using system temp directory to store the shared object.
-     *
-     * @return true if IntelPairHmm is supported on the platform
-     */
-    public boolean load() {
-        return load(null, libFileName);
+    public IntelPairHmm() {
+        setLibraryName("gkl_pairhmm");
     }
 
-    public boolean load(File tempDir) {
-        return load(tempDir, libFileName);
-    }
-    /**
-     * Load native library using tmpDir to store the shared object.
-     *
-     * @param tmpDir the directory used to store a copy of the shared object
-     * @param libFileName library name to be loaded
-     * @return true if IntelPairHmm is supported on the platform
-     */
-
-    public boolean load(File tmpDir, String libFileName) {
-        if(!isLoaded) {
-            isLoaded = IntelGKLUtils.load(tmpDir, libFileName);
-            return isLoaded;
+    @Override
+    public synchronized boolean load(File tempDir) {
+        if (!IntelGKLUtils.isAvxSupported()) {
+            return false;
         }
-        return true;
-    }
-
-    public static void setLibFileName(String newlibFileName)
-    {
-        libFileName = newlibFileName;
-    }
-
-    public static void setIsLoaded(boolean flag)
-    {
-        isLoaded = flag;
+        return libraryLoader.load(tempDir);
     }
 
     /**
@@ -64,8 +33,6 @@ public class IntelPairHmm implements PairHMMNativeBinding {
      *
      * @param args the args used to configure native PairHMM
      */
-
-
     public void initialize(PairHMMNativeArguments args) {
         if(args == null)
         {
