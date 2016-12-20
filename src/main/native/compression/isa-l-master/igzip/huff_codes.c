@@ -42,6 +42,22 @@
 static const uint8_t code_length_code_order[] =
     { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
 
+struct slver {
+	uint16_t snum;
+	uint8_t ver;
+	uint8_t core;
+};
+
+/* Version info */
+struct slver isal_update_histogram_slver_00010085;
+struct slver isal_update_histogram_slver = { 0x0085, 0x01, 0x00 };
+
+struct slver isal_create_hufftables_slver_00010086;
+struct slver isal_create_hufftables_slver = { 0x0086, 0x01, 0x00 };
+
+struct slver isal_create_hufftables_subset_slver_00010087;
+struct slver isal_create_hufftables_subset_slver = { 0x0087, 0x01, 0x00 };
+
 int heap_push(struct huff_tree element, struct histheap *heap)
 {
 	uint16_t index;
@@ -142,12 +158,12 @@ void append_to_back(struct linked_list *list, struct linked_list_node *new_eleme
 	return;
 }
 
-void isal_update_histogram(uint8_t * start_stream, int length,
-			   struct isal_huff_histogram *histogram)
+void isal_update_histogram_base(uint8_t * start_stream, int length,
+				struct isal_huff_histogram *histogram)
 {
 	uint32_t literal = 0, hash;
-	uint8_t *last_seen[HASH_SIZE];
-	uint8_t *current, *seen, *end_stream, *next_hash, *end;
+	uint16_t seen, *last_seen = histogram->hash_table;
+	uint8_t *current, *end_stream, *next_hash, *end;
 	uint32_t match_length;
 	uint32_t dist;
 	uint64_t *lit_len_histogram = histogram->lit_len_histogram;
@@ -157,18 +173,20 @@ void isal_update_histogram(uint8_t * start_stream, int length,
 		return;
 
 	end_stream = start_stream + length;
-	memset(last_seen, 0, sizeof(last_seen));	/* Initialize last_seen to be 0. */
+	memset(last_seen, 0, sizeof(histogram->hash_table));	/* Initialize last_seen to be 0. */
 	for (current = start_stream; current < end_stream - 3; current++) {
 		literal = *(uint32_t *) current;
 		hash = compute_hash(literal) & HASH_MASK;
 		seen = last_seen[hash];
-		last_seen[hash] = current;
-		dist = current - seen;
-		if (dist < D) {
-			match_length = compare258(seen, current, end_stream - current);
+		last_seen[hash] = ((uint64_t) current - (uint64_t) start_stream) & 0xFFFF;
+		dist = ((uint64_t) current - (uint64_t) start_stream - seen) & 0xFFFF;
+		if (dist - 1 < D - 1) {
+			assert(start_stream <= current - dist);
+			match_length =
+			    compare258(current - dist, current, end_stream - current);
 			if (match_length >= SHORTEST_MATCH) {
 				next_hash = current;
-#ifdef LIMIT_HASH_UPDATE
+#ifdef ISAL_LIMIT_HASH_UPDATE
 				end = next_hash + 3;
 #else
 				end = next_hash + match_length;
@@ -179,7 +197,9 @@ void isal_update_histogram(uint8_t * start_stream, int length,
 				for (; next_hash < end; next_hash++) {
 					literal = *(uint32_t *) next_hash;
 					hash = compute_hash(literal) & HASH_MASK;
-					last_seen[hash] = next_hash;
+					last_seen[hash] =
+					    ((uint64_t) next_hash -
+					     (uint64_t) start_stream) & 0xFFFF;
 				}
 
 				dist_histogram[convert_dist_to_dist_sym(dist)] += 1;
@@ -194,10 +214,10 @@ void isal_update_histogram(uint8_t * start_stream, int length,
 	literal = literal >> 8;
 	hash = compute_hash(literal) & HASH_MASK;
 	seen = last_seen[hash];
-	last_seen[hash] = current;
-	dist = current - seen;
+	last_seen[hash] = ((uint64_t) current - (uint64_t) start_stream) & 0xFFFF;
+	dist = ((uint64_t) current - (uint64_t) start_stream - seen) & 0xFFFF;
 	if (dist < D) {
-		match_length = compare258(seen, current, end_stream - current);
+		match_length = compare258(current - dist, current, end_stream - current);
 		if (match_length >= SHORTEST_MATCH) {
 			dist_histogram[convert_dist_to_dist_sym(dist)] += 1;
 			lit_len_histogram[convert_length_to_len_sym(match_length)] += 1;
@@ -836,7 +856,7 @@ int isal_create_hufftables(struct isal_hufftables *hufftables,
 	struct huff_tree lit_tree_array[2 * LIT_LEN - 1], dist_tree_array[2 * DIST_LEN - 1];
 	struct huff_code lit_huff_table[LIT_LEN], dist_huff_table[DIST_LEN];
 	uint64_t bit_count;
-	int max_dist = convert_dist_to_dist_sym(IGZIP_D);
+	int max_dist = convert_dist_to_dist_sym(IGZIP_HIST_SIZE);
 
 	uint32_t *dist_table = hufftables->dist_table;
 	uint32_t *len_table = hufftables->len_table;
@@ -879,10 +899,10 @@ int isal_create_hufftables(struct isal_hufftables *hufftables,
 	create_code_tables(dcodes, dcodes_sizes, DIST_LEN - DCODE_OFFSET,
 			   dist_huff_table + DCODE_OFFSET);
 
-	create_code_tables(lit_table, lit_table_sizes, LIT_TABLE_SIZE, lit_huff_table);
+	create_code_tables(lit_table, lit_table_sizes, IGZIP_LIT_TABLE_SIZE, lit_huff_table);
 
 	create_packed_len_table(len_table, lit_huff_table);
-	create_packed_dist_table(dist_table, DIST_TABLE_SIZE, dist_huff_table);
+	create_packed_dist_table(dist_table, IGZIP_DIST_TABLE_SIZE, dist_huff_table);
 
 	bit_count =
 	    create_header(deflate_hdr, sizeof(deflate_hdr), lit_huff_table, dist_huff_table,
@@ -901,7 +921,7 @@ int isal_create_hufftables_subset(struct isal_hufftables *hufftables,
 	struct huff_tree lit_tree_array[2 * LIT_LEN - 1], dist_tree_array[2 * DIST_LEN - 1];
 	struct huff_code lit_huff_table[LIT_LEN], dist_huff_table[DIST_LEN];
 	uint64_t bit_count;
-	int j, max_dist = convert_dist_to_dist_sym(IGZIP_D);
+	int j, max_dist = convert_dist_to_dist_sym(IGZIP_HIST_SIZE);
 
 	uint32_t *dist_table = hufftables->dist_table;
 	uint32_t *len_table = hufftables->len_table;
@@ -948,10 +968,10 @@ int isal_create_hufftables_subset(struct isal_hufftables *hufftables,
 	create_code_tables(dcodes, dcodes_sizes, DIST_LEN - DCODE_OFFSET,
 			   dist_huff_table + DCODE_OFFSET);
 
-	create_code_tables(lit_table, lit_table_sizes, LIT_TABLE_SIZE, lit_huff_table);
+	create_code_tables(lit_table, lit_table_sizes, IGZIP_LIT_TABLE_SIZE, lit_huff_table);
 
 	create_packed_len_table(len_table, lit_huff_table);
-	create_packed_dist_table(dist_table, DIST_TABLE_SIZE, dist_huff_table);
+	create_packed_dist_table(dist_table, IGZIP_DIST_TABLE_SIZE, dist_huff_table);
 
 	bit_count =
 	    create_header(deflate_hdr, sizeof(deflate_hdr), lit_huff_table, dist_huff_table,

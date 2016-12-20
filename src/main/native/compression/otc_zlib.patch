@@ -1,0 +1,19 @@
+*** configure	2016-12-20 13:54:27.742082675 -0500
+--- configure_patch	2016-12-20 13:52:59.333082744 -0500
+***************
+*** 200,206 ****
+  if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
+    echo ... using gcc >> configure.log
+    CC="$cc"
+!   CFLAGS="${CFLAGS--O3} ${ARCHS}"
+    SFLAGS="${CFLAGS--O3} -fPIC"
+    LDFLAGS="${LDFLAGS} ${ARCHS}"
+    if test $build64 -eq 1; then
+--- 200,206 ----
+  if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
+    echo ... using gcc >> configure.log
+    CC="$cc"
+!   CFLAGS="${CFLAGS--O3} ${ARCHS} -fPIC -O3"
+    SFLAGS="${CFLAGS--O3} -fPIC"
+    LDFLAGS="${LDFLAGS} ${ARCHS}"
+    if test $build64 -eq 1; then

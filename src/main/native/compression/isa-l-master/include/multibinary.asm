@@ -143,10 +143,46 @@
 %endmacro
 
 ;;;;;
+; mbin_dispatch_init_clmul 3 parameters
+; Use this case for CRC which needs both SSE4_1 and CLMUL
+; 1-> function name
+; 2-> base function
+; 3-> SSE4_1 and CLMUL optimized function
+;;;;;
+%macro mbin_dispatch_init_clmul 3
+	section .text
+	%1_dispatch_init:
+		push	mbin_rsi
+		push	mbin_rax
+		push	mbin_rbx
+		push	mbin_rcx
+		push	mbin_rdx
+		lea     mbin_rsi, [%2 WRT_OPT] ; Default - use base function
+
+		mov     eax, 1
+		cpuid
+		lea	mbin_rbx, [%3 WRT_OPT] ; SSE opt func
+
+		; Test for SSE4.2
+		test	ecx, FLAG_CPUID1_ECX_SSE4_1
+		jz	_%1_init_done
+		test    ecx, FLAG_CPUID1_ECX_CLMUL
+		cmovne	mbin_rsi, mbin_rbx
+	_%1_init_done:
+		pop	mbin_rdx
+		pop	mbin_rcx
+		pop	mbin_rbx
+		pop	mbin_rax
+		mov	[%1_dispatched], mbin_rsi
+		pop	mbin_rsi
+		ret
+%endmacro
+
+;;;;;
 ; mbin_dispatch_init5 parameters
 ; 1-> function name
 ; 2-> base function
-; 3-> SSE4_1 or 00/01 optimized function
+; 3-> SSE4_2 or 00/01 optimized function
 ; 4-> AVX/02 opt func
 ; 5-> AVX2/04 opt func
 ;;;;;
@@ -162,8 +198,8 @@
 
 		mov	eax, 1
 		cpuid
-		; Test for SSE4.1
-		test	ecx, FLAG_CPUID1_ECX_SSE4_1
+		; Test for SSE4.2
+		test	ecx, FLAG_CPUID1_ECX_SSE4_2
 		lea	mbin_rbx, [%3 WRT_OPT] ; SSE opt func
 		cmovne	mbin_rsi, mbin_rbx
 
@@ -203,7 +239,7 @@
 ; mbin_dispatch_init6 parameters
 ; 1-> function name
 ; 2-> base function
-; 3-> SSE4_1 or 00/01 optimized function
+; 3-> SSE4_2 or 00/01 optimized function
 ; 4-> AVX/02 opt func
 ; 5-> AVX2/04 opt func
 ; 6-> AVX512/06 opt func
@@ -222,8 +258,8 @@
 		mov	eax, 1
 		cpuid
 		mov	ebx, ecx ; save cpuid1.ecx
-		test	ecx, FLAG_CPUID1_ECX_SSE4_1
-		je	_%1_init_done	  ; Use base function if no SSE4_1
+		test	ecx, FLAG_CPUID1_ECX_SSE4_2
+		je	_%1_init_done	  ; Use base function if no SSE4_2
 		lea	mbin_rsi, [%3 WRT_OPT] ; SSE possible so use 00/01 opt
 
 		;; Test for XMM_YMM support/AVX

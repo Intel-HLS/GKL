@@ -50,6 +50,7 @@ extern "C" {
 static jfieldID FID_inf_lz_stream;
 static jfieldID FID_inf_inputBuffer;
 static jfieldID FID_inf_inputBufferLength;
+static jfieldID FID_inf_endOfStream;
 static jfieldID FID_inf_finished;
 
 
@@ -62,6 +63,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelInflater_initNative
   FID_inf_lz_stream = env->GetFieldID(cls, "lz_stream", "J");
   FID_inf_inputBuffer = env->GetFieldID(cls, "inputBuffer", "[B");
   FID_inf_inputBufferLength = env->GetFieldID(cls, "inputBufferLength", "I");
+  FID_inf_endOfStream = env->GetFieldID(cls, "endOfStream", "Z");
   FID_inf_finished = env->GetFieldID(cls, "finished", "Z");
 
 }
@@ -85,6 +87,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelInflater_resetNative
             lz_stream->avail_in = 0;
             lz_stream->next_in = Z_NULL;
 
+      fprintf(stdout,"%c",nowrap);
       int ret = inflateInit2(lz_stream, nowrap ? -MAX_WBITS : MAX_WBITS);
       if (ret != Z_OK) {
         jclass Exception = env->FindClass("java/lang/Exception");

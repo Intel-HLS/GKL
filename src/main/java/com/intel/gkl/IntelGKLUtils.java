@@ -28,37 +28,25 @@
 
 package com.intel.gkl;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 /**
- *This class provides support for Utilities for compression libraries support.
- *The shared library libIntelGKL is packaged as a jar files and its path is retireved
- *if the  GKL_USE_LIB_PATH variable is set. This utility class implements the load function
- *to load the library path for the packaged jar file.
+ * Provides utilities used by the GKL library.
  */
-
-
 public final class IntelGKLUtils {
     private final static Logger logger = LogManager.getLogger(IntelGKLUtils.class);
-    private final static String GKL_USE_LIB_PATH = "GKL_USE_LIB_PATH";
-    private final static String GKL_LIB_NAME = "IntelGKL";
-    private final static String GKL_OMP_LIB_NAME = "IntelGKL_omp";
-    private final static Boolean runningOnMac =
-            System.getProperty("os.name", "unknown").toLowerCase().startsWith("mac");
 
     /**
-     * Check if AVX is supported and enabled on the CPU
+     * Check if AVX is supported on the platform.
      *
-     * @return {@code true} if AVX is supported and enabled on the CPU, {@code false} otherwise
+     * @return  true if AVX is supported and enabled on the CPU, false otherwise
      */
-    public static Boolean isAvxSupported() {
+    public static boolean isAvxSupported() {
+        final boolean runningOnMac = System.getProperty("os.name", "unknown").toLowerCase().startsWith("mac");
         // use a grep command to check for AVX support
         // grep exit code = 0 if a match was found
         final String command = runningOnMac ? "sysctl -a | grep machdep.cpu.features | grep -i avx" :

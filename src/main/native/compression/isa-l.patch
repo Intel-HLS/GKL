@@ -1,12 +1,12 @@
-diff --git i/Makefile.am w/Makefile.am
-index 995259e..77f2894 100644
---- i/Makefile.am
-+++ w/Makefile.am
-@@ -72,6 +72,7 @@ test: $(addsuffix .run,$(unit_tests))
- # Support for yasm/nasm
- if USE_YASM
-   as_filter = ${srcdir}/tools/yasm-filter.sh
-+  as_include = $(addprefix -I ${srcdir}/,$(sort $(dir $(lsrc))))
- endif
- if USE_NASM
-   as_filter = ${srcdir}/tools/nasm-filter.sh
+*** configure.ac	2016-12-20 10:12:00.869092914 -0500
+--- configure.ac.patched	2016-12-20 10:12:21.189092898 -0500
+***************
+*** 148,153 ****
+--- 148,154 ----
+  -Wshadow \
+  -Wstrict-prototypes \
+  -Wtype-limits \
++ -fPIC \
+  "
+  AC_SUBST([my_CFLAGS])
+  

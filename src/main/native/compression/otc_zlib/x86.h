@@ -3,8 +3,8 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifndef CPU_H
-#define CPU_H
+#ifndef X86_H
+#define X86_H
 
 extern int x86_cpu_has_sse2;
 extern int x86_cpu_has_sse42;

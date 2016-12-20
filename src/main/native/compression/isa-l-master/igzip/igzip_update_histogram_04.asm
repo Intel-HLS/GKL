@@ -5,4 +5,4 @@
 %define COMPARE_TYPE 3
 %endif
 
-%include "igzip_stateless.asm"
+%include "igzip_update_histogram.asm"

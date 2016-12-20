@@ -39,13 +39,6 @@
 # include <x86intrin.h>
 #endif
 
-#ifndef IGZIP_USE_GZIP_FORMAT
-# define DEFLATE 1
-#endif
-
-
-extern uint32_t  CrcTable[256];
-
 static inline uint32_t bsr(uint32_t val)
 {
 	uint32_t msb;
@@ -75,7 +68,7 @@ static inline uint32_t tzcnt(uint64_t val)
 
 static void compute_dist_code(struct isal_hufftables *hufftables, uint16_t dist, uint64_t *p_code, uint64_t *p_len)
 {
-	assert(dist > DIST_TABLE_SIZE);
+	assert(dist > IGZIP_DIST_TABLE_SIZE);
 
 	dist -= 1;
 	uint32_t msb;
@@ -92,8 +85,8 @@ static void compute_dist_code(struct isal_hufftables *hufftables, uint16_t dist,
 	dist >>= num_extra_bits;
 	sym = dist + 2 * num_extra_bits;
 	assert(sym < 30);
-	code = hufftables->dcodes[sym - DECODE_OFFSET];
-	len = hufftables->dcodes_sizes[sym - DECODE_OFFSET];
+	code = hufftables->dcodes[sym - IGZIP_DECODE_OFFSET];
+	len = hufftables->dcodes_sizes[sym - IGZIP_DECODE_OFFSET];
 	*p_code = code | (extra_bits << len);
 	*p_len = len + num_extra_bits;
 }
@@ -104,7 +97,7 @@ static inline void get_dist_code(struct isal_hufftables *hufftables, uint32_t di
 		dist = 0;
 	assert(dist >= 1);
 	assert(dist <= 32768);
-	if (dist <= DIST_TABLE_SIZE) {
+	if (dist <= IGZIP_DIST_TABLE_SIZE) {
 		uint64_t code_len;
 		code_len = hufftables->dist_table[dist - 1];
 		*code = code_len >> 5;
@@ -138,8 +131,7 @@ static inline void get_lit_code(struct isal_hufftables *hufftables, uint32_t lit
  */
 static inline uint32_t compute_hash(uint32_t data)
 {
-	data &= 0x00FFFFFF;
-#ifdef __SSE4_1__
+#ifdef __SSE4_2__
 
 	return _mm_crc32_u32(0, data);
 
@@ -147,7 +139,7 @@ static inline uint32_t compute_hash(uint32_t data)
 	/* Use multiplication to create a hash, 0xBDD06057 is a prime number */
 	return ((uint64_t)data * 0xB2D06057) >> 16;
 
-#endif /* __SSE4_1__ */
+#endif /* __SSE4_2__ */
 }
 
 
@@ -211,16 +203,3 @@ static inline int compare258(uint8_t * str1, uint8_t * str2, uint32_t max_length
 
 	return count;
 }
-
-static inline void update_crc(uint32_t* crc, uint8_t * start, uint32_t length)
-{
-#ifndef DEFLATE
-	uint8_t *end = start + length;
-
-	while (start < end)
-		*crc = (*crc >> 8) ^ CrcTable[(*crc & 0x000000FF) ^ *start++];
-#else
-	return;
-#endif
-}
-

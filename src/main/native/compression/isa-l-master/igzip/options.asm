@@ -32,10 +32,6 @@ default rel
 %ifndef __OPTIONS_ASM__
 %define __OPTIONS_ASM__
 
-%ifndef IGZIP_USE_GZIP_FORMAT
-%define DEFLATE
-%endif
-
 ; Options:dir
 ; m - reschedule mem reads
 ; e b - bitbuff style
@@ -44,10 +40,20 @@ default rel
 ; l - use longer huffman table
 ; f - fix cache read
 
-%ifdef LARGE_WINDOW
-%define HIST_SIZE 32
-%else
-%define HIST_SIZE 8
+%ifndef IGZIP_HIST_SIZE
+%define IGZIP_HIST_SIZE (32 * 1024)
+%endif
+
+%if (IGZIP_HIST_SIZE > (32 * 1024))
+%undef IGZIP_HIST_SIZE
+%define IGZIP_HIST_SIZE (32 * 1024)
+%endif
+
+%ifdef LONGER_HUFFTABLE
+%if (IGZIP_HIST_SIZE > 8 * 1024)
+%undef IGZIP_HIST_SIZE
+%define IGZIP_HIST_SIZE (8 * 1024)
+%endif
 %endif
 
 %ifdef USE_BITBUFB
@@ -62,17 +68,10 @@ default rel
 ; (h) limit hash update
 %define LIMIT_HASH_UPDATE
 
-; (l) longer huffman table
-%define LONGER_HUFFTABLE
-
 ; (f) fix cache read problem
 %define FIX_CACHE_READ
 
-%if (HIST_SIZE > 8)
-%undef LONGER_HUFFTABLE
-%endif
-
-%define IGZIP_MAX_DEF_HDR_SIZE 328
+%define ISAL_DEF_MAX_HDR_SIZE 328
 
 %ifidn __OUTPUT_FORMAT__, elf64
 %ifndef __NASM_VER__

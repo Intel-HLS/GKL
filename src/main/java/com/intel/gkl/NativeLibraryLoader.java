@@ -11,81 +11,62 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *
+ * Loads native libraries from the classpath, usually from a jar file.
  */
 public final class NativeLibraryLoader {
     private static final Logger logger = LogManager.getLogger(NativeLibraryLoader.class);
-    private static final String USE_LIB_PATH = "USE_LIB_PATH";
+    private static final String USE_LIBRARY_PATH = "USE_LIBRARY_PATH";
     private static final Set<String> loadedLibraries = new HashSet<String>();
 
-    private final String libraryName;
-
-    public NativeLibraryLoader(String libraryName) {
-        this.libraryName = libraryName;
-    }
-
-    public boolean isLoaded() {
-        return loadedLibraries.contains(libraryName);
-    }
-
     /**
-     * Tries to load the GKL shared library. If AVX is not supported, it returns {@code false} without
-     * trying to load the library.
+     * Tries to load the native library from the classpath, usually from a jar file. <p>
      *
-     * If GKL is loaded from a jar file, the shared library file is extracted to the
-     * {@code tempDir} directory first.
+     * If the USE_LIBRARY_PATH environment variable is defined, the native library will be loaded from the
+     * java.library.path instead of the classpath.
      *
-     * @param tempDir directory where the shared library file is extracted
-     * @param libFileName name of the library file to be loaded
-     * @return {@code true} if GKL loaded successfully, {@code false} otherwise
+     * @param tempDir  directory where the native library is extracted or null to use the system temp directory
+     * @param libraryName  name of the shared library without system dependent modifications
+     * @return true if the library was loaded successfully, false otherwise
      */
-    /**
-     *
-     * @param tempDir
-     * @return {@code true} if GKL loaded successfully, {@code false} otherwise
-     */
-    public synchronized boolean load(File tempDir) {
-        if (isLoaded()) {
+    public static synchronized boolean load(File tempDir, String libraryName) {
+        if (loadedLibraries.contains(libraryName)) {
             return true;
         }
 
-        // try to load from Java library path if USE_LIB_PATH env var is defined
-        if (System.getenv(USE_LIB_PATH) != null) {
-            try {
-                String javaLibraryPath = System.getProperty("java.library.path");
-                logger.info(String.format("Trying to load native library from: \n\t%s",
-                        javaLibraryPath.replaceAll(":", "\n\t")));
-                System.loadLibrary(libraryName);
-                logger.info("Native library loaded from Java library path.");
+        final String systemLibraryName = System.mapLibraryName(libraryName);
 
+        // load from the java.library.path
+        if (System.getenv(USE_LIBRARY_PATH) != null) {
+            final String javaLibraryPath = System.getProperty("java.library.path");
+            try {
+                logger.warn(String.format("OVERRIDE DEFAULT: Loading %s from %s", systemLibraryName, javaLibraryPath));
+                logger.warn(String.format("LD_LIBRARY_PATH = %s", System.getenv("LD_LIBRARY_PATH")));
+                System.loadLibrary(libraryName);
                 return true;
-            } catch (UnsatisfiedLinkError ule) {
-                logger.warn("Unable to load library.");
+            } catch (Exception|Error e) {
+                logger.warn(String.format("OVERRIDE DEFAULT: Unable to load %s from %s", systemLibraryName, javaLibraryPath));
                 return false;
             }
         }
 
-        // try to extract from classpath
+        // load from the java classpath
+        final String resourcePath = "native/" +  systemLibraryName;
+        final URL inputUrl = NativeLibraryLoader.class.getResource(resourcePath);
+        if (inputUrl == null) {
+            logger.warn("Unable to find native library: " + resourcePath);
+            return false;
+        }
+        logger.info(String.format("Loading %s from %s", systemLibraryName, inputUrl.toString()));
+
         try {
-            String resourcePath = "native/" +  System.mapLibraryName(libraryName);
-            URL inputUrl = NativeLibraryLoader.class.getResource(resourcePath);
-            if (inputUrl == null) {
-                logger.warn("Unable to find native library: " + resourcePath);
-                return false;
-            }
-
-            logger.info(String.format("Trying to load native library from:\n\t%s", inputUrl.toString()));
-
-            File temp = File.createTempFile(FilenameUtils.getBaseName(resourcePath),
+            final File temp = File.createTempFile(FilenameUtils.getBaseName(resourcePath),
                     "." + FilenameUtils.getExtension(resourcePath), tempDir);
             FileUtils.copyURLToFile(inputUrl, temp);
             temp.deleteOnExit();
-            logger.debug(String.format("Extracted native to %s\n", temp.getAbsolutePath()));
-
+            logger.debug(String.format("Extracting %s to %s", systemLibraryName, temp.getAbsolutePath()));
             System.load(temp.getAbsolutePath());
-            logger.info("Native library loaded from classpath.");
-        } catch (Exception e) {
-            logger.warn("Unable to load native library.");
+        } catch (Exception|Error e) {
+            logger.warn(String.format("Unable to load %s from %s", systemLibraryName, resourcePath));
             return false;
         }
 

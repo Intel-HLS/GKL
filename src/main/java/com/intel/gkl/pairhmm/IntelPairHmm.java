@@ -9,23 +9,35 @@ import org.broadinstitute.gatk.nativebindings.pairhmm.ReadDataHolder;
 
 import java.io.File;
 
+/**
+ * Provides a native PairHMM implementation accelerated for the Intel Architecture.
+ */
 public class IntelPairHmm implements PairHMMNativeBinding {
-    private static NativeLibraryLoader libraryLoader;
+    private static final String NATIVE_LIBRARY_NAME = "gkl_pairhmm";
+    private String nativeLibraryName = "gkl_pairhmm";
 
-    protected static void setLibraryName(String libraryName) {
-        libraryLoader = new NativeLibraryLoader(libraryName);
+    void setNativeLibraryName(String nativeLibraryName) {
+        this.nativeLibraryName = nativeLibraryName;
     }
 
     public IntelPairHmm() {
-        setLibraryName("gkl_pairhmm");
+        setNativeLibraryName(NATIVE_LIBRARY_NAME);
     }
 
+    /**
+     * Loads the native library, if it is supported on this platform. <p>
+     * Returns false if AVX is not supported. <br>
+     * Returns false if the native library cannot be loaded for any reason. <br>
+     *
+     * @param tempDir  directory where the native library is extracted or null to use the system temp directory
+     * @return  true if the native library is supported and loaded, false otherwise
+     */
     @Override
     public synchronized boolean load(File tempDir) {
         if (!IntelGKLUtils.isAvxSupported()) {
             return false;
         }
-        return libraryLoader.load(tempDir);
+        return NativeLibraryLoader.load(tempDir, nativeLibraryName);
     }
 
     /**
