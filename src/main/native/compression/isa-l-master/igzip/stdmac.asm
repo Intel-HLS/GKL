@@ -27,7 +27,8 @@
 ;  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
+%ifndef STDMAC_ASM
+%define STDMAC_ASM
 ;; internal macro used by push_all
 ;; push args L to R
 %macro push_all_ 1-*
@@ -205,3 +206,184 @@ ssc:
 	mov	rbx, rax
 	ret
 %endm
+
+;; Implement BZHI instruction on older architectures
+;; Clobbers rcx, unless rcx is %%index
+%macro	BZHI	4
+%define	%%dest		%1
+%define	%%src		%2
+%define	%%index		%3
+%define	%%tmp1		%4
+
+%ifdef USE_HSWNI
+	bzhi	%%dest, %%src, %%index
+%else
+%ifnidn	%%index, rcx
+	mov	rcx, %%index
+%endif
+	mov	%%tmp1, 1
+	shl	%%tmp1, cl
+	sub	%%tmp1, 1
+
+%ifnidn	%%src, %%dest
+	mov	%%dest, %%src
+%endif
+
+	and	%%dest, %%tmp1
+%endif
+%endm
+
+;; Implement shrx instruction on older architectures
+;; Clobbers rcx, unless rcx is %%index
+%macro	SHRX	3
+%define	%%dest		%1
+%define	%%src		%2
+%define	%%index		%3
+
+%ifdef USE_HSWNI
+	shrx	%%dest, %%src, %%index
+%else
+%ifnidn	%%src, %%dest
+	mov	%%dest, %%src
+%endif
+%ifnidn	%%index, rcx
+	mov	rcx, %%index
+%endif
+	shr	%%dest, cl
+%endif
+%endm
+
+;; Implement shlx instruction on older architectures
+;; Clobbers rcx, unless rcx is %%index
+%macro	SHLX	3
+%define	%%dest		%1
+%define	%%src		%2
+%define	%%index		%3
+
+%ifdef USE_HSWNI
+	shlx	%%dest, %%src, %%index
+%else
+%ifnidn	%%src, %%dest
+	mov	%%dest, %%src
+%endif
+%ifnidn	%%index, rcx
+	mov	rcx, %%index
+%endif
+	shl	%%dest, cl
+%endif
+%endm
+
+%macro	MOVDQU	2
+%define	%%dest	%1
+%define	%%src	%2
+%if ((ARCH == 02) || (ARCH == 03) || (ARCH == 04))
+	vmovdqu	%%dest, %%src
+%else
+	movdqu	%%dest, %%src
+%endif
+%endm
+
+%macro	MOVD	2
+%define	%%dest	%1
+%define	%%src	%2
+%if (ARCH == 02 || ARCH == 03 || ARCH == 04)
+	vmovd	%%dest, %%src
+%else
+	movd	%%dest, %%src
+%endif
+%endm
+
+%macro	MOVQ	2
+%define	%%dest	%1
+%define	%%src	%2
+%if (ARCH == 02 || ARCH == 03 || ARCH == 04)
+	vmovq	%%dest, %%src
+%else
+	movq	%%dest, %%src
+%endif
+%endm
+
+%macro	PINSRD	3
+%define	%%dest	%1
+%define	%%src	%2
+%define	%%offset	%3
+%if ((ARCH == 02) || (ARCH == 03) || (ARCH == 04))
+	vpinsrd	%%dest, %%src, %%offset
+%else
+	pinsrd	%%dest, %%src, %%offset
+%endif
+%endm
+
+%macro	PEXTRD	3
+%define	%%dest	%1
+%define	%%src	%2
+%define	%%offset	%3
+%if ((ARCH == 02) || (ARCH == 03) || (ARCH == 04))
+	vpextrd	%%dest, %%src, %%offset
+%else
+	pextrd	%%dest, %%src, %%offset
+%endif
+%endm
+
+%macro	PSRLDQ	2
+%define	%%dest	%1
+%define	%%offset	%2
+%if ((ARCH == 02) || (ARCH == 03) || (ARCH == 04))
+	vpsrldq	%%dest, %%offset
+%else
+	psrldq	%%dest, %%offset
+%endif
+%endm
+
+%macro	PAND	3
+%define	%%dest	%1
+%define	%%src1	%2
+%define	%%src2	%3
+%if (ARCH == 02 || ARCH == 03 || ARCH == 04)
+	vpand	%%dest, %%src1, %%src2
+%else
+%ifnidn	%%dest, %%src1
+	movdqa	%%dest, %%src1
+%endif
+	pand	%%dest, %%src2
+%endif
+%endm
+
+%macro	PCMPEQB	3
+%define	%%dest	%1
+%define	%%src1	%2
+%define	%%src2	%3
+%if ((ARCH == 02) || (ARCH == 03) || (ARCH == 04))
+	vpcmpeqb	%%dest, %%src1, %%src2
+%else
+%ifnidn	%%dest, %%src1
+	movdqa	%%dest, %%src1
+%endif
+	pcmpeqb	%%dest, %%src2
+%endif
+%endm
+
+%macro	PMOVMSKB	2
+%define	%%dest	%1
+%define	%%src	%2
+%if ((ARCH == 02) || (ARCH == 03) || (ARCH == 04))
+	vpmovmskb	%%dest, %%src
+%else
+	pmovmskb	%%dest, %%src
+%endif
+%endm
+
+%macro PXOR	3
+%define	%%dest	%1
+%define %%src1	%2
+%define	%%src2	%3
+%if ((ARCH == 02) || (ARCH == 03) || (ARCH == 04))
+	vpxor	%%dest, %%src1, %%src2
+%else
+%ifnidn	%%dest, %%src1
+	movdqa	%%dest, %%src1
+%endif
+	pxor	%%dest, %%src2
+%endif
+%endm
+%endif 	;; ifndef STDMAC_ASM

@@ -28,47 +28,51 @@
 ########################################################################
 
 lsrc        += 	igzip/igzip.c igzip/hufftables_c.c \
-		igzip/crc_utils_01.asm \
-		igzip/crc_utils_04.asm \
-		igzip/igzip_body_01.asm igzip/igzip_body_04.asm igzip/igzip_finish.asm \
-		igzip/igzip_stateless_01.asm igzip/igzip_stateless_04.asm \
+		igzip/igzip_body_01.asm \
+		igzip/igzip_body_02.asm \
+		igzip/igzip_body_04.asm \
+		igzip/igzip_finish.asm \
 		igzip/crc_data.asm \
+		igzip/rfc1951_lookup.asm \
 		igzip/crc32_gzip.asm igzip/detect_repeated_char.asm \
 		igzip/igzip_multibinary.asm \
-		igzip/igzip_stateless_base.c \
-		igzip/igzip_base.c
+		igzip/igzip_base.c \
+		igzip/igzip_update_histogram_01.asm \
+		igzip/igzip_update_histogram_04.asm \
+		igzip/igzip_decode_block_stateless_01.asm \
+		igzip/igzip_decode_block_stateless_04.asm \
+		igzip/igzip_inflate_multibinary.asm
 
+src_include += -I $(srcdir)/igzip
 extern_hdrs +=	include/igzip_lib.h
 
 pkginclude_HEADERS += include/types.h
 
-unit_tests  += 	igzip/igzip_rand_test
-
-check_tests +=  igzip/igzip_check
+check_tests +=  igzip/igzip_rand_test
 
 perf_tests  +=  igzip/igzip_perf igzip/igzip_sync_flush_perf
 
-other_tests +=  igzip/igzip_file_perf igzip/igzip_sync_flush_file_perf igzip/igzip_stateless_file_perf
+other_tests +=  igzip/igzip_file_perf igzip/igzip_sync_flush_file_perf igzip/igzip_stateless_file_perf igzip/igzip_hist_perf
+other_tests +=  igzip/igzip_semi_dyn_file_perf
 
 other_src   += 	igzip/bitbuf2.asm igzip/data_struct2.asm \
-		igzip/igzip_buffer_utils_01.asm \
-		igzip/igzip_buffer_utils_04.asm \
+		igzip/inflate_data_structs.asm \
 		igzip/igzip_body.asm igzip/igzip_finish.asm \
 		igzip/lz0a_const.asm igzip/options.asm igzip/stdmac.asm igzip/igzip_compare_types.asm \
 		igzip/bitbuf2.h igzip/repeated_char_result.h \
 		igzip/igzip_body.asm \
-		igzip/igzip_stateless.asm \
+		igzip/igzip_update_histogram.asm \
 		igzip/huffman.asm \
 		include/reg_sizes.asm \
 		include/multibinary.asm \
 		include/test.h \
-		igzip/huffman.h
-
+		igzip/huffman.h \
+		igzip/igzip_decode_block_stateless.asm \
+		igzip/inflate_std_vects.h
 
 examples    += 	igzip/igzip_example igzip/igzip_sync_flush_example
 
-igzip_rand_test: igzip_inflate_ref.o
-igzip_igzip_rand_test_LDADD = igzip/igzip_inflate_ref.lo libisal.la
+igzip_igzip_rand_test_LDADD = libisal.la
 
 # Include tools to make custom Huffman tables based on sample data
 other_tests += igzip/generate_custom_hufftables
@@ -79,17 +83,17 @@ lsrc        += igzip/huff_codes.c
 # Include tools and tests using the reference inflate
 other_tests += igzip/igzip_inflate_perf
 other_tests += igzip/igzip_inflate_test
-other_src   += igzip/igzip_inflate_ref.h
-other_src   += igzip/igzip_inflate_ref.c
+other_tests += igzip/igzip_fuzz_inflate
+lsrc   += igzip/igzip_inflate.c
 other_src   += igzip/crc_inflate.h
 
-igzip_inflate_perf: igzip_inflate_ref.o
 igzip_inflate_perf: LDLIBS += -lz
-igzip_igzip_inflate_perf_LDADD = igzip/igzip_inflate_ref.lo libisal.la
+igzip_igzip_inflate_perf_LDADD = libisal.la
 igzip_igzip_inflate_perf_LDFLAGS = -lz
-igzip_inflate_test: igzip_inflate_ref.o
 igzip_inflate_test: LDLIBS += -lz
-igzip_igzip_inflate_test_LDADD = igzip/igzip_inflate_ref.lo libisal.la
+igzip_igzip_inflate_test_LDADD = libisal.la
 igzip_igzip_inflate_test_LDFLAGS = -lz
-igzip_check: igzip_inflate_ref.o
-igzip_igzip_check_LDADD = igzip/igzip_inflate_ref.lo libisal.la
+igzip_igzip_hist_perf_LDADD = libisal.la
+igzip_fuzz_inflate: LDLIBS += -lz
+igzip_igzip_fuzz_inflate_LDADD = libisal.la
+igzip_igzip_fuzz_inflate_LDFLAGS = -lz

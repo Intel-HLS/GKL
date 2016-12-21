@@ -16,9 +16,12 @@
 #  define GUNZIP
 #endif
 
+#include "zutil.h"
+#include "crc_folding.h"
+
 /* Possible inflate modes between inflate() calls */
 typedef enum {
-    HEAD,       /* i: waiting for magic header */
+    HEAD = 16180,   /* i: waiting for magic header */
     FLAGS,      /* i: waiting for method and flags (gzip) */
     TIME,       /* i: waiting for modification time (gzip) */
     OS,         /* i: waiting for extra flags and operating system (gzip) */
@@ -77,11 +80,14 @@ typedef enum {
         CHECK -> LENGTH -> DONE
  */
 
-/* state maintained between inflate() calls.  Approximately 10K bytes. */
+/* State maintained between inflate() calls -- approximately 7K bytes, not
+   including the allocated sliding window, which is up to 32K bytes. */
 struct inflate_state {
+    z_streamp strm;             /* pointer back to this zlib stream */
     inflate_mode mode;          /* current inflate mode */
     int last;                   /* true if processing last block */
-    int wrap;                   /* bit 0 true for zlib, bit 1 true for gzip */
+    int wrap;                   /* bit 0 true for zlib, bit 1 true for gzip,
+                                   bit 2 true to validate check value */
     int havedict;               /* true if dictionary provided */
     int flags;                  /* gzip header method and flags (0 if zlib) */
     unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
@@ -94,6 +100,9 @@ struct inflate_state {
     unsigned whave;             /* valid bytes in the window */
     unsigned wnext;             /* window write index */
     unsigned char FAR *window;  /* allocated sliding window, if needed */
+#ifdef HAVE_PCLMULQDQ
+    unsigned zalign(16) crc[4 * 5];
+#endif
         /* bit accumulator */
     unsigned long hold;         /* input bit accumulator */
     unsigned bits;              /* number of bits in "in" */
@@ -120,3 +129,67 @@ struct inflate_state {
     int back;                   /* bits back of last unprocessed length/lit */
     unsigned was;               /* initial length of match */
 };
+
+#include "x86.h"
+
+static inline void inf_crc_copy(z_streamp strm, unsigned char FAR *const dst,
+        const unsigned char FAR *const src, size_t len)
+{
+    struct inflate_state *const state = (struct inflate_state *const)strm->state;
+
+#if !defined(NO_GZIP) && defined(HAVE_PCLMULQDQ)
+    if ((state->wrap & 2) && x86_cpu_has_pclmulqdq) {
+        crc_fold_copy(state->crc, dst, src, len);
+        return;
+    }
+#endif
+
+    zmemcpy(dst, src, len);
+
+#if !defined(NO_GZIP)
+    if ((state->wrap & 2))
+        strm->adler = state->check = crc32(state->check, dst, len);
+    else
+#endif
+    if ((state->wrap & 1))
+        strm->adler = state->check = adler32(state->check, dst, len);
+}
+
+static inline void window_output_flush(z_streamp strm)
+{
+    struct inflate_state *const state = (struct inflate_state *const)strm->state;
+
+    size_t woff, roff, copysz;
+    size_t nexto_len;
+
+    if (state->wnext > strm->avail_out) {
+        nexto_len = strm->avail_out;
+        copysz = state->wnext - strm->avail_out;
+    } else {
+        nexto_len = state->wnext;
+        copysz = 0;
+    }
+
+    inf_crc_copy(strm, strm->next_out, state->window + state->wsize, nexto_len);
+
+    strm->avail_out -= nexto_len;
+    strm->next_out += nexto_len;
+
+    if (state->whave + nexto_len > state->wsize) {
+        woff = 0;
+        roff = nexto_len;
+        copysz += state->wsize;
+    } else {
+        roff = state->wsize - state->whave;
+        woff = state->wsize - state->whave - nexto_len;
+        copysz += state->whave + nexto_len;
+    }
+
+    memmove(state->window + woff, state->window + roff, copysz);
+
+    state->wnext -= nexto_len;
+    state->whave += nexto_len;
+    if (state->whave > state->wsize)
+        state->whave = state->wsize;
+}
+

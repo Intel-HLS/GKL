@@ -18,6 +18,19 @@ echo -------------------- >> configure.log
 echo $0 $* >> configure.log
 date >> configure.log
 
+
+# get source directory
+SRCDIR=`dirname $0`
+if test $SRCDIR = "."; then
+    ZINC=""
+    ZINCOUT="-I."
+    SRCDIR=""
+else
+    ZINC='-include zconf.h'
+    ZINCOUT='-I. -I$(SRCDIR)'
+    SRCDIR="$SRCDIR/"
+fi
+
 # set command prefix for cross-compilation
 if [ -n "${CHOST}" ]; then
     uname="`echo "${CHOST}" | sed -e 's/^[^-]*-\([^-]*\)$/\1/' -e 's/^[^-]*-[^-]*-\([^-]*\)$/\1/' -e 's/^[^-]*-[^-]*-\([^-]*\)-.*$/\1/'`"
@@ -48,10 +61,10 @@ esac
 STATICLIB=libz.a
 
 # extract zlib version numbers from zlib.h
-VER=`sed -n -e '/VERSION "/s/.*"\(.*\)".*/\1/p' < zlib.h`
-VER3=`sed -n -e '/VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < zlib.h`
-VER2=`sed -n -e '/VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < zlib.h`
-VER1=`sed -n -e '/VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < zlib.h`
+VER=`sed -n -e '/VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}zlib.h`
+VER3=`sed -n -e '/VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}zlib.h`
+VER2=`sed -n -e '/VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}zlib.h`
+VER1=`sed -n -e '/VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}zlib.h`
 
 # establish commands for library building
 if "${CROSS_PREFIX}ar" --version >/dev/null 2>/dev/null || test $? -lt 126; then
@@ -93,6 +106,7 @@ zprefix=0
 zconst=0
 build64=0
 gcc=0
+warn=0
 old_cc="$CC"
 old_cflags="$CFLAGS"
 OBJC='$(OBJZ) $(OBJG)'
@@ -141,6 +155,7 @@ case "$1" in
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
     --localstatedir=*) echo "ignored option: --localstatedir" | tee -a configure.log; shift ;;
     -c* | --const) zconst=1; shift ;;
+    -w* | --warn) warn=1; shift ;;
     *)
       echo "unknown option: $1" | tee -a configure.log
       echo "$0 --help for help" | tee -a configure.log
@@ -192,7 +207,7 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
     CFLAGS="${CFLAGS} -m64"
     SFLAGS="${SFLAGS} -m64"
   fi
-  if test "${ZLIBGCCWARN}" = "YES"; then
+  if test "$warn" -eq 1; then
     if test "$zconst" -eq 1; then
       CFLAGS="${CFLAGS} -Wall -Wextra -Wcast-qual -pedantic -DZLIB_CONST"
     else
@@ -204,9 +219,9 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   fi
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris*)
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,zlib.map"} ;;
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}zlib.map"} ;;
   *BSD | *bsd* | DragonFly)
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,zlib.map"}
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}zlib.map"}
         LDCONFIG="ldconfig -m" ;;
   CYGWIN* | Cygwin* | cygwin* | OS/2*)
         EXE='.exe' ;;
@@ -306,6 +321,9 @@ else
                      CFLAGS="$CFLAGS -xarch=v9" ;;
                  esac
              fi
+         fi
+         if test -n "$ZINC"; then
+             ZINC='-I- -I. -I$(SRCDIR)'
          fi
          ;;
   SunOS\ 4*) SFLAGS=${CFLAGS-"-O2 -PIC"}
@@ -490,7 +508,7 @@ else
 fi
 
 # copy clean zconf.h for subsequent edits
-cp -p zconf.h.in zconf.h
+cp -p ${SRCDIR}zconf.h.in zconf.h
 
 echo >> configure.log
 
@@ -842,10 +860,14 @@ case "${ARCH}" in
             CRC_FOLDING_lo=""
         fi
 
-#        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
-#        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+#        CFLAGS="${CFLAGS} -DUSE_QUICK"
+#        SFLAGS="${SFLAGS} -DUSE_QUICK"
+
         CFLAGS="${CFLAGS} -DUSE_MEDIUM"
         SFLAGS="${SFLAGS} -DUSE_MEDIUM"
+
+#        CFLAGS="${CFLAGS} -DHAVE_INTEL_MEMCPY"
+#        SFLAGS="${SFLAGS} -DHAVE_INTEL_MEMCPY"
 
 #        DEFLATE_QUICK_o="deflate_quick.o"
 #        DEFLATE_QUICK_lo="deflate_quick.lo"
@@ -890,10 +912,14 @@ case "${ARCH}" in
             CRC_FOLDING_lo=""
         fi
 
-#        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
-#        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+#        CFLAGS="${CFLAGS} -DUSE_QUICK"
+#        SFLAGS="${SFLAGS} -DUSE_QUICK"
+
         CFLAGS="${CFLAGS} -DUSE_MEDIUM"
         SFLAGS="${SFLAGS} -DUSE_MEDIUM"
+
+#        CFLAGS="${CFLAGS} -DHAVE_INTEL_MEMCPY"
+#        SFLAGS="${SFLAGS} -DHAVE_INTEL_MEMCPY"
 
 #        DEFLATE_QUICK_o="deflate_quick.o"
 #        DEFLATE_QUICK_lo="deflate_quick.lo"
@@ -924,6 +950,7 @@ echo STATICLIB = $STATICLIB >> configure.log
 echo TEST = $TEST >> configure.log
 echo VER = $VER >> configure.log
 echo Z_U4 = $Z_U4 >> configure.log
+echo SRCDIR = $SRCDIR >> configure.log
 echo exec_prefix = $exec_prefix >> configure.log
 echo includedir = $includedir >> configure.log
 echo libdir = $libdir >> configure.log
@@ -939,7 +966,7 @@ echo DEFLATE_QUICK_o=${DEFLATE_QUICK_o} >> configure.log
 echo DEFLATE_QUICK_lo=${DEFLATE_QUICK_lo} >> configure.log
 
 # udpate Makefile with the configure results
-sed < Makefile.in "
+sed < ${SRCDIR}Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
@@ -956,6 +983,9 @@ sed < Makefile.in "
 /^LDCONFIG *=/s#=.*#=$LDCONFIG#
 /^LDSHAREDLIBC *=/s#=.*#=$LDSHAREDLIBC#
 /^EXE *=/s#=.*#=$EXE#
+/^SRCDIR *=/s#=.*#=$SRCDIR#
+/^ZINC *=/s#=.*#=$ZINC#
+/^ZINCOUT *=/s#=.*#=$ZINCOUT#
 /^prefix *=/s#=.*#=$prefix#
 /^exec_prefix *=/s#=.*#=$exec_prefix#
 /^libdir *=/s#=.*#=$libdir#
@@ -975,7 +1005,7 @@ sed < Makefile.in "
 " > Makefile
 
 # create zlib.pc with the configure results
-sed < zlib.pc.in "
+sed < ${SRCDIR}zlib.pc.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
 /^CPP *=/s#=.*#=$CPP#

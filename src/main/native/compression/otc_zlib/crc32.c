@@ -30,8 +30,6 @@
 
 #include "zutil.h"      /* for STDC and FAR definitions */
 
-#define local static
-
 /* Definitions for doing the crc four data bytes at a time. */
 #if !defined(NOBYFOUR) && defined(Z_U4)
 #  define BYFOUR
@@ -247,6 +245,18 @@ unsigned long ZEXPORT crc32(crc, buf, len)
 
 #ifdef BYFOUR
 
+/*
+   This BYFOUR code accesses the passed unsigned char * buffer with a 32-bit
+   integer pointer type. This violates the strict aliasing rule, where a
+   compiler can assume, for optimization purposes, that two pointers to
+   fundamentally different types won't ever point to the same memory. This can
+   manifest as a problem only if one of the pointers is written to. This code
+   only reads from those pointers. So long as this code remains isolated in
+   this compilation unit, there won't be a problem. For this reason, this code
+   should not be copied and pasted into a compilation unit in which other code
+   writes to the buffer that is passed to these routines.
+ */
+
 /* ========================================================================= */
 #define DOLIT4 c ^= *buf4++; \
         c = crc_table[3][c & 0xff] ^ crc_table[2][(c >> 8) & 0xff] ^ \
@@ -292,7 +302,7 @@ local unsigned long crc32_little(crc, buf, len)
 }
 
 /* ========================================================================= */
-#define DOBIG4 c ^= *++buf4; \
+#define DOBIG4 c ^= *buf4++; \
         c = crc_table[4][c & 0xff] ^ crc_table[5][(c >> 8) & 0xff] ^ \
             crc_table[6][(c >> 16) & 0xff] ^ crc_table[7][c >> 24]
 #define DOBIG32 DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4
@@ -314,7 +324,6 @@ local unsigned long crc32_big(crc, buf, len)
     }
 
     buf4 = (const z_crc_t FAR *)(const void FAR *)buf;
-    buf4--;
     while (len >= 32) {
         DOBIG32;
         len -= 32;
@@ -323,7 +332,6 @@ local unsigned long crc32_big(crc, buf, len)
         DOBIG4;
         len -= 4;
     }
-    buf4++;
     buf = (const unsigned char FAR *)buf4;
 
     if (len) do {
@@ -439,21 +447,13 @@ uLong ZEXPORT crc32_combine64(crc1, crc2, len2)
 }
 
 #include "deflate.h"
-
-#ifdef HAVE_PCLMULQDQ
-#include "x86.h"
-extern void ZLIB_INTERNAL crc_fold_init(deflate_state *z_const s);
-extern void ZLIB_INTERNAL crc_fold_copy(deflate_state *z_const s,
-        unsigned char *dst, z_const unsigned char *src, long len);
-extern unsigned ZLIB_INTERNAL crc_fold_512to32(deflate_state *z_const s);
-#endif
+#include "crc_folding.h"
 
 ZLIB_INTERNAL void crc_reset(deflate_state *const s)
 {
 #ifdef HAVE_PCLMULQDQ
     if (x86_cpu_has_pclmulqdq) {
-        crc_fold_init(s);
-        return;
+        crc_fold_init(s->crc0);
     }
 #endif
     s->strm->adler = crc32(0L, Z_NULL, 0);
@@ -463,7 +463,7 @@ ZLIB_INTERNAL void crc_finalize(deflate_state *const s)
 {
 #ifdef HAVE_PCLMULQDQ
     if (x86_cpu_has_pclmulqdq)
-        s->strm->adler = crc_fold_512to32(s);
+        s->strm->adler = crc_fold_512to32(s->crc0);
 #endif
 }
 
@@ -471,7 +471,7 @@ ZLIB_INTERNAL void copy_with_crc(z_streamp strm, Bytef *dst, long size)
 {
 #ifdef HAVE_PCLMULQDQ
     if (x86_cpu_has_pclmulqdq) {
-        crc_fold_copy(strm->state, dst, strm->next_in, size);
+        crc_fold_copy(strm->state->crc0, dst, strm->next_in, size);
         return;
     }
 #endif

@@ -29,27 +29,34 @@
 package com.intel.gkl.compression;
 
 import com.intel.gkl.IntelGKLUtils;
+import com.intel.gkl.NativeLibraryLoader;
+import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
 import java.util.zip.Deflater;
 
-import com.intel.gkl.NativeLibraryLoader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.broadinstitute.gatk.nativebindings.NativeLibrary;
-
+/**
+ * Provides a native Deflater implementation accelerated for the Intel Architecture.
+ */
 public final class IntelDeflater extends Deflater implements NativeLibrary {
-    private static final Logger logger = LogManager.getLogger(IntelDeflater.class);
-
-    private static final NativeLibraryLoader libraryLoader = new NativeLibraryLoader("gkl_compression");
+    private static final String NATIVE_LIBRARY_NAME = "gkl_compression";
     private static boolean initialized = false;
 
+    /**
+     * Loads the native library, if it is supported on this platform. <p>
+     * Returns false if AVX is not supported. <br>
+     * Returns false if the native library cannot be loaded for any reason. <br>
+     * Initializes the native library after the first load. <br>
+     *
+     * @param tempDir  directory where the native library is extracted or null to use the system temp directory
+     * @return  true if the native library is supported and loaded, false otherwise
+     */
     @Override
     public synchronized boolean load(File tempDir) {
         if (!IntelGKLUtils.isAvxSupported()) {
             return false;
         }
-        if (!libraryLoader.load(tempDir)) {
+        if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
             return false;
         }
         if (!initialized) {
@@ -109,7 +116,6 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
 
     @Override
     public void reset() {
-        logger.debug("Reset deflater");
         resetNative(nowrap);
         inputBuffer = null;
         inputBufferLength = 0;

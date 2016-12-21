@@ -17,7 +17,13 @@ int x86_cpu_has_pclmulqdq;
 #ifndef _MSC_VER
 void x86_check_features(void)
 {
+    static int once = 0;
+
     unsigned eax, ebx, ecx, edx;
+
+    if (once != 0)
+        return;
+    once = 1;
 
     eax = 1;
     __asm__ __volatile__ (

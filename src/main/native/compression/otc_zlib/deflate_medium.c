@@ -57,20 +57,20 @@ static void insert_match(deflate_state *s, struct match match)
     if (zunlikely(s->lookahead <= match.match_length + MIN_MATCH))
         return;
 
-        /* matches that are not long enough we need to emit as litterals */
-        if (match.match_length < MIN_MATCH) {
-            while (match.match_length) {
-                    match.strstart++;
-                    match.match_length--;
+    /* matches that are not long enough we need to emit as litterals */
+    if (match.match_length < MIN_MATCH) {
+        while (match.match_length) {
+                match.strstart++;
+                match.match_length--;
 
-                    if (match.match_length) {
-                        if (match.strstart >= match.orgstart) {
-                            insert_string(s, match.strstart);
-                        }
+                if (match.match_length) {
+                    if (match.strstart >= match.orgstart) {
+                        insert_string(s, match.strstart);
                     }
-            }
-            return;
+                }
         }
+        return;
+    }
 
         /* Insert new strings in the hash table only if the match length
          * is not too large. This saves time but degrades compression.

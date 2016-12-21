@@ -30,23 +30,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "igzip_lib.h"
-#include "igzip_inflate_ref.h"
 #include "crc_inflate.h"
+#include "inflate_std_vects.h"
 #include <math.h>
 
 #ifndef RANDOMS
-# define RANDOMS   400
+# define RANDOMS   0x40
 #endif
 #ifndef TEST_SEED
 # define TEST_SEED 0x1234
 #endif
 
 #define IBUF_SIZE  (1024*1024)
-
-#ifndef IGZIP_USE_GZIP_FORMAT
-# define DEFLATE 1
-#endif
 
 #define PAGE_SIZE 4*1024
 
@@ -78,7 +75,6 @@ enum IGZIP_TEST_ERROR_CODES {
 	INFLATE_INVALID_BLOCK_HEADER,
 	INFLATE_INVALID_SYMBOL,
 	INFLATE_OUT_BUFFER_OVERFLOW,
-	INFLATE_INVALID_NON_COMPRESSED_BLOCK_LENGTH,
 	INFLATE_LEFTOVER_INPUT,
 	INFLATE_INCORRECT_OUTPUT_SIZE,
 	INFLATE_INVALID_LOOK_BACK_DISTANCE,
@@ -92,25 +88,19 @@ enum IGZIP_TEST_ERROR_CODES {
 	RESULT_ERROR
 };
 
-const int hdr_bytes = 300;
+static const int hdr_bytes = 300;
 
-#ifndef DEFLATE
-const uint8_t gzip_hdr[10] = {
+static const uint8_t gzip_hdr[10] = {
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0xff
 };
 
-const uint32_t gzip_hdr_bytes = 10;
-const uint32_t gzip_trl_bytes = 8;
+static const uint32_t gzip_hdr_bytes = 10;
+/* static const uint32_t gzip_trl_bytes = 8; */
 
-const int trl_bytes = 8;
-const int gzip_extra_bytes = 18;
+static const int gzip_extra_bytes = 18;	/* gzip_hdr_bytes + gzip_trl_bytes */
 
-#else
-const int trl_bytes = 0;
-const int gzip_extra_bytes = 0;
-
-#endif
+int inflate_type = 0;
 
 struct isal_hufftables *hufftables = NULL;
 
@@ -220,9 +210,6 @@ void print_error(int error_code)
 	case INFLATE_OUT_BUFFER_OVERFLOW:
 		printf("error: output buffer overflow while decompressing data\n");
 		break;
-	case INFLATE_INVALID_NON_COMPRESSED_BLOCK_LENGTH:
-		printf("error: invalid length bits in non-compressed block\n");
-		break;
 	case INFLATE_GENERAL_ERROR:
 		printf("error: decompression failed\n");
 		break;
@@ -271,7 +258,6 @@ void print_uint8_t(uint8_t * array, uint64_t length)
 	printf("\n");
 }
 
-#ifndef DEFLATE
 uint32_t check_gzip_header(uint8_t * z_buf)
 {
 	/* These values are defined in RFC 1952 page 4 */
@@ -305,53 +291,223 @@ uint32_t check_gzip_header(uint8_t * z_buf)
 	return ret;
 }
 
-uint32_t check_gzip_trl(struct inflate_state * gstream)
+uint32_t check_gzip_trl(uint64_t gzip_trl, uint32_t inflate_crc, uint8_t * uncompress_buf,
+			uint32_t uncompress_len)
 {
-	uint8_t *index = NULL;
-	uint32_t crc, ret = 0;
+	uint64_t trl, ret = 0;
+	uint32_t crc;
 
-	index = gstream->out_buffer.next_out - gstream->out_buffer.total_out;
-	crc = find_crc(index, gstream->out_buffer.total_out);
+	crc = find_crc(uncompress_buf, uncompress_len);
+	trl = ((uint64_t) uncompress_len << 32) | crc;
 
-	if (gstream->out_buffer.total_out != *(uint32_t *) (gstream->in_buffer.next_in + 4) ||
-	    crc != *(uint32_t *) gstream->in_buffer.next_in)
+	if (crc != inflate_crc || trl != gzip_trl)
 		ret = INCORRECT_GZIP_TRAILER;
 
 	return ret;
 }
-#endif
+
+int inflate_stateless_pass(uint8_t * compress_buf, uint64_t compress_len,
+			   uint8_t * uncompress_buf, uint32_t * uncompress_len,
+			   uint32_t gzip_flag)
+{
+	struct inflate_state state;
+	int ret = 0;
+
+	state.next_in = compress_buf;
+	state.avail_in = compress_len;
+	state.next_out = uncompress_buf;
+	state.avail_out = *uncompress_len;
+	state.crc_flag = gzip_flag;
+
+	ret = isal_inflate_stateless(&state);
+
+	*uncompress_len = state.total_out;
+
+	if (gzip_flag) {
+		if (!ret)
+			ret =
+			    check_gzip_trl(*(uint64_t *) state.next_in, state.crc,
+					   uncompress_buf, *uncompress_len);
+		state.avail_in -= 8;
+	}
+
+	if (ret == 0 && state.avail_in != 0)
+		ret = INFLATE_LEFTOVER_INPUT;
+
+	return ret;
+}
+
+int inflate_multi_pass(uint8_t * compress_buf, uint64_t compress_len,
+		       uint8_t * uncompress_buf, uint32_t * uncompress_len, uint32_t gzip_flag)
+{
+	struct inflate_state *state = NULL;
+	int ret = 0;
+	uint8_t *comp_tmp = NULL, *uncomp_tmp = NULL;
+	uint32_t comp_tmp_size = 0, uncomp_tmp_size = 0;
+	uint32_t comp_processed = 0, uncomp_processed = 0;
+	int32_t read_in_old = 0;
+
+	state = malloc(sizeof(struct inflate_state));
+	if (state == NULL) {
+		printf("Failed to allocate memory\n");
+		exit(0);
+	}
+
+	isal_inflate_init(state);
+
+	state->next_in = NULL;
+	state->next_out = NULL;
+	state->avail_in = 0;
+	state->avail_out = 0;
+	state->crc_flag = gzip_flag;
+
+	if (gzip_flag)
+		compress_len -= 8;
+
+	while (1) {
+		if (state->avail_in == 0) {
+			comp_tmp_size = rand() % (compress_len + 1);
+
+			if (comp_tmp_size >= compress_len - comp_processed)
+				comp_tmp_size = compress_len - comp_processed;
+
+			if (comp_tmp_size != 0) {
+				if (comp_tmp != NULL) {
+					free(comp_tmp);
+					comp_tmp = NULL;
+				}
+
+				comp_tmp = malloc(comp_tmp_size);
+
+				if (comp_tmp == NULL) {
+					printf("Failed to allocate memory\n");
+					return MALLOC_FAILED;
+				}
+
+				memcpy(comp_tmp, compress_buf + comp_processed, comp_tmp_size);
+				comp_processed += comp_tmp_size;
+
+				state->next_in = comp_tmp;
+				state->avail_in = comp_tmp_size;
+			}
+		}
+
+		if (state->avail_out == 0) {
+			/* Save uncompressed data into uncompress_buf */
+			if (uncomp_tmp != NULL) {
+				memcpy(uncompress_buf + uncomp_processed, uncomp_tmp,
+				       uncomp_tmp_size);
+				uncomp_processed += uncomp_tmp_size;
+			}
+
+			uncomp_tmp_size = rand() % (*uncompress_len + 1);
+
+			/* Limit size of buffer to be smaller than maximum */
+			if (uncomp_tmp_size > *uncompress_len - uncomp_processed)
+				uncomp_tmp_size = *uncompress_len - uncomp_processed;
+
+			if (uncomp_tmp_size != 0) {
+
+				if (uncomp_tmp != NULL) {
+					fflush(0);
+					free(uncomp_tmp);
+					uncomp_tmp = NULL;
+				}
+
+				uncomp_tmp = malloc(uncomp_tmp_size);
+				if (uncomp_tmp == NULL) {
+					printf("Failed to allocate memory\n");
+					return MALLOC_FAILED;
+				}
+
+				state->avail_out = uncomp_tmp_size;
+				state->next_out = uncomp_tmp;
+			}
+		}
+
+		ret = isal_inflate(state);
+
+		if (state->block_state == ISAL_BLOCK_FINISH || ret != 0) {
+			memcpy(uncompress_buf + uncomp_processed, uncomp_tmp, uncomp_tmp_size);
+			*uncompress_len = state->total_out;
+			break;
+		}
+
+		if (*uncompress_len - uncomp_processed == 0 && state->avail_out == 0
+		    && state->tmp_out_valid - state->tmp_out_processed > 0) {
+			ret = ISAL_OUT_OVERFLOW;
+			break;
+		}
+
+		if (compress_len - comp_processed == 0 && state->avail_in == 0
+		    && (state->block_state != ISAL_BLOCK_INPUT_DONE)
+		    && state->tmp_out_valid - state->tmp_out_processed == 0) {
+			if (state->read_in_length == read_in_old) {
+				ret = ISAL_END_INPUT;
+				break;
+			}
+			read_in_old = state->read_in_length;
+		}
+	}
+
+	if (gzip_flag) {
+		if (!ret)
+			ret =
+			    check_gzip_trl(*(uint64_t *) & compress_buf[compress_len],
+					   state->crc, uncompress_buf, *uncompress_len);
+	}
+	if (ret == 0 && state->avail_in != 0)
+		ret = INFLATE_LEFTOVER_INPUT;
+
+	if (comp_tmp != NULL) {
+		free(comp_tmp);
+		comp_tmp = NULL;
+	}
+
+	if (uncomp_tmp != NULL) {
+		free(uncomp_tmp);
+		uncomp_tmp = NULL;
+	}
+
+	free(state);
+	return ret;
+}
 
 /* Inflate the  compressed data and check that the decompressed data agrees with the input data */
-int inflate_check(uint8_t * z_buf, int z_size, uint8_t * in_buf, int in_size)
+int inflate_check(uint8_t * z_buf, int z_size, uint8_t * in_buf, int in_size,
+		  uint32_t gzip_flag)
 {
 	/* Test inflate with reference inflate */
 
 	int ret = 0;
-	struct inflate_state gstream;
 	uint32_t test_size = in_size;
 	uint8_t *test_buf = NULL;
 	int mem_result = 0;
+	int gzip_hdr_result = 0, gzip_trl_result = 0;
 
 	if (in_size > 0) {
 		assert(in_buf != NULL);
 		test_buf = malloc(test_size);
-
 		if (test_buf == NULL)
 			return MALLOC_FAILED;
 	}
+
 	if (test_buf != NULL)
 		memset(test_buf, 0xff, test_size);
 
-#ifndef DEFLATE
-	int gzip_hdr_result, gzip_trl_result;
+	if (gzip_flag == IGZIP_GZIP) {
+		gzip_hdr_result = check_gzip_header(z_buf);
+		z_buf += gzip_hdr_bytes;
+		z_size -= gzip_hdr_bytes;
+	}
 
-	gzip_hdr_result = check_gzip_header(z_buf);
-	z_buf += gzip_hdr_bytes;
-	z_size -= gzip_hdr_bytes;
-#endif
-
-	igzip_inflate_init(&gstream, z_buf, z_size, test_buf, test_size);
-	ret = igzip_inflate(&gstream);
+	if (inflate_type == 0) {
+		ret = inflate_stateless_pass(z_buf, z_size, test_buf, &test_size, gzip_flag);
+		inflate_type = 1;
+	} else {
+		ret = inflate_multi_pass(z_buf, z_size, test_buf, &test_size, gzip_flag);
+		inflate_type = 0;
+	}
 
 	if (test_buf != NULL)
 		mem_result = memcmp(in_buf, test_buf, in_size);
@@ -361,64 +517,59 @@ int inflate_check(uint8_t * z_buf, int z_size, uint8_t * in_buf, int in_size)
 	if (mem_result)
 		for (i = 0; i < in_size; i++) {
 			if (in_buf[i] != test_buf[i]) {
-				printf("First incorrect data at 0x%x of 0x%x, 0x%x != 0x%x\n",
-				       i, in_size, in_buf[i], test_buf[i]);
+				printf
+				    ("First incorrect data at 0x%x of 0x%x, 0x%x != 0x%x\n",
+				     i, in_size, in_buf[i], test_buf[i]);
 				break;
 			}
 		}
 #endif
 
-#ifndef DEFLATE
-	gzip_trl_result = check_gzip_trl(&gstream);
-	gstream.in_buffer.avail_in -= gzip_trl_bytes;
-	gstream.in_buffer.next_in += gzip_trl_bytes;
-#endif
-
 	if (test_buf != NULL)
 		free(test_buf);
-
 	switch (ret) {
 	case 0:
 		break;
-	case END_OF_INPUT:
+	case ISAL_END_INPUT:
 		return INFLATE_END_OF_INPUT;
 		break;
-	case INVALID_BLOCK_HEADER:
+	case ISAL_INVALID_BLOCK:
 		return INFLATE_INVALID_BLOCK_HEADER;
 		break;
-	case INVALID_SYMBOL:
+	case ISAL_INVALID_SYMBOL:
 		return INFLATE_INVALID_SYMBOL;
 		break;
-	case OUT_BUFFER_OVERFLOW:
+	case ISAL_OUT_OVERFLOW:
 		return INFLATE_OUT_BUFFER_OVERFLOW;
 		break;
-	case INVALID_NON_COMPRESSED_BLOCK_LENGTH:
-		return INFLATE_INVALID_NON_COMPRESSED_BLOCK_LENGTH;
-		break;
-	case INVALID_LOOK_BACK_DISTANCE:
+	case ISAL_INVALID_LOOKBACK:
 		return INFLATE_INVALID_LOOK_BACK_DISTANCE;
 		break;
+	case INFLATE_LEFTOVER_INPUT:
+		return INFLATE_LEFTOVER_INPUT;
+		break;
+	case INCORRECT_GZIP_TRAILER:
+		gzip_trl_result = INCORRECT_GZIP_TRAILER;
+		break;
+
 	default:
 		return INFLATE_GENERAL_ERROR;
 		break;
 	}
 
-	if (gstream.in_buffer.avail_in != 0)
-		return INFLATE_LEFTOVER_INPUT;
-
-	if (gstream.out_buffer.total_out != in_size)
+	if (test_size != in_size)
 		return INFLATE_INCORRECT_OUTPUT_SIZE;
 
 	if (mem_result)
 		return RESULT_ERROR;
 
-#ifndef DEFLATE
-	if (gzip_hdr_result)
-		return INVALID_GZIP_HEADER;
+	if (gzip_flag) {
+		if (gzip_hdr_result)
+			return INVALID_GZIP_HEADER;
 
-	if (gzip_trl_result)
-		return INCORRECT_GZIP_TRAILER;
-#endif
+		if (gzip_trl_result)
+			return INCORRECT_GZIP_TRAILER;
+	}
 
 	return 0;
 }
@@ -516,11 +667,16 @@ int isal_deflate_with_checks(struct isal_zstream *stream, uint32_t data_size,
 
 }
 
+void set_random_hufftable(struct isal_zstream *stream)
+{
+	isal_deflate_set_hufftables(stream, hufftables, rand() % 4);
+}
+
 /* Compress the input data into the output buffer where the input buffer and
  * output buffer are randomly segmented to test state information for the
  * compression*/
 int compress_multi_pass(uint8_t * data, uint32_t data_size, uint8_t * compressed_buf,
-			uint32_t * compressed_size, uint32_t flush_type)
+			uint32_t * compressed_size, uint32_t flush_type, uint32_t gzip_flag)
 {
 	int ret = IGZIP_COMP_OK;
 	uint8_t *in_buf = NULL, *out_buf = NULL;
@@ -538,9 +694,6 @@ int compress_multi_pass(uint8_t * data, uint32_t data_size, uint8_t * compressed
 
 	isal_deflate_init(&stream);
 
-	if (hufftables != NULL)
-		stream.hufftables = hufftables;
-
 	if (state->state != ZSTATE_NEW_HDR)
 		return COMPRESS_INCORRECT_STATE;
 
@@ -550,6 +703,7 @@ int compress_multi_pass(uint8_t * data, uint32_t data_size, uint8_t * compressed
 	/* These are set here to allow the loop to run correctly */
 	stream.avail_in = 0;
 	stream.avail_out = 0;
+	stream.gzip_flag = gzip_flag;
 
 	while (1) {
 		loop_count++;
@@ -619,6 +773,9 @@ int compress_multi_pass(uint8_t * data, uint32_t data_size, uint8_t * compressed
 			}
 		}
 
+		if (state->state == ZSTATE_NEW_HDR)
+			set_random_hufftable(&stream);
+
 		ret =
 		    isal_deflate_with_checks(&stream, data_size, *compressed_size, in_buf,
 					     in_size, in_processed, out_buf, out_size,
@@ -655,7 +812,7 @@ int compress_multi_pass(uint8_t * data, uint32_t data_size, uint8_t * compressed
 
 /* Compress the input data into the outbuffer in one call to isal_deflate */
 int compress_single_pass(uint8_t * data, uint32_t data_size, uint8_t * compressed_buf,
-			 uint32_t * compressed_size, uint32_t flush_type)
+			 uint32_t * compressed_size, uint32_t flush_type, uint32_t gzip_flag)
 {
 	int ret = IGZIP_COMP_OK;
 	struct isal_zstream stream;
@@ -669,8 +826,7 @@ int compress_single_pass(uint8_t * data, uint32_t data_size, uint8_t * compresse
 
 	isal_deflate_init(&stream);
 
-	if (hufftables != NULL)
-		stream.hufftables = hufftables;
+	set_random_hufftable(&stream);
 
 	if (state->state != ZSTATE_NEW_HDR)
 		return COMPRESS_INCORRECT_STATE;
@@ -681,6 +837,7 @@ int compress_single_pass(uint8_t * data, uint32_t data_size, uint8_t * compresse
 	stream.avail_out = *compressed_size;
 	stream.next_out = compressed_buf;
 	stream.end_of_stream = 1;
+	stream.gzip_flag = gzip_flag;
 
 	ret =
 	    isal_deflate_with_checks(&stream, data_size, *compressed_size, data, data_size,
@@ -698,25 +855,25 @@ int compress_single_pass(uint8_t * data, uint32_t data_size, uint8_t * compresse
 
 /* Statelessly compress the input buffer into the output buffer */
 int compress_stateless(uint8_t * data, uint32_t data_size, uint8_t * compressed_buf,
-		       uint32_t * compressed_size)
+		       uint32_t * compressed_size, uint32_t flush_type, uint32_t gzip_flag)
 {
 	int ret = IGZIP_COMP_OK;
 	struct isal_zstream stream;
 
 	create_rand_repeat_data((uint8_t *) & stream, sizeof(stream));
 
-	isal_deflate_init(&stream);
+	isal_deflate_stateless_init(&stream);
 
-	if (hufftables != NULL)
-		stream.hufftables = hufftables;
+	set_random_hufftable(&stream);
 
 	stream.avail_in = data_size;
-	stream.end_of_stream = 1;
 	stream.next_in = data;
-	stream.flush = NO_FLUSH;
-
+	stream.flush = flush_type;
+	if (flush_type != NO_FLUSH)
+		stream.end_of_stream = 1;
 	stream.avail_out = *compressed_size;
 	stream.next_out = compressed_buf;
+	stream.gzip_flag = gzip_flag;
 
 	ret = isal_deflate_stateless(&stream);
 
@@ -726,12 +883,15 @@ int compress_stateless(uint8_t * data, uint32_t data_size, uint8_t * compressed_
 		return COMPRESS_INPUT_STREAM_INTEGRITY_ERROR;
 
 	if (stream.next_out - compressed_buf != stream.total_out ||
-	    stream.total_out + stream.avail_out != *compressed_size)
+	    stream.total_out + stream.avail_out != *compressed_size) {
 		return COMPRESS_OUTPUT_STREAM_INTEGRITY_ERROR;
+	}
 
 	if (ret != IGZIP_COMP_OK) {
 		if (ret == STATELESS_OVERFLOW)
 			return COMPRESS_OUT_BUFFER_OVERFLOW;
+		else if (ret == INVALID_FLUSH)
+			return INVALID_FLUSH_ERROR;
 		else
 			return COMPRESS_GENERAL_ERROR;
 	}
@@ -749,11 +909,104 @@ int compress_stateless(uint8_t * data, uint32_t data_size, uint8_t * compressed_
 
 }
 
+/* Statelessly compress the input buffer into the output buffer */
+int compress_stateless_full_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed_buf,
+				  uint32_t * compressed_size)
+{
+	int ret = IGZIP_COMP_OK;
+	uint8_t *in_buf = NULL, *out_buf = compressed_buf;
+	uint32_t in_size = 0;
+	uint32_t in_processed = 00;
+	struct isal_zstream stream;
+	uint32_t loop_count = 0;
+
+#ifdef VERBOSE
+	printf("Starting Stateless Compress Full Flush\n");
+#endif
+
+	create_rand_repeat_data((uint8_t *) & stream, sizeof(stream));
+
+	isal_deflate_stateless_init(&stream);
+
+	stream.flush = FULL_FLUSH;
+	stream.end_of_stream = 0;
+	stream.avail_out = *compressed_size;
+	stream.next_out = compressed_buf;
+
+	while (1) {
+		loop_count++;
+
+		/* Randomly choose size of the next out buffer */
+		in_size = rand() % (data_size + 1);
+
+		/* Limit size of buffer to be smaller than maximum */
+		if (in_size >= data_size - in_processed) {
+			in_size = data_size - in_processed;
+			stream.end_of_stream = 1;
+		}
+
+		stream.avail_in = in_size;
+
+		if (in_size != 0) {
+			if (in_buf != NULL) {
+				free(in_buf);
+				in_buf = NULL;
+			}
+
+			in_buf = malloc(in_size);
+			if (in_buf == NULL) {
+				ret = MALLOC_FAILED;
+				break;
+			}
+			memcpy(in_buf, data + in_processed, in_size);
+			in_processed += in_size;
+
+			stream.next_in = in_buf;
+		}
+
+		out_buf = stream.next_out;
+
+		if (stream.internal_state.state == ZSTATE_NEW_HDR)
+			set_random_hufftable(&stream);
+
+		ret = isal_deflate_stateless(&stream);
+		assert(stream.internal_state.bitbuf.m_bit_count == 0);
+
+		assert(compressed_buf == stream.next_out - stream.total_out);
+		if (ret)
+			break;
+
+		/* Verify that blocks are independent */
+		ret = inflate_check(out_buf, stream.next_out - out_buf, in_buf, in_size, 0);
+
+		if (ret == INFLATE_INVALID_LOOK_BACK_DISTANCE) {
+			break;
+		} else
+			ret = 0;
+
+		/* Check if the compression is completed */
+		if (in_processed == data_size) {
+			*compressed_size = stream.total_out;
+			break;
+		}
+
+	}
+
+	if (in_buf != NULL)
+		free(in_buf);
+
+	if (ret == STATELESS_OVERFLOW && loop_count >= MAX_LOOPS)
+		ret = COMPRESS_LOOP_COUNT_OVERFLOW;
+
+	return ret;
+
+}
+
 /* Compress the input data into the output buffer where the input buffer and
  * is randomly segmented to test for independence of blocks in full flush
  * compression*/
 int compress_full_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed_buf,
-			uint32_t * compressed_size)
+			uint32_t * compressed_size, uint32_t gzip_flag)
 {
 	int ret = IGZIP_COMP_OK;
 	uint8_t *in_buf = NULL, *out_buf = compressed_buf;
@@ -771,9 +1024,6 @@ int compress_full_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed
 
 	isal_deflate_init(&stream);
 
-	if (hufftables != NULL)
-		stream.hufftables = hufftables;
-
 	if (state->state != ZSTATE_NEW_HDR)
 		return COMPRESS_INCORRECT_STATE;
 
@@ -782,6 +1032,7 @@ int compress_full_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed
 	stream.avail_out = *compressed_size;
 	stream.next_out = compressed_buf;
 	stream.total_out = 0;
+	stream.gzip_flag = gzip_flag;
 
 	while (1) {
 		loop_count++;
@@ -819,6 +1070,9 @@ int compress_full_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed
 			out_buf = stream.next_out;
 		}
 
+		if (state->state == ZSTATE_NEW_HDR)
+			set_random_hufftable(&stream);
+
 		ret = isal_deflate(&stream);
 
 		if (ret)
@@ -827,7 +1081,8 @@ int compress_full_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed
 		/* Verify that blocks are independent */
 		if (state->state == ZSTATE_NEW_HDR || state->state == ZSTATE_END) {
 			ret =
-			    inflate_check(out_buf, stream.next_out - out_buf, in_buf, in_size);
+			    inflate_check(out_buf, stream.next_out - out_buf, in_buf, in_size,
+					  0);
 
 			if (ret == INFLATE_INVALID_LOOK_BACK_DISTANCE)
 				break;
@@ -856,7 +1111,7 @@ int compress_full_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed
 /*Compress the input buffer into the output buffer, but switch the flush type in
  * the middle of the compression to test what happens*/
 int compress_swap_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed_buf,
-			uint32_t * compressed_size, uint32_t flush_type)
+			uint32_t * compressed_size, uint32_t flush_type, uint32_t gzip_flag)
 {
 	int ret = IGZIP_COMP_OK;
 	struct isal_zstream stream;
@@ -869,8 +1124,7 @@ int compress_swap_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed
 
 	isal_deflate_init(&stream);
 
-	if (hufftables != NULL)
-		stream.hufftables = hufftables;
+	set_random_hufftable(&stream);
 
 	if (state->state != ZSTATE_NEW_HDR)
 		return COMPRESS_INCORRECT_STATE;
@@ -883,6 +1137,7 @@ int compress_swap_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed
 	stream.avail_out = *compressed_size;
 	stream.next_out = compressed_buf;
 	stream.end_of_stream = 0;
+	stream.gzip_flag = gzip_flag;
 
 	ret =
 	    isal_deflate_with_checks(&stream, data_size, *compressed_size, data, partial_size,
@@ -890,6 +1145,9 @@ int compress_swap_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed
 
 	if (ret)
 		return ret;
+
+	if (state->state == ZSTATE_NEW_HDR)
+		set_random_hufftable(&stream);
 
 	flush_type = rand() % 3;
 
@@ -912,12 +1170,14 @@ int compress_swap_flush(uint8_t * data, uint32_t data_size, uint8_t * compressed
 }
 
 /* Test deflate_stateless */
-int test_compress_stateless(uint8_t * in_data, uint32_t in_size)
+int test_compress_stateless(uint8_t * in_data, uint32_t in_size, uint32_t flush_type)
 {
 	int ret = IGZIP_COMP_OK;
-	uint32_t z_size, overflow;
+	uint32_t z_size, overflow, gzip_flag;
 	uint8_t *z_buf = NULL;
 	uint8_t *in_buf = NULL;
+
+	gzip_flag = rand() % 3;
 
 	if (in_size != 0) {
 		in_buf = malloc(in_size);
@@ -929,7 +1189,9 @@ int test_compress_stateless(uint8_t * in_data, uint32_t in_size)
 	}
 
 	/* Test non-overflow case where a type 0 block is not written */
-	z_size = 2 * in_size + hdr_bytes + trl_bytes;
+	z_size = 2 * in_size + hdr_bytes;
+	if (gzip_flag)
+		z_size += gzip_extra_bytes;
 
 	z_buf = malloc(z_size);
 
@@ -938,10 +1200,30 @@ int test_compress_stateless(uint8_t * in_data, uint32_t in_size)
 
 	create_rand_repeat_data(z_buf, z_size);
 
-	ret = compress_stateless(in_buf, in_size, z_buf, &z_size);
+	/* If flush type is invalid */
+	if (flush_type != NO_FLUSH && flush_type != FULL_FLUSH) {
+		ret =
+		    compress_stateless(in_buf, in_size, z_buf, &z_size, flush_type, gzip_flag);
+
+		if (ret != INVALID_FLUSH_ERROR)
+			print_error(ret);
+		else
+			ret = 0;
+
+		if (z_buf != NULL)
+			free(z_buf);
+
+		if (in_buf != NULL)
+			free(in_buf);
+
+		return ret;
+	}
+
+	/* Else test valid flush type */
+	ret = compress_stateless(in_buf, in_size, z_buf, &z_size, flush_type, gzip_flag);
 
 	if (!ret)
-		ret = inflate_check(z_buf, z_size, in_buf, in_size);
+		ret = inflate_check(z_buf, z_size, in_buf, in_size, gzip_flag);
 
 #ifdef VERBOSE
 	if (ret) {
@@ -956,14 +1238,15 @@ int test_compress_stateless(uint8_t * in_data, uint32_t in_size)
 		free(z_buf);
 		z_buf = NULL;
 	}
+
 	print_error(ret);
 	if (ret)
 		return ret;
 
 	/*Test non-overflow case where a type 0 block is possible to be written */
-	z_size =
-	    TYPE0_HDR_SIZE * ((in_size + TYPE0_MAX_SIZE - 1) / TYPE0_MAX_SIZE) + in_size +
-	    gzip_extra_bytes;
+	z_size = TYPE0_HDR_SIZE * ((in_size + TYPE0_MAX_SIZE - 1) / TYPE0_MAX_SIZE) + in_size;
+	if (gzip_flag)
+		z_size += gzip_extra_bytes;
 
 	if (z_size == gzip_extra_bytes)
 		z_size += TYPE0_HDR_SIZE;
@@ -978,9 +1261,9 @@ int test_compress_stateless(uint8_t * in_data, uint32_t in_size)
 
 	create_rand_repeat_data(z_buf, z_size);
 
-	ret = compress_stateless(in_buf, in_size, z_buf, &z_size);
+	ret = compress_stateless(in_buf, in_size, z_buf, &z_size, flush_type, gzip_flag);
 	if (!ret)
-		ret = inflate_check(z_buf, z_size, in_buf, in_size);
+		ret = inflate_check(z_buf, z_size, in_buf, in_size, gzip_flag);
 #ifdef VERBOSE
 	if (ret) {
 		printf("Compressed array: ");
@@ -1008,14 +1291,16 @@ int test_compress_stateless(uint8_t * in_data, uint32_t in_size)
 				return MALLOC_FAILED;
 		}
 
-		overflow = compress_stateless(in_buf, in_size, z_buf, &z_size);
+		overflow =
+		    compress_stateless(in_buf, in_size, z_buf, &z_size, flush_type, gzip_flag);
 
 		if (overflow != COMPRESS_OUT_BUFFER_OVERFLOW) {
 #ifdef VERBOSE
 			printf("overflow error = %d\n", overflow);
 			print_error(overflow);
 			if (overflow == 0) {
-				overflow = inflate_check(z_buf, z_size, in_buf, in_size);
+				overflow =
+				    inflate_check(z_buf, z_size, in_buf, in_size, gzip_flag);
 				printf("inflate ret = %d\n", overflow);
 				print_error(overflow);
 			}
@@ -1025,12 +1310,52 @@ int test_compress_stateless(uint8_t * in_data, uint32_t in_size)
 			printf("Data: ");
 			print_uint8_t(in_buf, in_size);
 #endif
-			ret = OVERFLOW_TEST_ERROR;
 		}
 	}
 
 	print_error(ret);
+	if (ret) {
+		if (z_buf != NULL) {
+			free(z_buf);
+			z_buf = NULL;
+		}
+		if (in_buf != NULL)
+			free(in_buf);
+		return ret;
+	}
 
+	if (flush_type == FULL_FLUSH) {
+		if (z_buf != NULL)
+			free(z_buf);
+
+		z_size = 2 * in_size + MAX_LOOPS * (hdr_bytes + 5);
+
+		z_buf = malloc(z_size);
+
+		if (z_buf == NULL)
+			return MALLOC_FAILED;
+
+		create_rand_repeat_data(z_buf, z_size);
+
+		/* Else test valid flush type */
+		ret = compress_stateless_full_flush(in_buf, in_size, z_buf, &z_size);
+
+		if (!ret)
+			ret = inflate_check(z_buf, z_size, in_buf, in_size, 0);
+		else if (ret == COMPRESS_LOOP_COUNT_OVERFLOW)
+			ret = 0;
+
+		print_error(ret);
+#ifdef VERBOSE
+		if (ret) {
+			printf("Compressed array: ");
+			print_uint8_t(z_buf, z_size);
+			printf("\n");
+			printf("Data: ");
+			print_uint8_t(in_buf, in_size);
+		}
+#endif
+	}
 	if (z_buf != NULL)
 		free(z_buf);
 
@@ -1044,19 +1369,23 @@ int test_compress_stateless(uint8_t * in_data, uint32_t in_size)
 int test_compress(uint8_t * in_buf, uint32_t in_size, uint32_t flush_type)
 {
 	int ret = IGZIP_COMP_OK, fin_ret = IGZIP_COMP_OK;
-	uint32_t overflow = 0;
+	uint32_t overflow = 0, gzip_flag;
 	uint32_t z_size, z_size_max, z_compressed_size;
 	uint8_t *z_buf = NULL;
 
 	/* Test a non overflow case */
 	if (flush_type == NO_FLUSH)
-		z_size_max = 2 * in_size + hdr_bytes + trl_bytes + 2;
+		z_size_max = 2 * in_size + hdr_bytes + 2;
 	else if (flush_type == SYNC_FLUSH || flush_type == FULL_FLUSH)
-		z_size_max = 2 * in_size + MAX_LOOPS * (hdr_bytes + trl_bytes + 5);
+		z_size_max = 2 * in_size + MAX_LOOPS * (hdr_bytes + 5);
 	else {
 		printf("Invalid Flush Parameter\n");
 		return COMPRESS_GENERAL_ERROR;
 	}
+
+	gzip_flag = rand() % 3;
+	if (gzip_flag)
+		z_size_max += gzip_extra_bytes;
 
 	z_size = z_size_max;
 
@@ -1065,12 +1394,12 @@ int test_compress(uint8_t * in_buf, uint32_t in_size, uint32_t flush_type)
 		print_error(MALLOC_FAILED);
 		return MALLOC_FAILED;
 	}
-	create_rand_repeat_data(z_buf, z_size_max);
+	create_rand_repeat_data(z_buf, z_size);
 
-	ret = compress_single_pass(in_buf, in_size, z_buf, &z_size, flush_type);
+	ret = compress_single_pass(in_buf, in_size, z_buf, &z_size, flush_type, gzip_flag);
 
 	if (!ret)
-		ret = inflate_check(z_buf, z_size, in_buf, in_size);
+		ret = inflate_check(z_buf, z_size, in_buf, in_size, gzip_flag);
 
 	if (ret) {
 #ifdef VERBOSE
@@ -1090,10 +1419,10 @@ int test_compress(uint8_t * in_buf, uint32_t in_size, uint32_t flush_type)
 	z_size = z_size_max;
 	create_rand_repeat_data(z_buf, z_size_max);
 
-	ret = compress_multi_pass(in_buf, in_size, z_buf, &z_size, flush_type);
+	ret = compress_multi_pass(in_buf, in_size, z_buf, &z_size, flush_type, gzip_flag);
 
 	if (!ret)
-		ret = inflate_check(z_buf, z_size, in_buf, in_size);
+		ret = inflate_check(z_buf, z_size, in_buf, in_size, gzip_flag);
 
 	if (ret) {
 #ifdef VERBOSE
@@ -1118,11 +1447,12 @@ int test_compress(uint8_t * in_buf, uint32_t in_size, uint32_t flush_type)
 	z_size = rand() % z_compressed_size;
 	create_rand_repeat_data(z_buf, z_size_max);
 
-	overflow = compress_single_pass(in_buf, in_size, z_buf, &z_size, flush_type);
+	overflow =
+	    compress_single_pass(in_buf, in_size, z_buf, &z_size, flush_type, gzip_flag);
 
 	if (overflow != COMPRESS_OUT_BUFFER_OVERFLOW) {
 		if (overflow == 0)
-			ret = inflate_check(z_buf, z_size, in_buf, in_size);
+			ret = inflate_check(z_buf, z_size, in_buf, in_size, gzip_flag);
 
 		/* Rarely single pass overflow will compresses data
 		 * better than the initial run. This is to stop that
@@ -1151,11 +1481,13 @@ int test_compress(uint8_t * in_buf, uint32_t in_size, uint32_t flush_type)
 	if (flush_type == NO_FLUSH) {
 		create_rand_repeat_data(z_buf, z_size_max);
 
-		overflow = compress_multi_pass(in_buf, in_size, z_buf, &z_size, flush_type);
+		overflow =
+		    compress_multi_pass(in_buf, in_size, z_buf, &z_size, flush_type,
+					gzip_flag);
 
 		if (overflow != COMPRESS_OUT_BUFFER_OVERFLOW) {
 			if (overflow == 0)
-				ret = inflate_check(z_buf, z_size, in_buf, in_size);
+				ret = inflate_check(z_buf, z_size, in_buf, in_size, gzip_flag);
 
 			/* Rarely multi pass overflow will compresses data
 			 * better than the initial run. This is to stop that
@@ -1190,11 +1522,13 @@ int test_compress(uint8_t * in_buf, uint32_t in_size, uint32_t flush_type)
 int test_flush(uint8_t * in_buf, uint32_t in_size)
 {
 	int fin_ret = IGZIP_COMP_OK, ret;
-	uint32_t z_size, flush_type = 0;
+	uint32_t z_size, flush_type = 0, gzip_flag;
 	uint8_t *z_buf = NULL;
 
-	z_size = 2 * in_size + 2 * (hdr_bytes + trl_bytes) + 8;
-
+	gzip_flag = rand() % 3;
+	z_size = 2 * in_size + 2 * hdr_bytes + 8;
+	if (gzip_flag)
+		z_size += gzip_extra_bytes;
 	z_buf = malloc(z_size);
 
 	if (z_buf == NULL)
@@ -1206,7 +1540,7 @@ int test_flush(uint8_t * in_buf, uint32_t in_size)
 		flush_type = rand();
 
 	/* Test invalid flush */
-	ret = compress_single_pass(in_buf, in_size, z_buf, &z_size, flush_type);
+	ret = compress_single_pass(in_buf, in_size, z_buf, &z_size, flush_type, gzip_flag);
 
 	if (ret == COMPRESS_GENERAL_ERROR)
 		ret = 0;
@@ -1221,10 +1555,10 @@ int test_flush(uint8_t * in_buf, uint32_t in_size)
 	create_rand_repeat_data(z_buf, z_size);
 
 	/* Test swapping flush type */
-	ret = compress_swap_flush(in_buf, in_size, z_buf, &z_size, rand() % 3);
+	ret = compress_swap_flush(in_buf, in_size, z_buf, &z_size, rand() % 3, gzip_flag);
 
 	if (!ret)
-		ret = inflate_check(z_buf, z_size, in_buf, in_size);
+		ret = inflate_check(z_buf, z_size, in_buf, in_size, gzip_flag);
 
 	if (ret) {
 #ifdef VERBOSE
@@ -1248,10 +1582,14 @@ int test_flush(uint8_t * in_buf, uint32_t in_size)
 int test_full_flush(uint8_t * in_buf, uint32_t in_size)
 {
 	int ret = IGZIP_COMP_OK;
-	uint32_t z_size;
+	uint32_t z_size, gzip_flag;
 	uint8_t *z_buf = NULL;
 
-	z_size = 2 * in_size + MAX_LOOPS * (hdr_bytes + trl_bytes + 5);
+	gzip_flag = rand() % 3;
+	z_size = 2 * in_size + MAX_LOOPS * (hdr_bytes + 5);
+
+	if (gzip_flag)
+		z_size += gzip_extra_bytes;
 
 	z_buf = malloc(z_size);
 	if (z_buf == NULL) {
@@ -1261,10 +1599,10 @@ int test_full_flush(uint8_t * in_buf, uint32_t in_size)
 
 	create_rand_repeat_data(z_buf, z_size);
 
-	ret = compress_full_flush(in_buf, in_size, z_buf, &z_size);
+	ret = compress_full_flush(in_buf, in_size, z_buf, &z_size, gzip_flag);
 
 	if (!ret)
-		ret = inflate_check(z_buf, z_size, in_buf, in_size);
+		ret = inflate_check(z_buf, z_size, in_buf, in_size, gzip_flag);
 
 	if (ret) {
 #ifdef VERBOSE
@@ -1281,6 +1619,46 @@ int test_full_flush(uint8_t * in_buf, uint32_t in_size)
 	free(z_buf);
 
 	return ret;
+}
+
+int test_inflate(struct vect_result *in_vector)
+{
+	int ret = IGZIP_COMP_OK;
+	uint8_t *compress_buf = in_vector->vector, *out_buf = NULL;
+	uint64_t compress_len = in_vector->vector_length;
+	uint32_t out_size = 0;
+
+	out_size = 10 * in_vector->vector_length;
+	out_buf = malloc(out_size);
+	if (out_buf == NULL)
+		return MALLOC_FAILED;
+
+	ret = inflate_stateless_pass(compress_buf, compress_len, out_buf, &out_size, 0);
+
+	if (ret == INFLATE_LEFTOVER_INPUT)
+		ret = ISAL_DECOMP_OK;
+
+	if (ret != in_vector->expected_error)
+		printf("Inflate return value incorrect, %d != %d\n", ret,
+		       in_vector->expected_error);
+	else
+		ret = IGZIP_COMP_OK;
+
+	if (!ret) {
+		ret = inflate_multi_pass(compress_buf, compress_len, out_buf, &out_size, 0);
+
+		if (ret == INFLATE_LEFTOVER_INPUT)
+			ret = ISAL_DECOMP_OK;
+
+		if (ret != in_vector->expected_error)
+			printf("Inflate return value incorrect, %d != %d\n", ret,
+			       in_vector->expected_error);
+		else
+			ret = IGZIP_COMP_OK;
+	}
+
+	return ret;
+
 }
 
 int get_filesize(FILE * f)
@@ -1314,7 +1692,9 @@ int test_compress_file(char *file_name)
 		fread(in_buf, 1, in_size, in_file);
 	}
 
-	ret |= test_compress_stateless(in_buf, in_size);
+	ret |= test_compress_stateless(in_buf, in_size, NO_FLUSH);
+	ret |= test_compress_stateless(in_buf, in_size, SYNC_FLUSH);
+	ret |= test_compress_stateless(in_buf, in_size, FULL_FLUSH);
 	ret |= test_compress(in_buf, in_size, NO_FLUSH);
 	ret |= test_compress(in_buf, in_size, SYNC_FLUSH);
 	ret |= test_compress(in_buf, in_size, FULL_FLUSH);
@@ -1362,9 +1742,10 @@ int create_custom_hufftables(struct isal_hufftables *hufftables_custom, int argc
 		fread(stream, 1, file_length, file);
 
 		if (ferror(file)) {
-			printf("Error occurred when reading file");
+			printf("Error occurred when reading file\n");
 			fclose(file);
 			free(stream);
+			stream = NULL;
 			return 1;
 		}
 
@@ -1373,7 +1754,10 @@ int create_custom_hufftables(struct isal_hufftables *hufftables_custom, int argc
 		isal_update_histogram(stream, file_length, &histogram);
 
 		fclose(file);
-		free(stream);
+		if (stream != NULL) {
+			free(stream);
+			stream = NULL;
+		}
 		argc--;
 	}
 
@@ -1392,7 +1776,7 @@ int main(int argc, char *argv[])
 	setbuf(stdout, NULL);
 #endif
 
-	printf("Window Size: %d K\n", HIST_SIZE);
+	printf("Window Size: %d K\n", IGZIP_HIST_SIZE / 1024);
 	printf("Test Seed  : %d\n", TEST_SEED);
 	printf("Randoms    : %d\n", RANDOMS);
 	srand(TEST_SEED);
@@ -1416,7 +1800,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc > 1) {
-		printf("igzip_rand_test files:        ");
+		printf("igzip_rand_test files:                  ");
 
 		for (i = 1; i < argc; i++) {
 			ret |= test_compress_file(argv[i]);
@@ -1429,13 +1813,13 @@ int main(int argc, char *argv[])
 		fin_ret |= ret;
 	}
 
-	printf("igzip_rand_test stateless:    ");
+	printf("igzip_rand_test stateless:              ");
 
-	ret = test_compress_stateless((uint8_t *) str1, sizeof(str1));
+	ret = test_compress_stateless((uint8_t *) str1, sizeof(str1), NO_FLUSH);
 	if (ret)
 		return ret;
 
-	ret |= test_compress_stateless((uint8_t *) str2, sizeof(str2));
+	ret |= test_compress_stateless((uint8_t *) str2, sizeof(str2), NO_FLUSH);
 	if (ret)
 		return ret;
 
@@ -1446,7 +1830,7 @@ int main(int argc, char *argv[])
 
 		create_rand_repeat_data(in_buf, in_size);
 
-		ret |= test_compress_stateless(in_buf, in_size);
+		ret |= test_compress_stateless(in_buf, in_size, NO_FLUSH);
 
 		in_buf -= offset;
 
@@ -1459,14 +1843,79 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < RANDOMS / 16; i++) {
 		create_rand_repeat_data(in_buf, PAGE_SIZE);
-		ret |= test_compress_stateless(in_buf, PAGE_SIZE);	// good for efence
+		ret |= test_compress_stateless(in_buf, PAGE_SIZE, NO_FLUSH);	// good for efence
+		if (ret)
+			return ret;
+	}
+
+	fin_ret |= ret;
+
+	ret = test_compress_stateless((uint8_t *) str1, sizeof(str1), SYNC_FLUSH);
+	if (ret)
+		return ret;
+
+	ret |= test_compress_stateless((uint8_t *) str2, sizeof(str2), SYNC_FLUSH);
+	if (ret)
+		return ret;
+
+	for (i = 0; i < 16; i++) {
+		in_size = rand() % (IBUF_SIZE + 1);
+		offset = rand() % (IBUF_SIZE + 1 - in_size);
+		in_buf += offset;
+
+		create_rand_repeat_data(in_buf, in_size);
+
+		ret |= test_compress_stateless(in_buf, in_size, SYNC_FLUSH);
+
+		in_buf -= offset;
+
+		if (ret)
+			return ret;
 	}
 
 	fin_ret |= ret;
 
 	printf("%s\n", ret ? "Fail" : "Pass");
 
-	printf("igzip_rand_test NO_FLUSH:     ");
+	printf("igzip_rand_test stateless FULL_FLUSH:   ");
+
+	ret = test_compress_stateless((uint8_t *) str1, sizeof(str1), FULL_FLUSH);
+	if (ret)
+		return ret;
+
+	ret |= test_compress_stateless((uint8_t *) str2, sizeof(str2), FULL_FLUSH);
+	if (ret)
+		return ret;
+
+	for (i = 0; i < RANDOMS; i++) {
+		in_size = rand() % (IBUF_SIZE + 1);
+		offset = rand() % (IBUF_SIZE + 1 - in_size);
+		in_buf += offset;
+
+		create_rand_repeat_data(in_buf, in_size);
+
+		ret |= test_compress_stateless(in_buf, in_size, FULL_FLUSH);
+
+		in_buf -= offset;
+
+		if (i % (RANDOMS / 16) == 0)
+			printf(".");
+
+		if (ret)
+			return ret;
+	}
+
+	for (i = 0; i < RANDOMS / 16; i++) {
+		create_rand_repeat_data(in_buf, PAGE_SIZE);
+		ret |= test_compress_stateless(in_buf, PAGE_SIZE, FULL_FLUSH);	// good for efence
+		if (ret)
+			return ret;
+	}
+	fin_ret |= ret;
+
+	printf("%s\n", ret ? "Fail" : "Pass");
+
+	printf("igzip_rand_test stateful  NO_FLUSH:     ");
 
 	ret = test_compress((uint8_t *) str1, sizeof(str1), NO_FLUSH);
 	if (ret)
@@ -1497,7 +1946,7 @@ int main(int argc, char *argv[])
 
 	printf("%s\n", ret ? "Fail" : "Pass");
 
-	printf("igzip_rand_test SYNC_FLUSH:   ");
+	printf("igzip_rand_test stateful  SYNC_FLUSH:   ");
 
 	ret = test_compress((uint8_t *) str1, sizeof(str1), SYNC_FLUSH);
 	if (ret)
@@ -1528,7 +1977,7 @@ int main(int argc, char *argv[])
 
 	printf("%s\n", ret ? "Fail" : "Pass");
 
-	printf("igzip_rand_test FULL_FLUSH:   ");
+	printf("igzip_rand_test stateful  FULL_FLUSH:   ");
 
 	ret = test_compress((uint8_t *) str1, sizeof(str1), FULL_FLUSH);
 	if (ret)
@@ -1555,7 +2004,6 @@ int main(int argc, char *argv[])
 			return ret;
 	}
 
-#ifdef DEFLATE
 	for (i = 0; i < RANDOMS / 8; i++) {
 		in_size = rand() % (IBUF_SIZE + 1);
 		offset = rand() % (IBUF_SIZE + 1 - in_size);
@@ -1570,13 +2018,12 @@ int main(int argc, char *argv[])
 		if (ret)
 			return ret;
 	}
-#endif
 
 	fin_ret |= ret;
 
 	printf("%s\n", ret ? "Fail" : "Pass");
 
-	printf("igzip_rand_test Change Flush: ");
+	printf("igzip_rand_test stateful  Change Flush: ");
 
 	ret = test_flush((uint8_t *) str1, sizeof(str1));
 	if (ret)
@@ -1607,7 +2054,17 @@ int main(int argc, char *argv[])
 
 	printf("%s\n", ret ? "Fail" : "Pass");
 
-	printf("igzip rand test finished:     %s\n",
+	printf("igzip_rand_test inflate   Std Vectors:  ");
+
+	for (i = 0; i < sizeof(std_vect_array) / sizeof(struct vect_result); i++) {
+		ret = test_inflate(&std_vect_array[i]);
+		if (ret)
+			return ret;
+	}
+	printf("................");
+	printf("%s\n", ret ? "Fail" : "Pass");
+
+	printf("igzip rand test finished: %s\n",
 	       fin_ret ? "Some tests failed" : "All tests passed");
 
 	return fin_ret != IGZIP_COMP_OK;

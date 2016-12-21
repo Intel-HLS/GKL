@@ -34,15 +34,26 @@ lsrc  += \
 	crc/crc32_ieee_by4.asm \
 	crc/crc32_iscsi_01.asm \
 	crc/crc32_iscsi_00.asm \
+	crc/crc64_multibinary.asm \
+	crc/crc64_ecma_refl_by8.asm \
+	crc/crc64_ecma_norm_by8.asm \
+	crc/crc64_iso_refl_by8.asm \
+	crc/crc64_iso_norm_by8.asm \
+	crc/crc64_jones_refl_by8.asm \
+	crc/crc64_jones_norm_by8.asm \
+	crc/crc64_base.c \
 	crc/crc_multibinary.asm \
 	crc/crc_base.c
 
-extern_hdrs +=  include/crc.h
+src_include += -I $(srcdir)/crc
+extern_hdrs +=  include/crc.h include/crc64.h
 
 other_src   +=  include/reg_sizes.asm include/types.h include/test.h
 
-check_tests +=  crc/crc16_t10dif_test crc/crc32_ieee_test crc/crc32_iscsi_test
+check_tests +=  crc/crc16_t10dif_test crc/crc32_ieee_test crc/crc32_iscsi_test \
+		crc/crc64_funcs_test
 
-perf_tests  +=  crc/crc16_t10dif_perf crc/crc32_ieee_perf crc/crc32_iscsi_perf
+perf_tests  +=  crc/crc16_t10dif_perf crc/crc32_ieee_perf crc/crc32_iscsi_perf \
+		crc/crc64_funcs_perf
 
-examples    +=  crc/crc_simple_test
+examples    +=  crc/crc_simple_test crc/crc64_example

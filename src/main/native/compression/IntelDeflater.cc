@@ -103,7 +103,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
      isal_hufftables *temp_huffman_pointer = lz_stream->hufftables;
 
      DBG("lz_stream = 0x%lx", (long)temp_huffman_pointer);
-      isal_deflate_init(lz_stream);
+      isal_deflate_stateless_init(lz_stream);
       lz_stream->hufftables = temp_huffman_pointer;
 
     }

@@ -39,11 +39,12 @@
 #	trace - get simulator trace
 #	clean - remove object files
 
-version ?= #auto filled on release
+version ?= 2.17.0
 
 CC  = gcc
 AS  = yasm
 SIM = sde $(SIMFLAGS) --
+AWK = awk
 
 DEBUG      = -g
 DEBUG_yasm = -g dwarf2
@@ -73,12 +74,20 @@ unit_testsmingw = $(unit_tests)
 examplesmingw = $(examples)
 perf_testsmingw = $(perf_tests)
 
+LDFLAGS_so = -Wl,-soname,$(soname)
+
 ifeq ($(arch),mingw)
   CC=x86_64-w64-mingw32-gcc
   AR=x86_64-w64-mingw32-ar
   LDFLAGS = -Wl,--force-exe-suffix
 endif
 
+ifeq ($(shell uname),Darwin)
+  ASFLAGS_   = -f macho64 --prefix=_
+  ARFLAGS_   = -r $@
+  LDFLAGS_so =
+  STRIP_gcc  =
+endif
 
 INCLUDE   = $(patsubst %,-I%/,$(subst :, ,$(VPATH)))
 CFLAGS   = $(CFLAGS_$(arch)) $(CFLAGS_$(CC)) $(DEBUG) -O2 $(DEFINES) $(INCLUDE)
@@ -111,6 +120,7 @@ perf_testswin64 = $(perf_tests)
 all_tests = $(notdir $(sort $(perf_tests$(arch)) $(check_tests$(arch)) $(unit_tests$(arch)) $(examples$(arch)) $(other_tests)))
 all_unit_tests = $(notdir $(sort $(check_tests$(arch)) $(unit_tests$(arch))))
 all_perf_tests = $(notdir $(sort $(perf_tests$(arch))))
+all_check_tests = $(notdir $(sort $(check_tests$(arch))))
 
 $(all_unit_tests): % : %.c $(lib_name)
 $(all_perf_tests): % : %.c $(lib_name)
@@ -119,11 +129,13 @@ $(sort $(notdir $(other_tests))): % : %.c $(lib_name)
 
 sim test trace: $(addsuffix .run,$(all_unit_tests))
 perf: $(addsuffix .run,$(all_perf_tests))
+check: $(addsuffix .run,$(all_check_tests))
 ex:   $(notdir $(examples$(arch)))
 all: lib $(all_tests)
 other: $(notdir $(other_tests))
 tests: $(all_unit_tests)
 perfs: $(all_perf_tests)
+checks: $(all_check_tests)
 check test perf: SIM=
 trace: SIMFLAGS = -debugtrace
 check test sim:
@@ -193,11 +205,28 @@ endif
 
 $(shared_objs): CFLAGS += -fPIC
 $(shared_objs) $(aobjs): | $(O)
-$(so_lib_name): LDFLAGS+=-Wl,-soname,$(soname)
+$(so_lib_name): LDFLAGS+=$(LDFLAGS_so)
 $(so_lib_name): $(shared_objs) $(aobjs)
 	@echo "  ---> Creating Shared Lib $@"
 	@$(CC) $(CFLAGS) --shared  $(LDFLAGS) -o $@ $^
 	@(cd $(@D); ln -f -s $(so_lib_inst) $(soname))
+
+
+isa-l.h:
+	@echo 'Building $@'
+	@echo ''			>> $@
+	@echo '#ifndef _ISAL_H_'	>> $@
+	@echo '#define _ISAL_H_'	>> $@
+	@echo ''			>> $@
+	@echo '#define.ISAL_MAJOR_VERSION.${version}' |  ${AWK} -F . '{print $$1, $$2, $$3}' >> $@
+	@echo '#define.ISAL_MINOR_VERSION.${version}' |  ${AWK} -F . '{print $$1, $$2, $$4}' >> $@
+	@echo '#define.ISAL_PATCH_VERSION.${version}' |  ${AWK} -F . '{print $$1, $$2, $$5}' >> $@
+	@echo '#define ISAL_MAKE_VERSION(maj, min, patch)  ((maj) * 0x10000 + (min) * 0x100 + (patch))' >> $@
+	@echo '#define ISAL_VERSION ISAL_MAKE_VERSION(ISAL_MAJOR_VERSION, ISAL_MINOR_VERSION, ISAL_PATCH_VERSION)' >> $@
+	@echo ''			>> $@
+	@for unit in $(sort $(extern_hdrs)); do echo "#include <isa-l/$$unit>" | sed -e 's;include/;;' >> $@; done
+	@echo '#endif //_ISAL_H_'	>> $@
+
 
 # Target for install
 prefix = /usr/local
@@ -206,14 +235,17 @@ $(install_dirs): ; mkdir -p $@
 install: $(sort $(extern_hdrs)) | $(install_dirs) $(lib_name) $(so_lib_name) isa-l.h
 	install -m 644 $(lib_name) $(prefix)/lib/libisal.a
 	install -m 644 $^ $(prefix)/include/isa-l/.
-	install -m 664 include/isa-l.h $(prefix)/include/.
+	install -m 664 isa-l.h $(prefix)/include/.
+	install -m 664 include/types.h $(prefix)/include/isa-l/.
 	install -m 664 $(so_lib_name) $(prefix)/lib/$(so_lib_ver)
 	(cd $(prefix)/lib && ln -f -s $(so_lib_ver) $(soname) && ln -f -s $(so_lib_ver) $(so_lib_inst))
 ifeq ($(shell uname),Darwin)
 	(cd $(prefix)/lib && ln -f -s $(so_lib_ver) $(basename $(so_lib_inst)).dylib)
-endif
+	which glibtool && glibtool --mode=finish $(prefix)/lib
+else
 	which libtool && libtool --mode=finish $(prefix)/lib || \
 	echo 'Lib installed at $(prefix)/lib. Run system-dependent programs to add shared lib path.'
+endif
 
 uninstall:
 	$(RM) $(prefix)/lib/libisal.a

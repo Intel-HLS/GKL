@@ -6,9 +6,9 @@ noinst_HEADERS =
 pkginclude_HEADERS = include/test.h
 noinst_LTLIBRARIES =
 INCLUDE = -I $(srcdir)/include/
-AM_CFLAGS = ${my_CFLAGS} ${INCLUDE} ${D}
 
 lsrc=
+src_include=
 extern_hdrs=
 other_src=
 check_tests=
@@ -31,7 +31,7 @@ include igzip/Makefile.am
 
 # LIB version info not necessarily the same as package version
 LIBISAL_CURRENT=2
-LIBISAL_REVISION=16
+LIBISAL_REVISION=17
 LIBISAL_AGE=0
 
 lib_LTLIBRARIES = libisal.la
@@ -59,6 +59,7 @@ CLEANFILES += ${EXTRA_PROGRAMS}
 
 perfs: ${perf_tests}
 tests: ${unit_tests}
+checks: ${check_tests}
 other: ${other_tests}
 perf: $(addsuffix .run,$(perf_tests))
 ex: ${examples}
@@ -75,12 +76,13 @@ if USE_YASM
 endif
 if USE_NASM
   as_filter = ${srcdir}/tools/nasm-filter.sh
-  as_include = $(addprefix -I ${srcdir}/,$(sort $(dir $(lsrc))))
 endif
 
 CCAS = $(as_filter)
 EXTRA_DIST += tools/yasm-filter.sh tools/nasm-filter.sh
-AM_CCASFLAGS = ${yasm_args} ${INCLUDE} ${as_include} ${DEFS} ${D}
+
+AM_CFLAGS = ${my_CFLAGS} ${INCLUDE} $(src_include) ${D}
+AM_CCASFLAGS = ${yasm_args} ${INCLUDE} ${src_include} ${DEFS} ${D}
 
 .asm.s:
 	@echo "  MKTMP   " $@;
