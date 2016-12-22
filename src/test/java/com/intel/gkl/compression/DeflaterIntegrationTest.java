@@ -82,13 +82,13 @@ DeflaterIntegrationTest {
                 final SamReader generatedFile = readerFactory.open(outputFile);
 
                 log.info("Checking generated output. Total records = " + totalRecords);
-/*
+
                 Iterator<SAMRecord> generatedIterator = generatedFile.iterator();
                 for (final SAMRecord expected : expectedFile) {
                     SAMRecord generated = generatedIterator.next();
                     assert(expected.toString().equals(generated.toString()));
 
-                }*/
+                }
 
             }
         }
