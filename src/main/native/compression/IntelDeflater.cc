@@ -95,7 +95,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
       }
 
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
-       isal_deflate_init(lz_stream);
+       isal_deflate_stateless_init(lz_stream);
        lz_stream->hufftables = 0x0;
 
     }
@@ -219,10 +219,15 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 
          hufftables_custom = (isal_hufftables*) malloc(sizeof(isal_hufftables));
 
+         int sixtyfourK = 64*1024;
+         int usable_buffer= (inputBufferLength < sixtyfourK) ? inputBufferLength : sixtyfourK;
+         DBG("lz_stream = 0x%lx", (long)hufftables_custom);
+
          memset(&histogram, 0, sizeof(histogram));
-         isal_update_histogram((unsigned char*)next_in,inputBufferLength, &histogram);
+         isal_update_histogram((unsigned char*)next_in,usable_buffer, &histogram);
          isal_create_hufftables(hufftables_custom, &histogram);
-         lz_stream->flush = SYNC_FLUSH;
+         isal_deflate_set_hufftables(lz_stream,
+         				hufftables_custom, IGZIP_HUFFTABLE_CUSTOM);
          lz_stream->hufftables = hufftables_custom;
          DBG("lz_stream = 0x%lx", (long)hufftables_custom);
        }
@@ -238,6 +243,11 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 #endif
 
     long bytes_out = outputBufferLength - lz_stream->avail_out;
+
+     DBG ("bytes_out = %d \n", bytes_out);
+      DBG ("avail_out = %d \n",lz_stream->avail_out );
+
+
 
     // release buffers
     env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);

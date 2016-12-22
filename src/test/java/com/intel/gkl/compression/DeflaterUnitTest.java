@@ -59,53 +59,52 @@ public class DeflaterUnitTest {
 
     @Test(enabled = true)
     public void randomDNATest() {
-        final int LEN = 60*1024*1024;
+        final int LEN = 4*1024*1024;
         final byte[] input = new byte[LEN];
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
 
 
+        for(int level=0; level <10; level++) {
+            final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+            final Deflater deflater = intelDeflaterFactory.makeDeflater(level, true);
 
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(2, true);
+            Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
+            Inflater inflater = new Inflater(true);
+
+            for (int i = 0; i < 2; i++) {
+                randomDNA(input);
+                deflater.reset();
+                deflater.setInput(input, 0, input.length);
+                deflater.finish();
+
+                int compressedBytes = 0;
+                while (!deflater.finished()) {
+                    compressedBytes = deflater.deflate(compressed, 0, compressed.length);
+                }
+
+                System.out.printf("%d bytes compressed to %d bytes : %2.2f%% compression\n",
+                        LEN, compressedBytes, 100.0 - 100.0 * compressedBytes / LEN);
+
+                long totalTime = 0;
 
 
+                try {
+                    inflater.reset();
+                    inflater.setInput(compressed, 0, compressedBytes);
+                    final long start = System.currentTimeMillis();
+                    inflater.inflate(result, 0, LEN);
+                    totalTime = System.currentTimeMillis() - start;
+                    System.out.printf("%d\n", totalTime);
 
-        Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
-        Inflater inflater = new Inflater(true);
 
-        for (int i = 0; i < 2; i++) {
-            randomDNA(input);
-            deflater.reset();
-            deflater.setInput(input, 0, input.length);
-            deflater.finish();
+                } catch (java.util.zip.DataFormatException e) {
+                    e.printStackTrace();
+                }
 
-            int compressedBytes = 0;
-            while (!deflater.finished()) {
-                compressedBytes = deflater.deflate(compressed, 0, compressed.length);
+                Assert.assertEquals(input, result);
             }
-
-            System.out.printf("%d bytes compressed to %d bytes : %2.2f%% compression\n",
-                    LEN, compressedBytes, 100.0 - 100.0 * compressedBytes / LEN);
-
-            long totalTime = 0;
-
-
-            try {
-                inflater.reset();
-                inflater.setInput(compressed, 0, compressedBytes);
-                final long start = System.currentTimeMillis();
-                inflater.inflate(result, 0, LEN);
-                totalTime = System.currentTimeMillis() - start;
-                System.out.printf("%d\n",totalTime);
-
-
-            } catch (java.util.zip.DataFormatException e) {
-                e.printStackTrace();
-            }
-
-            Assert.assertEquals(input, result);
+            inflater.end();
         }
-        inflater.end();
     }
 }
