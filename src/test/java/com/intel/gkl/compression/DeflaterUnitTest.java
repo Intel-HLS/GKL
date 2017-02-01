@@ -51,10 +51,12 @@ public class DeflaterUnitTest {
         }
     }
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void loadLibrary() {
         final boolean isSupported = new IntelDeflater().load(null);
         Assert.assertTrue(isSupported);
+        final boolean Supported = new IntelInflater().load(null);
+        Assert.assertTrue(Supported);
     }
 
     @Test(enabled = true)
@@ -66,13 +68,19 @@ public class DeflaterUnitTest {
 
 
         for(int level=0; level <10; level++) {
+            for (int i = 0; i < 1; i++) {
             final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
             final Deflater deflater = intelDeflaterFactory.makeDeflater(level, true);
 
             Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
-            Inflater inflater = new Inflater(true);
 
-            for (int i = 0; i < 2; i++) {
+            final boolean isSupported = new IntelInflater().load(null);
+            Assert.assertTrue(isSupported);
+            final IntelInflater inflater = new IntelInflater(true);
+
+            //Inflater inflater = new Inflater(true);
+
+
                 randomDNA(input);
                 deflater.reset();
                 deflater.setInput(input, 0, input.length);
@@ -98,13 +106,15 @@ public class DeflaterUnitTest {
                     System.out.printf("%d\n", totalTime);
 
 
-                } catch (java.util.zip.DataFormatException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
                 Assert.assertEquals(input, result);
-            }
+
             inflater.end();
+            deflater.end();
+            }
         }
     }
 }
