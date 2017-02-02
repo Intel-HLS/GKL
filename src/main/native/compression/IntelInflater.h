@@ -29,7 +29,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelInflater_resetNative
  * Signature: ([BI)I
  */
 JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNative
-  (JNIEnv *, jobject, jbyteArray, jint);
+  (JNIEnv *, jobject, jbyteArray, jint, jint);
 
 /*
  * Class:     com_intel_gkl_compression_IntelInflater

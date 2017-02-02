@@ -51,6 +51,7 @@ static jfieldID FID_inf_lz_stream;
 static jfieldID FID_inf_inputBuffer;
 static jfieldID FID_inf_inputBufferLength;
 static jfieldID FID_inf_finished;
+static jfieldID FID_inf_inputBufferOffset;
 
 
 
@@ -63,6 +64,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelInflater_initNative
   FID_inf_inputBuffer = env->GetFieldID(cls, "inputBuffer", "[B");
   FID_inf_inputBufferLength = env->GetFieldID(cls, "inputBufferLength", "I");
   FID_inf_finished = env->GetFieldID(cls, "finished", "Z");
+  FID_inf_inputBufferOffset = env->GetFieldID(cls, "inputBufferOffset", "I");
 
 }
 
@@ -82,8 +84,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelInflater_resetNative
       env->SetLongField(obj, FID_inf_lz_stream, (jlong)lz_stream);
 
 
-
-      
       isal_inflate_init(lz_stream);
 
       lz_stream->avail_in = 0;
@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelInflater_resetNative
 
 
 JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNative
-(JNIEnv * env, jobject obj, jbyteArray outputBuffer, jint outputBufferLength)
+(JNIEnv * env, jobject obj, jbyteArray outputBuffer, jint outputBufferOffset, jint outputBufferLength)
 {
 
 
@@ -106,13 +106,16 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
 
     jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inf_inputBuffer);
       jint inputBufferLength = env->GetIntField(obj, FID_inf_inputBufferLength);
+      jint inputBufferOffset = env->GetIntField(obj, FID_inf_inputBufferOffset);
+
 
         jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
         jbyte* next_out = (jbyte*)env->GetPrimitiveArrayCritical(outputBuffer, 0);
 
-        lz_stream->next_in = (Bytef *) next_in;
+
+        lz_stream->next_in = (Bytef *) (next_in + inputBufferOffset);
         lz_stream->avail_in = (uInt) inputBufferLength;
-        lz_stream->next_out = (Bytef *) next_out;
+        lz_stream->next_out = (Bytef *) (next_out + outputBufferOffset);
         lz_stream->avail_out = (uInt) outputBufferLength;
 
         int bytes_in = inputBufferLength;

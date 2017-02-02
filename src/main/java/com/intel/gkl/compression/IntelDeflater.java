@@ -139,6 +139,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
         if(len <= 0) {
             throw new NullPointerException("Input buffer length is zero.");
         }
+
         inputBuffer = b;
         inputBufferLength = len;
     }
