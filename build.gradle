@@ -13,6 +13,7 @@ compileTestJava {
 }
 
 repositories {
+    maven { url uri('/home/gspowley/.m2/repository/')}
     mavenLocal()
     mavenCentral()
     maven { url "https://artifactory.broadinstitute.org/artifactory/libs-snapshot/" }
@@ -24,7 +25,6 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.5'
     compile 'org.apache.logging.log4j:log4j-core:2.5'
     compile 'com.github.samtools:htsjdk:2.7.0-18-g4d0070b-SNAPSHOT'
-
     testCompile 'org.testng:testng:6.9.9'
 }
 

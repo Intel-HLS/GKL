@@ -83,7 +83,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelInflater_resetNative
 
 
 
-      fprintf(stdout,"%c",nowrap);
+      
       isal_inflate_init(lz_stream);
 
       lz_stream->avail_in = 0;
