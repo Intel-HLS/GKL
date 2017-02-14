@@ -83,15 +83,13 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelInflater_resetNative
       }
       env->SetLongField(obj, FID_inf_lz_stream, (jlong)lz_stream);
 
-
+    }
       isal_inflate_init(lz_stream);
 
       lz_stream->avail_in = 0;
       lz_stream->next_in = Z_NULL;
       lz_stream->avail_out = 0;
       lz_stream->next_out = Z_NULL;
-
-     }
 
 }
 

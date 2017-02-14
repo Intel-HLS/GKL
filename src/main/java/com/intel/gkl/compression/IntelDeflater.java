@@ -79,6 +79,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
     private int level;
     private int strategy;
     private boolean nowrap;
+
     
      /**
      * Creates a new compressor using the specified compression level.
@@ -119,6 +120,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
         resetNative(nowrap);
         inputBuffer = null;
         inputBufferLength = 0;
+
         endOfStream = false;
         finished = false;
     }
@@ -142,6 +144,8 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
 
         inputBuffer = b;
         inputBufferLength = len;
+
+
     }
 
     /**
@@ -167,6 +171,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      */
     @Override
     public int deflate(byte[] b, int off, int len ) {
+
         return deflateNative(b, len);
     }
 

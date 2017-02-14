@@ -24,7 +24,7 @@ public class IntelInflaterFactory extends InflaterFactory {
     }
 
     public Inflater makeInflater(final boolean nowrap) {
-        if (intelInflaterSupported) {
+        if (intelInflaterSupported && nowrap) {
             return new IntelInflater(nowrap);
         }
         logger.warn("IntelInflater is not supported, using Java.util.zip.Inflater");

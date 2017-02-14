@@ -21,9 +21,10 @@ public class InflaterUnitTest {
     private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
 
     @Test(enabled = true)
-    public void integrationTest() throws IOException {
+    public void inflaterUnitTest() throws IOException {
 
         final File inputFile = new File(INPUT_FILE);
+
         long inputBytes = inputFile.length();
         int compressedBytes = 0;
         final byte[] inputbuffer = new byte[(int)inputBytes];
@@ -66,5 +67,7 @@ public class InflaterUnitTest {
             inflater.end();
             deflater.end();
         }
+
+
     }
 }
