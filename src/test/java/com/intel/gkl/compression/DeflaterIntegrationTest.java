@@ -59,6 +59,7 @@ DeflaterIntegrationTest {
                 long totalRecords = 0;
                 try (final SamReader reader = readerFactory.open(inputFile)) {
                     final SAMFileHeader header = reader.getFileHeader();
+
                     final SAMFileWriterFactory writerFactory = new SAMFileWriterFactory();
                     writerFactory.setCompressionLevel(compressionLevel);
                     writerFactory.setDeflaterFactory(deflaterFactory);
