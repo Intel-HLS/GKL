@@ -54,8 +54,8 @@ static jfieldID FID_inputBuffer;
 static jfieldID FID_inputBufferLength;
 static jfieldID FID_endOfStream;
 static jfieldID FID_finished;
-static jfieldID FID_finish;
 static jfieldID FID_level;
+//static jfieldID FID_inputBufferOffset;
 
 
 
@@ -69,8 +69,8 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_initNative
   FID_inputBufferLength = env->GetFieldID(cls, "inputBufferLength", "I");
   FID_endOfStream = env->GetFieldID(cls, "endOfStream", "Z");
   FID_finished = env->GetFieldID(cls, "finished", "Z");
-  FID_finish = env->GetFieldID(cls, "finish", "Z");
   FID_level = env->GetFieldID(cls,"level","I");
+//  FID_inputBufferOffset = env->GetFieldID(cls, "inputBufferOffset", "I");
 
 }
 
@@ -185,9 +185,10 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 
   jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inputBuffer);
   jint inputBufferLength = env->GetIntField(obj, FID_inputBufferLength);
+  //jint inputBufferOffset = env->GetIntField(obj, FID_inputBufferOffset);
   jboolean endOfStream = env->GetBooleanField(obj, FID_endOfStream);
   jint level = env->GetIntField(obj, FID_level);
-  jboolean finish = env->GetBooleanField(obj, FID_finish);
+
 
   if(level == 1) {
   
@@ -198,11 +199,11 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
     jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
     jbyte* next_out = (jbyte*)env->GetPrimitiveArrayCritical(outputBuffer, 0);
 
-    lz_stream->next_in = (UINT8*)next_in;
+    lz_stream->next_in = (UINT8*)(next_in);
     lz_stream->avail_in = inputBufferLength;
     lz_stream->end_of_stream = endOfStream;
-    lz_stream->next_out = (UINT8*)next_out;
-    lz_stream->avail_out = outputBufferLength;
+    lz_stream->next_out = (UINT8*) (next_out);
+    lz_stream->avail_out = outputBufferLength ;
 
     int bytes_in = inputBufferLength;
 
@@ -316,4 +317,5 @@ Java_com_intel_gkl_compression_IntelDeflater_endNative(JNIEnv *env, jobject obj)
   if (level != 1) {
     deflateEnd(lz_stream);
   }
+  else free(lz_stream);
 }

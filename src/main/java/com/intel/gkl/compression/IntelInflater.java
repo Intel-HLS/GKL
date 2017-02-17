@@ -69,12 +69,13 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
     private long lz_stream;
     private byte[] inputBuffer;
     private int inputBufferLength;
+    private int inputBufferOffset;
     private boolean finished;
     private boolean nowrap;
 
     private static native void initNative();
     private native void resetNative(boolean nowrap);
-    private native int inflateNative( byte[] b, int len);
+    private native int inflateNative( byte[] b, int off, int len);
     private native void endNative();
 
     /**
@@ -122,6 +123,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
             throw new NullPointerException("Input buffer length is zero.");
         }
         inputBuffer = b;
+        inputBufferOffset = off;
         inputBufferLength = len;
     }
 
@@ -139,7 +141,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      */
     @Override
     public int inflate (byte[] b, int off, int len ) {
-        return inflateNative(b, len);
+        return inflateNative(b, off, len);
     }
 
     /**
@@ -150,7 +152,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      */
     @Override
     public int inflate (byte[] b ) {
-        return inflateNative( b, 0);
+        return inflateNative( b, 0, 0);
     }
 
     /**
