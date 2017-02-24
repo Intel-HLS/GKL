@@ -88,6 +88,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
     public IntelInflater(boolean nowrap) {
       //  initFieldsNative();
         this.nowrap = nowrap;
+
     }
 
     /**
@@ -116,6 +117,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      */
     @Override
     public void setInput(byte[] b, int off, int len) throws NullPointerException {
+        if(lz_stream == 0) reset();
         if(b == null) {
             throw new NullPointerException("Input is null");
         }
@@ -125,6 +127,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
         inputBuffer = b;
         inputBufferOffset = off;
         inputBufferLength = len;
+
     }
 
     /**
@@ -152,7 +155,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      */
     @Override
     public int inflate (byte[] b ) {
-        return inflateNative( b, 0, 0);
+        return inflateNative( b, 0, b.length);
     }
 
     /**
@@ -175,6 +178,15 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      */
     @Override
     public void end() {
-        endNative();
+
+        if(lz_stream !=0)
+        {
+            endNative();
+            lz_stream=0;
+        }
     }
+
+    @Override
+    protected void finalize() {}
+
 }

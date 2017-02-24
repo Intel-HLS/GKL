@@ -96,6 +96,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
         this.level = level;
         this.nowrap = nowrap;
         strategy = DEFAULT_STRATEGY;
+
     }
 
      /**
@@ -135,6 +136,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      */
     @Override
     public void setInput(byte[] b, int off, int len) throws NullPointerException {
+        if(lz_stream == 0) reset();
         if(b == null) {
             throw new NullPointerException("Input is null");
         }
@@ -144,8 +146,6 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
 
         inputBuffer = b;
         inputBufferLength = len;
-
-
     }
 
     /**
