@@ -82,7 +82,6 @@ public class DeflaterUnitTest {
 
 
                 randomDNA(input);
-                deflater.reset();
                 deflater.setInput(input, 0, input.length);
                 deflater.finish();
 
@@ -98,7 +97,7 @@ public class DeflaterUnitTest {
 
 
                 try {
-                    inflater.reset();
+
                     inflater.setInput(compressed, 0, compressedBytes);
                     final long start = System.currentTimeMillis();
                     inflater.inflate(result, 0, LEN);
