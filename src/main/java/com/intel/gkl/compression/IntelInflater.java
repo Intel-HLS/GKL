@@ -178,15 +178,9 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      */
     @Override
     public void end() {
-
-        if(lz_stream !=0)
-        {
+        if(lz_stream != 0) {
             endNative();
-            lz_stream=0;
+            lz_stream = 0;
         }
     }
-
-    @Override
-    protected void finalize() {}
-
 }
