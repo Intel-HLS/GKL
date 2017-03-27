@@ -33,9 +33,9 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
 
   g_use_double = use_double;
   
-  #ifdef OMP
+#ifdef _OPENMP
   g_max_threads = std::min((int)max_threads, omp_get_max_threads());
-  #endif
+#endif
 
   // enable FTZ
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
@@ -60,7 +60,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
  jobjectArray readDataArray, jobjectArray haplotypeDataArray, jdoubleArray likelihoodArray)
 {
   DBG("Enter");
-   
+
   //==================================================================
   // get Java data
   JavaData javaData;
