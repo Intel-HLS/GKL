@@ -195,6 +195,9 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      */
     @Override
     public void end() {
-        endNative();
+        if(lz_stream != 0) {
+            endNative();
+            lz_stream = 0;
+        }
     }
 }
