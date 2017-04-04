@@ -4,8 +4,7 @@ BUILDING optimized version of compression library for C/C++ using GKL
 
 2. Apply the zlib_deflate.patch and zlib.patch to files in /otc_zlib
 	$cd ../otc_zlib
-        $patch < zlib_deflate.patch
-        $patch < zlib.patch
+        $patch < ../libz/zlib_deflate.patch
 
 3. Run make
 

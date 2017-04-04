@@ -59,6 +59,8 @@ ADD_CUSTOM_COMMAND(
 ExternalProject_Add(
    zlib-1.2.8devn-jtkv5External
    URL ${CMAKE_CURRENT_SOURCE_DIR}/../otc_zlib 
+   PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/zlib.patch
+#   PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/zlib_deflate.patch
    CONFIGURE_COMMAND <SOURCE_DIR>/configure --static --prefix=<INSTALL_DIR>
    BUILD_COMMAND make
    INSTALL_COMMAND make install
