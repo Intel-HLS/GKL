@@ -313,9 +313,14 @@ JNIEXPORT void JNICALL
 Java_com_intel_gkl_compression_IntelDeflater_endNative(JNIEnv *env, jobject obj)
 {
   jint level = env->GetIntField(obj, FID_level);
-  z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
+
   if (level != 1) {
+    z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
     deflateEnd(lz_stream);
   }
-  else free(lz_stream);
+  else {
+   isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
+   free(lz_stream->hufftables);
+   free(lz_stream);
+  }
 }

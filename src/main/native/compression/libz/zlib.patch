@@ -1,0 +1,20 @@
+--- Makefile.in	2017-03-14 10:53:14.850526414 -0400
++++ Makefile.in.new	2017-03-14 10:52:48.009526529 -0400
+@@ -26,7 +26,7 @@
+ 
+ SFLAGS=-O
+ LDFLAGS=
+-TEST_LDFLAGS=-L. libz.a
++TEST_LDFLAGS=-L. libz.a libisal.a
+ LDSHARED=$(CC)
+ CPP=$(CC) -E
+ 
+@@ -318,7 +318,7 @@
+ 
+ 
+ placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
+-	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
++	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(TEST_LDFLAGS)
+ 	rm -f $(SHAREDLIB) $(SHAREDLIBM)
+ 	ln -s $@ $(SHAREDLIB)
+ 	ln -s $@ $(SHAREDLIBM)

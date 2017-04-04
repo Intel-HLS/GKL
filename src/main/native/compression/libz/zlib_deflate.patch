@@ -1,0 +1,145 @@
+--- deflate.c	2016-12-08 10:07:15.000000000 -0500
++++ deflate_new.c	2017-04-04 11:11:11.433780075 -0400
+@@ -50,11 +50,13 @@
+ /* @(#) $Id$ */
+ 
+ #include "deflate.h"
+-
++#define USE_IGZIP
+ #if defined(CHECK_SSE2) || defined(USE_SSE4_2_CRC_HASH) || defined(USE_QUICK)
+ #include "x86.h"
+ #endif
+-
++#ifdef USE_IGZIP
++#include "igzip_lib.h"
++#endif
+ const char deflate_copyright[] =
+    " deflate 1.2.8.1 Copyright 1995-2013 Jean-loup Gailly and Mark Adler ";
+ /*
+@@ -382,7 +384,30 @@
+     s->strategy = strategy;
+     s->method = (Byte)method;
+ 
+-    return deflateReset(strm);
++    int ret =  deflateReset(strm);
++        #ifdef USE_IGZIP
++            if(level ==1){
++                if(s->wrap == 0)
++    	        {
++                    strm->state->strm = (z_streamp) ZALLOC(strm, 1, sizeof(struct isal_zstream));
++                    isal_deflate_init((struct isal_zstream*)strm->state->strm);
++                    ((struct isal_zstream*)strm->state->strm)->end_of_stream = 0;
++                    ((struct isal_zstream*)strm->state->strm)->hufftables = 0x0;
++                    ((struct isal_zstream*)strm->state->strm)->gzip_flag = 0;
++
++                }
++                else if(s->wrap == 2)
++                {
++                     strm->state->strm = (z_streamp) ZALLOC(strm, 1, sizeof(struct isal_zstream));
++                     isal_deflate_init((struct isal_zstream*)strm->state->strm);
++                     ((struct isal_zstream*)strm->state->strm)->end_of_stream = 0;
++                     ((struct isal_zstream*)strm->state->strm)->hufftables = 0x0;
++                     ((struct isal_zstream*)strm->state->strm)->gzip_flag = 1;
++                }
++            }
++
++        #endif
++        return ret;
+ }
+ 
+ /* =========================================================================
+@@ -755,6 +780,72 @@
+     int old_flush; /* value of flush param for previous deflate call */
+     deflate_state *s;
+ 
++    #ifdef USE_IGZIP
++             s = strm->state;
++
++
++            if( (s->level == 1) && (s->wrap ==0 || s->wrap ==2) )
++            {
++
++
++            int original_flush = flush;
++
++            if(flush == Z_FINISH || flush == Z_FULL_FLUSH) {
++            flush = FULL_FLUSH;
++            }
++            else if(flush == Z_SYNC_FLUSH ) {
++            flush = SYNC_FLUSH;
++            }
++            else if(flush != Z_NO_FLUSH ){
++            ERR_RETURN(strm, Z_STREAM_ERROR);
++            }
++
++
++
++            if(((struct isal_zstream*)s->strm)->hufftables == 0x0)
++                      {
++                        struct isal_huff_histogram histogram;
++                        struct isal_hufftables *hufftables_custom;
++                        int sixtyfourK = 64*1024;
++                        int usable_buffer= (strm->avail_in < sixtyfourK) ? strm->avail_in : sixtyfourK;
++
++                         hufftables_custom = (struct isal_hufftables*) malloc(sizeof(struct isal_hufftables));
++
++                         memset(&histogram, 0, sizeof(histogram));
++                         isal_update_histogram((unsigned char*)strm->next_in,usable_buffer, &histogram);
++                         isal_create_hufftables(hufftables_custom, &histogram);
++                         ((struct isal_zstream*)s->strm)->hufftables = hufftables_custom;
++                 }
++
++
++                ((struct isal_zstream *)s->strm)->next_in = strm->next_in;
++                ((struct isal_zstream *)s->strm)->avail_in = strm->avail_in;
++                ((struct isal_zstream *)s->strm)->avail_out = strm->avail_out;
++                ((struct isal_zstream *)s->strm)->next_out = strm->next_out;
++                ((struct isal_zstream *)s->strm)->flush = flush;
++                ((struct isal_zstream *)s->strm)->end_of_stream = 1;
++
++                //printf("Next_in =  %p, Next_out = %p, Avail_in = %d, Avail_out = %d\n",strm->next_in, strm->next_out, strm->avail_in, strm->avail_out);
++
++                 int ret = isal_deflate_stateless((struct isal_zstream*)s->strm);
++
++
++                 strm->avail_in = ((struct isal_zstream *)s->strm)->avail_in;
++                 strm->next_in = ((struct isal_zstream *)s->strm)->next_in;
++                 strm->avail_out = ((struct isal_zstream *)s->strm)->avail_out;
++                 strm->next_out = ((struct isal_zstream *)s->strm)->next_out;
++                 strm->total_out =((struct isal_zstream *)s->strm)->total_out;
++                 strm->total_in =((struct isal_zstream *)s->strm)->total_in;
++
++                 if(original_flush == Z_FINISH && ret == COMP_OK) ret = Z_STREAM_END;
++
++                 return ret;
++
++
++             }
++
++        #endif
++
+     if (deflateStateCheck(strm) || flush > Z_BLOCK || flush < 0) {
+         return Z_STREAM_ERROR;
+     }
+@@ -1076,6 +1167,21 @@
+ {
+     int status;
+ 
++     #ifdef USE_IGZIP
++            if(strm->state->level ==1 &&  ( (strm->state->wrap == 0 ) || (strm->state->wrap == 2 )) )
++            {
++              /* Deallocate in reverse order of allocations: */
++              TRY_FREE(strm, strm->state->pending_buf);
++              TRY_FREE(strm, strm->state->head);
++              TRY_FREE(strm, strm->state->prev);
++              TRY_FREE(strm, strm->state->window);
++              ZFREE(strm, strm->state->strm);
++              ZFREE(strm, strm->state);
++              strm->state = Z_NULL;
++              return Z_OK;
++            }
++        #endif
++
+     if (deflateStateCheck(strm)) return Z_STREAM_ERROR;
+ 
+     status = strm->state->status;
