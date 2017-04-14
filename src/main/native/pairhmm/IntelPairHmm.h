@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     com_intel_gkl_pairhmm_IntelPairHmm
  * Method:    initNative
- * Signature: (Ljava/lang/Class;Ljava/lang/Class;ZI)V
+ * Signature: (Ljava/lang/Class;Ljava/lang/Class;ZIZ)V
  */
 JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
-  (JNIEnv *, jclass, jclass, jclass, jboolean, jint);
+(JNIEnv *, jclass, jclass, jclass, jboolean, jint, jboolean);
 
 /*
  * Class:     com_intel_gkl_pairhmm_IntelPairHmm
