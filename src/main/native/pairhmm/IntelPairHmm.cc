@@ -6,13 +6,16 @@
 #include "IntelPairHmm.h"
 #include "pairhmm_common.h"
 #include "avx-pairhmm.h"
+#include "shacc_pairhmm.h"
 #include "JavaData.h"
+#include "debug.h"
 
 bool g_use_double;
 int g_max_threads;
+bool g_use_fpga;
 
-Context<float> ctxf;
-Context<double> ctxd;
+Context<float> g_ctxf;
+Context<double> g_ctxd;
 
 float (*g_compute_full_prob_float)(testcase *tc);
 double (*g_compute_full_prob_double)(testcase *tc);
@@ -24,7 +27,7 @@ double (*g_compute_full_prob_double)(testcase *tc);
  */
 JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
 (JNIEnv* env, jclass cls, jclass readDataHolder, jclass haplotypeDataHolder,
- jboolean use_double, jint max_threads)
+ jboolean use_double, jint max_threads, jboolean use_fpga)
 {
   DBG("Enter");
 
@@ -37,6 +40,8 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   g_max_threads = std::min((int)max_threads, omp_get_max_threads());
 #endif
 
+  g_use_fpga = use_fpga;
+
   // enable FTZ
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
@@ -48,7 +53,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   ConvertChar::init();
   DBG("Exit");
 }
-
 
 /*
  * Class:     com_intel_gkl_pairhmm_IntelPairHmm
@@ -69,18 +73,28 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
   
   //==================================================================
   // calcutate pairHMM
+  shacc_pairhmm::Batch batch;
+  bool batch_valid = false;
+  if (g_use_fpga && !g_use_double) {
+    batch = javaData.getBatch();
+    batch_valid = shacc_pairhmm::calculate(batch);
+  }
+
+#ifdef _OPENMP
   #pragma omp parallel for schedule(dynamic, 1) num_threads(g_max_threads)
+#endif
   for (int i = 0; i < testcases.size(); i++) {
     double result_final = 0;
 
-    float result_float = g_use_double ? 0.0f : g_compute_full_prob_float(&testcases[i]);
+    float result_float = g_use_double ? 0.0f : 
+      batch_valid ? batch.results[i] : g_compute_full_prob_float(&testcases[i]);
 
     if (result_float < MIN_ACCEPTED) {
       double result_double = g_compute_full_prob_double(&testcases[i]);
-      result_final = log10(result_double) - ctxd.LOG10_INITIAL_CONSTANT;
+      result_final = log10(result_double) - g_ctxd.LOG10_INITIAL_CONSTANT;
     }
     else {
-      result_final = (double)(log10f(result_float) - ctxf.LOG10_INITIAL_CONSTANT);
+      result_final = (double)(log10f(result_float) - g_ctxf.LOG10_INITIAL_CONSTANT);
     }
 
     javaResults[i] = result_final;

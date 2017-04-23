@@ -10,9 +10,6 @@
 #include <assert.h>
 #include <stdint.h>
 
-#define DBG(M, ...)
-//#define DBG(M, ...)  fprintf(stdout, "[DEBUG] (%s %s:%d) " M "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-
 #define CAT(X,Y) X##Y
 #define CONCAT(X,Y) CAT(X,Y)
 
@@ -22,10 +19,8 @@
 
 typedef struct {
   int rslen, haplen;
-  char *q, *i, *d, *c;
-  char *hap, *rs;
-  int *ihap;
-  int *irs;
+  const char *q, *i, *d, *c;
+  const char *hap, *rs;
 } testcase;
 
 class ConvertChar {

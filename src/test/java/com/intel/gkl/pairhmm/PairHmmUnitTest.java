@@ -1,6 +1,7 @@
 package com.intel.gkl.pairhmm;
 
 import com.intel.gkl.IntelGKLUtils;
+import com.intel.gkl.NativeLibraryLoader;
 import com.intel.gkl.pairhmm.IntelPairHmm;
 import org.broadinstitute.gatk.nativebindings.pairhmm.HaplotypeDataHolder;
 import org.broadinstitute.gatk.nativebindings.pairhmm.PairHMMNativeArguments;
@@ -52,6 +53,15 @@ public class PairHmmUnitTest {
 
         // check result
         Assert.assertEquals(likelihoodArray[0], expectedResult, 1e-5, "Likelihood not in expected range.");
+    }
+
+    @Test(enabled = true)
+    public void fpgaTest() {
+        final boolean shaccIsLoaded = NativeLibraryLoader.load(null, "gkl_pairhmm_shacc");
+        Assert.assertTrue(shaccIsLoaded);
+
+        final boolean isloaded = new IntelPairHmmFpga().load(null);
+        Assert.assertTrue(isloaded);
     }
 
     @Test(enabled = true)

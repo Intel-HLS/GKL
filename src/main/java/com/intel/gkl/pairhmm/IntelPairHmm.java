@@ -1,5 +1,8 @@
 package com.intel.gkl.pairhmm;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
 import org.broadinstitute.gatk.nativebindings.pairhmm.HaplotypeDataHolder;
@@ -13,8 +16,10 @@ import java.io.File;
  * Provides a native PairHMM implementation accelerated for the Intel Architecture.
  */
 public class IntelPairHmm implements PairHMMNativeBinding {
+    private final static Logger logger = LogManager.getLogger(IntelPairHmm.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_pairhmm";
     private String nativeLibraryName = "gkl_pairhmm";
+    boolean useFpga = false;
 
     void setNativeLibraryName(String nativeLibraryName) {
         this.nativeLibraryName = nativeLibraryName;
@@ -46,13 +51,15 @@ public class IntelPairHmm implements PairHMMNativeBinding {
      * @param args the args used to configure native PairHMM
      */
     public void initialize(PairHMMNativeArguments args) {
-        if(args == null)
-        {
+        if (args == null) {
             args = new PairHMMNativeArguments();
             args.useDoublePrecision = false;
             args.maxNumberOfThreads = 1;
         }
-        initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads);
+        if (args.useDoublePrecision && useFpga) {
+            logger.warn("FPGA PairHMM does not support double precision floating-point. Using AVX PairHMM");
+        }
+        initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads, useFpga);
     }
 
     /**
@@ -82,7 +89,8 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     private native static void initNative(Class<?> readDataHolderClass,
                                           Class<?> haplotypeDataHolderClass,
                                           boolean doublePrecision,
-                                          int maxThreads);
+                                          int maxThreads,
+                                          boolean useFpga);
 
     private native void computeLikelihoodsNative(Object[] readDataArray,
                                                  Object[] haplotypeDataArray,
