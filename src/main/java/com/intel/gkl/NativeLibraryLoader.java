@@ -66,7 +66,7 @@ public final class NativeLibraryLoader {
             logger.debug(String.format("Extracting %s to %s", systemLibraryName, temp.getAbsolutePath()));
             System.load(temp.getAbsolutePath());
         } catch (Exception|Error e) {
-            logger.warn(String.format("Unable to load %s from %s", systemLibraryName, resourcePath));
+            logger.warn(String.format("Unable to load %s from %s (%s)", systemLibraryName, resourcePath, e.getMessage()));
             return false;
         }
 
