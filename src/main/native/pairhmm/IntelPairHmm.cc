@@ -37,7 +37,22 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   g_use_double = use_double;
   
 #ifdef _OPENMP
-  g_max_threads = std::min((int)max_threads, omp_get_max_threads());
+  int avail_threads = omp_get_max_threads();
+  int req_threads = (int)max_threads;
+  g_max_threads = std::min(req_threads, avail_threads);
+
+  INFO("Available threads: %d", avail_threads);
+  INFO("Requested threads: %d", req_threads);
+  if (req_threads > avail_threads) {
+    WARN("Using %d available threads, but %d were requested", g_max_threads, req_threads);
+  }
+  else {
+    INFO("Using %d threads", g_max_threads);
+  }
+#else
+  if ((int)max_threads != 1) {
+    WARN("Ignoring request for %d threads; not using OpenMP implementation", (int)max_threads);
+  }
 #endif
 
   g_use_fpga = use_fpga;
