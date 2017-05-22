@@ -66,7 +66,7 @@ class JavaData {
       }
     }
 
-    m_total_cells = 3 * total_read_length * total_hap_length;
+    m_total_cells = total_read_length * total_hap_length;
 
     return m_testcases;
   }
