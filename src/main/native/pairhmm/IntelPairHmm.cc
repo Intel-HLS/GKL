@@ -38,7 +38,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   
 #ifdef _OPENMP
   int avail_threads = omp_get_max_threads();
-  int req_threads = (int)max_threads;
+  int req_threads = max_threads;
   g_max_threads = std::min(req_threads, avail_threads);
 
   INFO("Available threads: %d", avail_threads);
@@ -50,8 +50,8 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
     INFO("Using %d threads", g_max_threads);
   }
 #else
-  if ((int)max_threads != 1) {
-    WARN("Ignoring request for %d threads; not using OpenMP implementation", (int)max_threads);
+  if (max_threads != 1) {
+    WARN("Ignoring request for %d threads; not using OpenMP implementation", max_threads);
   }
 #endif
 
