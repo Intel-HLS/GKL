@@ -30,6 +30,7 @@ package com.intel.gkl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,34 +38,29 @@ import java.io.IOException;
 /**
  * Provides utilities used by the GKL library.
  */
-public final class IntelGKLUtils {
+public final class IntelGKLUtils implements NativeLibrary {
     private final static Logger logger = LogManager.getLogger(IntelGKLUtils.class);
+    private static final String NATIVE_LIBRARY_NAME = "gkl_utils";
+    private static boolean initialized = false;
 
     /**
-     * Check if AVX is supported on the platform.
+     * Loads the native library, if it is supported on this platform. <p>
+     * Returns false if AVX is not supported. <br>
+     * Returns false if the native library cannot be loaded for any reason. <br>
      *
-     * @return  true if AVX is supported and enabled on the CPU, false otherwise
+     * @param tempDir  directory where the native library is extracted or null to use the system temp directory
+     * @return  true if the native library is supported and loaded, false otherwise
      */
-    public static boolean isAvxSupported() {
-        final boolean runningOnMac = System.getProperty("os.name", "unknown").toLowerCase().startsWith("mac");
-        // use a grep command to check for AVX support
-        // grep exit code = 0 if a match was found
-        final String command = runningOnMac ? "sysctl -a | grep machdep.cpu.features | grep -i avx" :
-                "grep -i avx /proc/cpuinfo";
-        try {
-            Process process = new ProcessBuilder("/bin/sh", "-c", command).start();
-            if (process.waitFor() != 0) {
-                logger.warn("Error starting process to check for AVX support : " + command);
-                return false;
-            }
-            if (process.exitValue() != 0) {
-                logger.info("AVX is not supported on this system : " + command);
-                return false;
-            }
-        }
-        catch (InterruptedException | IOException e) {
-            logger.warn("Error running command to check for AVX support : " + command);
+    @Override
+
+
+    public synchronized boolean load(File tempDir) {
+
+        if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
             return false;
+        }
+        if (!initialized) {
+            initialized = true;
         }
         return true;
     }
@@ -75,4 +71,20 @@ public final class IntelGKLUtils {
     public static String pathToTestResource(String filename) {
         return TEST_RESOURCES_ABSPATH + filename;
     }
+
+    public boolean getFlushToZero() {
+        return getFlushToZeroNative();
+    }
+
+    public void setFlushToZero(boolean value) {
+        setFlushToZeroNative(value);
+    }
+
+    public static boolean isAvxSupported() {
+        return isAvxSupportedNative();
+    }
+
+    private native boolean getFlushToZeroNative();
+    private native void setFlushToZeroNative(boolean value);
+    private native static boolean isAvxSupportedNative();
 }

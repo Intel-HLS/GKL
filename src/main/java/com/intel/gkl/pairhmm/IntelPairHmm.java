@@ -1,5 +1,6 @@
 package com.intel.gkl.pairhmm;
 
+import com.intel.gkl.compression.IntelInflater;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,6 +40,11 @@ public class IntelPairHmm implements PairHMMNativeBinding {
      */
     @Override
     public synchronized boolean load(File tempDir) {
+
+        final boolean isSupported = new IntelGKLUtils().load(null);
+
+        final IntelGKLUtils inflater = new IntelGKLUtils();
+
         if (!IntelGKLUtils.isAvxSupported()) {
             return false;
         }
