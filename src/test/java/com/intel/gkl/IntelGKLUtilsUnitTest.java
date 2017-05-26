@@ -8,23 +8,19 @@ import org.testng.annotations.Test;
 public class IntelGKLUtilsUnitTest {
     private final static Logger log = LogManager.getLogger(IntelGKLUtilsUnitTest.class);
 
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void simpleTest() {
-        boolean ftzIsLoaded = new IntelGKLUtils().load(null);
-        assert(ftzIsLoaded);
-
-        IntelGKLUtils utils = new IntelGKLUtils();
 
         log.info("Test setting FTZ");
         boolean value = false;
-        utils.setFlushToZero(true);
-        value = utils.getFlushToZero();
+        IntelGKLUtils.setFlushToZero(true);
+        value = IntelGKLUtils.getFlushToZero();
         assert(value == true);
 
         log.info("Test clearing FTZ");
         value = true;
-        utils.setFlushToZero(false);
-        value = utils.getFlushToZero();
+        IntelGKLUtils.setFlushToZero(false);
+        value = IntelGKLUtils.getFlushToZero();
         assert(value == false);
     }
 
@@ -32,26 +28,20 @@ public class IntelGKLUtilsUnitTest {
         boolean ftzValue;
 
         public void run() {
-            IntelGKLUtils utils = new IntelGKLUtils();
-            boolean ftzIsLoaded = utils.load(null);
-            assert(ftzIsLoaded);
-
-            ftzValue = utils.getFlushToZero();
+            
+            ftzValue = IntelGKLUtils.getFlushToZero();
             log.info("Child thread FTZ = " + ftzValue);
         }
     }
 
     @Test(enabled = true)
     public void childThreadTest() {
-        IntelGKLUtils utils = new IntelGKLUtils();
-        boolean ftzIsLoaded = utils.load(null);
-        assert (ftzIsLoaded);
 
         log.info("Parent setting FTZ = true");
 
         boolean value = false;
-        utils.setFlushToZero(true);
-        value = utils.getFlushToZero();
+        IntelGKLUtils.setFlushToZero(true);
+        value = IntelGKLUtils.getFlushToZero();
         assert(value == true);
 
         ChildThread childThread = new ChildThread();
@@ -68,12 +58,8 @@ public class IntelGKLUtilsUnitTest {
 
     @Test(enabled = true)
     public void platformFeaturesTest() {
-        IntelGKLUtils utils = new IntelGKLUtils();
-        boolean ftzIsLoaded = utils.load(null);
-        assert (ftzIsLoaded);
 
         log.info("Check Platform Features");
-
 
         boolean isAVX = IntelGKLUtils.isAvxSupported();
         if(isAVX) log.info("AVX is supported");

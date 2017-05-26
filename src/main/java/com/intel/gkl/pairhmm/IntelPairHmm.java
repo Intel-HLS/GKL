@@ -41,8 +41,6 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     @Override
     public synchronized boolean load(File tempDir) {
 
-        final boolean isSupported = new IntelGKLUtils().load(null);
-
         if (!IntelGKLUtils.isAvxSupported()) {
             return false;
         }

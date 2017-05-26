@@ -72,19 +72,37 @@ public final class IntelGKLUtils implements NativeLibrary {
         return TEST_RESOURCES_ABSPATH + filename;
     }
 
-    public boolean getFlushToZero() {
+    private static boolean loadGKLUtils()
+    {
+        final boolean isLoaded = new IntelGKLUtils().load(null);
+        if(!isLoaded)
+        {
+            logger.warn("Cannot load IntelGKLUtils");
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean getFlushToZero() {
+
+        if(!loadGKLUtils()) return false;
         return getFlushToZeroNative();
     }
 
-    public void setFlushToZero(boolean value) {
+    public static void setFlushToZero(boolean value) {
+
+        loadGKLUtils();
+
         setFlushToZeroNative(value);
     }
 
     public static boolean isAvxSupported() {
+
+        if(!loadGKLUtils()) return false;
         return isAvxSupportedNative();
     }
 
-    private native boolean getFlushToZeroNative();
-    private native void setFlushToZeroNative(boolean value);
+    private native static boolean getFlushToZeroNative();
+    private native static void setFlushToZeroNative(boolean value);
     private native static boolean isAvxSupportedNative();
 }
