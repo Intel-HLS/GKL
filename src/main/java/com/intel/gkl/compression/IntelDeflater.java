@@ -53,9 +53,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      */
     @Override
     public synchronized boolean load(File tempDir) {
-        if (!IntelGKLUtils.isAvxSupported()) {
-            return false;
-        }
+
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
             return false;
         }

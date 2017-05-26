@@ -1,7 +1,7 @@
 #---------------------------------------------------------------------
 # ftz
 #---------------------------------------------------------------------
-set(TARGET gkl_ftz)
+set(TARGET gkl_utils)
 
-add_library(${TARGET} SHARED ftz.cc)
+add_library(${TARGET} SHARED utils.cc)
 install(TARGETS ${TARGET} DESTINATION ${CMAKE_BINARY_DIR})

@@ -20,4 +20,4 @@ set(NATIVE_DIR ${PROJECT_SOURCE_DIR}/src/main/native)
 
 add_subdirectory("${NATIVE_DIR}/compression")
 add_subdirectory("${NATIVE_DIR}/pairhmm")
-add_subdirectory("${NATIVE_DIR}/ftz")
+add_subdirectory("${NATIVE_DIR}/utils")

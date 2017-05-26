@@ -1,5 +1,6 @@
 package com.intel.gkl.pairhmm;
 
+import com.intel.gkl.compression.IntelInflater;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,7 +40,18 @@ public class IntelPairHmm implements PairHMMNativeBinding {
      */
     @Override
     public synchronized boolean load(File tempDir) {
-        if (!IntelGKLUtils.isAvxSupported()) {
+
+        IntelGKLUtils utils = new IntelGKLUtils();
+
+        boolean isLoaded = utils.load(null);
+
+        if(!isLoaded)
+        {
+            logger.warn("Intel GKL Utils not loaded");
+            return false;
+        }
+
+        if (!utils.isAvxSupported()) {
             return false;
         }
         return NativeLibraryLoader.load(tempDir, nativeLibraryName);
