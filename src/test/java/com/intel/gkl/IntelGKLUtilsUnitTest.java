@@ -11,16 +11,20 @@ public class IntelGKLUtilsUnitTest {
     @Test(enabled = true)
     public void simpleTest() {
 
+        IntelGKLUtils utils = new IntelGKLUtils();
+
+        boolean isLoaded = utils.load(null);
+
         log.info("Test setting FTZ");
         boolean value = false;
-        IntelGKLUtils.setFlushToZero(true);
-        value = IntelGKLUtils.getFlushToZero();
+        utils.setFlushToZero(true);
+        value = utils.getFlushToZero();
         assert(value == true);
 
         log.info("Test clearing FTZ");
         value = true;
-        IntelGKLUtils.setFlushToZero(false);
-        value = IntelGKLUtils.getFlushToZero();
+        utils.setFlushToZero(false);
+        value = utils.getFlushToZero();
         assert(value == false);
     }
 
@@ -28,8 +32,10 @@ public class IntelGKLUtilsUnitTest {
         boolean ftzValue;
 
         public void run() {
-            
-            ftzValue = IntelGKLUtils.getFlushToZero();
+            IntelGKLUtils utils = new IntelGKLUtils();
+            boolean isLoaded = utils.load(null);
+
+            ftzValue = utils.getFlushToZero();
             log.info("Child thread FTZ = " + ftzValue);
         }
     }
@@ -39,9 +45,13 @@ public class IntelGKLUtilsUnitTest {
 
         log.info("Parent setting FTZ = true");
 
+        IntelGKLUtils utils = new IntelGKLUtils();
+
+        boolean isLoaded = utils.load(null);
+
         boolean value = false;
-        IntelGKLUtils.setFlushToZero(true);
-        value = IntelGKLUtils.getFlushToZero();
+        utils.setFlushToZero(true);
+        value = utils.getFlushToZero();
         assert(value == true);
 
         ChildThread childThread = new ChildThread();
@@ -61,7 +71,12 @@ public class IntelGKLUtilsUnitTest {
 
         log.info("Check Platform Features");
 
-        boolean isAVX = IntelGKLUtils.isAvxSupported();
+        IntelGKLUtils utils = new IntelGKLUtils();
+
+        boolean isLoaded = utils.load(null);
+
+
+        boolean isAVX = utils.isAvxSupported();
         if(isAVX) log.info("AVX is supported");
         else log.info("AVX is not supported");
 

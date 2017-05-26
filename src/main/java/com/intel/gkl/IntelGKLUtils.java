@@ -45,7 +45,6 @@ public final class IntelGKLUtils implements NativeLibrary {
 
     /**
      * Loads the native library, if it is supported on this platform. <p>
-     * Returns false if AVX is not supported. <br>
      * Returns false if the native library cannot be loaded for any reason. <br>
      *
      * @param tempDir  directory where the native library is extracted or null to use the system temp directory
@@ -72,37 +71,20 @@ public final class IntelGKLUtils implements NativeLibrary {
         return TEST_RESOURCES_ABSPATH + filename;
     }
 
-    private static boolean loadGKLUtils()
-    {
-        final boolean isLoaded = new IntelGKLUtils().load(null);
-        if(!isLoaded)
-        {
-            logger.warn("Cannot load IntelGKLUtils");
-            return false;
-        }
-        return true;
-    }
 
-    public static boolean getFlushToZero() {
-
-        if(!loadGKLUtils()) return false;
+    public boolean getFlushToZero() {
         return getFlushToZeroNative();
     }
 
-    public static void setFlushToZero(boolean value) {
-
-        loadGKLUtils();
-
+    public void setFlushToZero(boolean value) {
         setFlushToZeroNative(value);
     }
 
-    public static boolean isAvxSupported() {
-
-        if(!loadGKLUtils()) return false;
+    public boolean isAvxSupported() {
         return isAvxSupportedNative();
     }
 
-    private native static boolean getFlushToZeroNative();
-    private native static void setFlushToZeroNative(boolean value);
-    private native static boolean isAvxSupportedNative();
+    private native boolean getFlushToZeroNative();
+    private native void setFlushToZeroNative(boolean value);
+    private native boolean isAvxSupportedNative();
 }
