@@ -14,6 +14,7 @@ public class IntelGKLUtilsUnitTest {
         IntelGKLUtils utils = new IntelGKLUtils();
 
         boolean isLoaded = utils.load(null);
+        assert(isLoaded);
 
         log.info("Test setting FTZ");
         boolean value = false;
@@ -34,6 +35,7 @@ public class IntelGKLUtilsUnitTest {
         public void run() {
             IntelGKLUtils utils = new IntelGKLUtils();
             boolean isLoaded = utils.load(null);
+            assert(isLoaded);
 
             ftzValue = utils.getFlushToZero();
             log.info("Child thread FTZ = " + ftzValue);
@@ -48,6 +50,7 @@ public class IntelGKLUtilsUnitTest {
         IntelGKLUtils utils = new IntelGKLUtils();
 
         boolean isLoaded = utils.load(null);
+        assert(isLoaded);
 
         boolean value = false;
         utils.setFlushToZero(true);
@@ -74,7 +77,7 @@ public class IntelGKLUtilsUnitTest {
         IntelGKLUtils utils = new IntelGKLUtils();
 
         boolean isLoaded = utils.load(null);
-
+        assert(isLoaded);
 
         boolean isAVX = utils.isAvxSupported();
         if(isAVX) log.info("AVX is supported");
