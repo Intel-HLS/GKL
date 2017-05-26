@@ -43,8 +43,6 @@ public class IntelPairHmm implements PairHMMNativeBinding {
 
         final boolean isSupported = new IntelGKLUtils().load(null);
 
-        final IntelGKLUtils inflater = new IntelGKLUtils();
-
         if (!IntelGKLUtils.isAvxSupported()) {
             return false;
         }
