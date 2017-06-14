@@ -72,6 +72,9 @@ public class IntelPairHmm implements PairHMMNativeBinding {
             logger.warn("FPGA PairHMM does not support double precision floating-point. Using AVX PairHMM");
         }
 
+        if(!gklUtils.getFlushToZero()) {
+            logger.warn("Flush-to-zero (FTZ) is disabled; enabling just for PairHMM");
+        }
         initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads, useFpga);
 
         // log information about threads
@@ -115,6 +118,9 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     @Override
     public void done() {
         doneNative();
+        if(!gklUtils.getFlushToZero()) {
+            logger.info("PairHMM finished. Disabling flush-to-zero (FTZ)");
+        }
     }
 
     private native static void initNative(Class<?> readDataHolderClass,

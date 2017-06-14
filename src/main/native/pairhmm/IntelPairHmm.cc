@@ -63,7 +63,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   if (_MM_GET_FLUSH_ZERO_MODE() == _MM_FLUSH_ZERO_OFF)
   {
     g_disable_ftz = true;
-    WARN("Flush-to-zero (FTZ) is disabled; enabling just for PairHMM");
+    DBG("Flush-to-zero (FTZ) is disabled; enabling just for PairHMM");
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
   }
 
@@ -142,6 +142,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_doneNative
   if (g_disable_ftz)
   {
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_OFF);
-    INFO("PairHMM finished. Disabling flush-to-zero (FTZ)");
+    DBG("PairHMM finished. Disabling flush-to-zero (FTZ)");
   }
 }
