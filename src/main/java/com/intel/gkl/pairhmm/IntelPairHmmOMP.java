@@ -8,5 +8,6 @@ public final class IntelPairHmmOMP extends IntelPairHmm {
 
     public IntelPairHmmOMP() {
         setNativeLibraryName(NATIVE_LIBRARY_NAME);
+        useOmp = true;
     }
 }
