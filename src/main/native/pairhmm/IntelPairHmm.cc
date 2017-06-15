@@ -13,7 +13,6 @@
 bool g_use_double;
 int g_max_threads;
 bool g_use_fpga;
-bool g_disable_ftz;
 
 Context<float> g_ctxf;
 Context<double> g_ctxd;
@@ -59,13 +58,10 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   g_use_fpga = use_fpga;
 
   // enable FTZ
-  g_disable_ftz = false;
-  if (_MM_GET_FLUSH_ZERO_MODE() == _MM_FLUSH_ZERO_OFF)
-  {
-    g_disable_ftz = true;
-    DBG("Flush-to-zero (FTZ) is disabled; enabling just for PairHMM");
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+  if (_MM_GET_FLUSH_ZERO_MODE() != _MM_FLUSH_ZERO_ON) {
+    DBG("Flush-to-zero (FTZ) is enabled when running PairHMM");
   }
+  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
   // set function pointers
   g_compute_full_prob_float = compute_full_prob_avxs;
@@ -138,10 +134,5 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
 JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_doneNative
 (JNIEnv* env, jobject obj)
 {
-  // disable FTZ (if it was disabled initially)
-  if (g_disable_ftz)
-  {
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_OFF);
-    DBG("PairHMM finished. Disabling flush-to-zero (FTZ)");
-  }
+
 }
