@@ -26,11 +26,18 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_IntelGKLUtils_setFlushToZeroNative
 /*
  * Class:     com_intel_gkl_IntelGKLUtils
  * Method:    isAvxSupportedNative
- * Signature: (Z)V
+ * Signature: ()Z
  */
-
 JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvxSupportedNative
-  (JNIEnv *env, jobject obj);
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_intel_gkl_IntelGKLUtils
+ * Method:    getAvailableOmpThreadsNative
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_intel_gkl_IntelGKLUtils_getAvailableOmpThreadsNative
+  (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

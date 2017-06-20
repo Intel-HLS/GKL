@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import com.intel.gkl.pairhmm.IntelPairHmmOMP;
 
 public class IntelGKLUtilsUnitTest {
     private final static Logger log = LogManager.getLogger(IntelGKLUtilsUnitTest.class);
@@ -85,5 +86,24 @@ public class IntelGKLUtilsUnitTest {
 
     }
 
+    @Test(enabled = true)
+    public void availableOmpThreadsTest() {
 
+        IntelGKLUtils utils = new IntelGKLUtils();
+
+        boolean isLoaded = utils.load(null);
+        assert(isLoaded);
+
+        IntelPairHmmOMP phmm = new IntelPairHmmOMP();
+        if(phmm.load(null)) {
+            log.info("Test getting OpenMP threads when OMP available");
+            int value = utils.getAvailableOmpThreads();
+            assert(value > 0);
+        }
+        else {
+            log.info("Test getting OpenMP threads when OMP unavailable");
+            int value = utils.getAvailableOmpThreads();
+            assert(value == 0);
+        }
+    }
 }

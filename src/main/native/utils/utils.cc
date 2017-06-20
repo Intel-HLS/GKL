@@ -4,6 +4,10 @@
   #include <x86intrin.h> // SIMD intrinsics for GCC
 #endif
 
+#ifdef linux
+  #include <omp.h>
+#endif
+
 #include "utils.h"
 #include <cpuid.h>
 #include <stdio.h>
@@ -60,13 +64,28 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_IntelGKLUtils_setFlushToZeroNative
 JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvxSupportedNative
   (JNIEnv *env, jobject obj)
 {
+  jint eax, ebx, ecx, edx;
 
-        jint eax, ebx, ecx, edx;
+  __cpuid(0, eax, ebx, ecx, edx);
 
-        __cpuid(0, eax, ebx, ecx, edx);
+  if ((ecx && AVXFlag) == 0 ) return false;
 
-        if ((ecx && AVXFlag) == 0 ) return false;
+  return true;
+}
 
-        return true;
+/*
+ * Class:     com_intel_gkl_IntelGKLUtils
+ * Method:    getAvailableOmpThreadsNative
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_intel_gkl_IntelGKLUtils_getAvailableOmpThreadsNative
+  (JNIEnv *env, jobject obj)
+{
+#ifdef _OPENMP
+  int avail_threads = omp_get_max_threads();
+#else
+  int avail_threads = 0;
+#endif
 
+  return avail_threads;
 }

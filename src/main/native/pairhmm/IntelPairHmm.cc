@@ -41,23 +41,26 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   int req_threads = max_threads;
   g_max_threads = std::min(req_threads, avail_threads);
 
-  INFO("Available threads: %d", avail_threads);
-  INFO("Requested threads: %d", req_threads);
+  DBG("Available threads: %d", avail_threads);
+  DBG("Requested threads: %d", req_threads);
   if (req_threads > avail_threads) {
-    WARN("Using %d available threads, but %d were requested", g_max_threads, req_threads);
+    DBG("Using %d available threads, but %d were requested", g_max_threads, req_threads);
   }
   else {
-    INFO("Using %d threads", g_max_threads);
+    DBG("Using %d threads", g_max_threads);
   }
 #else
   if (max_threads != 1) {
-    WARN("Ignoring request for %d threads; not using OpenMP implementation", max_threads);
+    DBG("Ignoring request for %d threads; not using OpenMP implementation", max_threads);
   }
 #endif
 
   g_use_fpga = use_fpga;
 
   // enable FTZ
+  if (_MM_GET_FLUSH_ZERO_MODE() != _MM_FLUSH_ZERO_ON) {
+    DBG("Flush-to-zero (FTZ) is enabled when running PairHMM");
+  }
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
   // set function pointers
@@ -131,5 +134,5 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
 JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_doneNative
 (JNIEnv* env, jobject obj)
 {
-  
+
 }

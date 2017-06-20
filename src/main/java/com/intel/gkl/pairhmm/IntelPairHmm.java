@@ -1,6 +1,5 @@
 package com.intel.gkl.pairhmm;
 
-import com.intel.gkl.compression.IntelInflater;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +19,9 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     private final static Logger logger = LogManager.getLogger(IntelPairHmm.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_pairhmm";
     private String nativeLibraryName = "gkl_pairhmm";
+    private IntelGKLUtils gklUtils = new IntelGKLUtils();
     boolean useFpga = false;
+    boolean useOmp = false;
 
     void setNativeLibraryName(String nativeLibraryName) {
         this.nativeLibraryName = nativeLibraryName;
@@ -40,10 +41,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
      */
     @Override
     public synchronized boolean load(File tempDir) {
-
-        IntelGKLUtils utils = new IntelGKLUtils();
-
-        boolean isLoaded = utils.load(null);
+        boolean isLoaded = gklUtils.load(null);
 
         if(!isLoaded)
         {
@@ -51,9 +49,10 @@ public class IntelPairHmm implements PairHMMNativeBinding {
             return false;
         }
 
-        if (!utils.isAvxSupported()) {
+        if (!gklUtils.isAvxSupported()) {
             return false;
         }
+
         return NativeLibraryLoader.load(tempDir, nativeLibraryName);
     }
 
@@ -68,10 +67,33 @@ public class IntelPairHmm implements PairHMMNativeBinding {
             args.useDoublePrecision = false;
             args.maxNumberOfThreads = 1;
         }
+
         if (args.useDoublePrecision && useFpga) {
             logger.warn("FPGA PairHMM does not support double precision floating-point. Using AVX PairHMM");
         }
+
+        if(!gklUtils.getFlushToZero()) {
+            logger.warn("Flush-to-zero (FTZ) is enabled when running PairHMM");
+        }
         initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads, useFpga);
+
+        // log information about threads
+        int reqThreads = args.maxNumberOfThreads;
+        if (useOmp) {
+            int availThreads = gklUtils.getAvailableOmpThreads();
+            int maxThreads = Math.min(reqThreads, availThreads);
+
+            logger.info("Available threads: " + availThreads);
+            logger.info("Requested threads: " + reqThreads);
+            if (reqThreads > availThreads) {
+                logger.warn("Using " + maxThreads + " available threads, but " + reqThreads + " were requested");
+            }
+        }
+        else {
+            if (reqThreads != 1) {
+                logger.warn("Ignoring request for " + reqThreads + " threads; not using OpenMP implementation");
+            }
+        }
     }
 
     /**
