@@ -20,7 +20,7 @@ include(ExternalProject)
 
 ExternalProject_Add(
    isalExternal
-   URL ${CMAKE_CURRENT_SOURCE_DIR}/isa-l-master
+   URL ${CMAKE_CURRENT_SOURCE_DIR}/../isa-l-master
    UPDATE_COMMAND <SOURCE_DIR>/autogen.sh
 #PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/isa-l.patch
    CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> 
@@ -36,13 +36,13 @@ ADD_CUSTOM_COMMAND(
       TARGET isalExternal
       PRE_BUILD
       COMMAND cp
-      ARGS ${CMAKE_CURRENT_BINARY_DIR}/isa-l-master/include/igzip_lib.h  ${CMAKE_CURRENT_BINARY_DIR}/zlib-1.2.8devn-jtkv5/igzip_lib.h)
+      ARGS ${CMAKE_CURRENT_BINARY_DIR}/../isa-l-master/include/igzip_lib.h  ${CMAKE_CURRENT_BINARY_DIR}/../otc_zlib/igzip_lib.h)
 
 ADD_CUSTOM_COMMAND(
       TARGET isalExternal
       PRE_BUILD
       COMMAND cp
-      ARGS ${CMAKE_CURRENT_BINARY_DIR}/isa-l-master/include/types.h  ${CMAKE_CURRENT_BINARY_DIR}/zlib-1.2.8devn-jtkv5/types.h)
+      ARGS ${CMAKE_CURRENT_BINARY_DIR}/../isa-l-master/include/types.h  ${CMAKE_CURRENT_BINARY_DIR}/../otc_zlib/types.h)
 
 ADD_CUSTOM_COMMAND(
       TARGET isalExternal
@@ -58,7 +58,7 @@ ADD_CUSTOM_COMMAND(
 
 ExternalProject_Add(
    zlib-1.2.8devn-jtkv5External
-   URL ${CMAKE_CURRENT_SOURCE_DIR}/zlib-1.2.8devn-jtkv5
+   URL ${CMAKE_CURRENT_SOURCE_DIR}/../otc_zlib
    PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/zlib.patch
    CONFIGURE_COMMAND <SOURCE_DIR>/configure --static --prefix=<INSTALL_DIR>
    BUILD_COMMAND make
