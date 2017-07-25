@@ -102,6 +102,9 @@ class JavaData {
     }
     m_batch.haps = m_haps.data();
 
+    // allocate results
+    m_batch.results = (float*)malloc(sizeof(float) * num_testcases);
+
     m_batch.num_cells = m_total_cells;
     
     return m_batch;
