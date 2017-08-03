@@ -2,8 +2,7 @@ package com.intel.gkl.compression;
 
 import com.intel.gkl.IntelGKLUtils;
 import htsjdk.samtools.util.BlockCompressedInputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -17,7 +16,7 @@ import java.util.zip.Inflater;
  */
 public class InflaterUnitTest {
 
-    private final static Logger log = LogManager.getLogger(InflaterUnitTest.class);
+    private final static Logger log = Logger.getLogger(InflaterUnitTest.class);
     private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
 
     @Test(enabled = true)
