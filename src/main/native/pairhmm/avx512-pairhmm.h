@@ -5,12 +5,12 @@
 #include "avx-types.h"
 
 #undef SIMD_ENGINE
-#define SIMD_ENGINE avx
+#define SIMD_ENGINE avx512
 
-#include "avx-functions-float.h"
-#include "avx-vector-shift.h"
+#include "avx512-functions-float.h"
+#include "avx512-vector-shift.h"
 #include "avx-pairhmm-template.h"
 
-#include "avx-functions-double.h"
-#include "avx-vector-shift.h"
+#include "avx512-functions-double.h"
+#include "avx512-vector-shift.h"
 #include "avx-pairhmm-template.h"

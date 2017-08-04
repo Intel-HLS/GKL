@@ -10,10 +10,12 @@
 #undef SHIFT_CONST3
 #undef _128_TYPE
 #undef SIMD_TYPE
+#undef _256_INT_TYPE
 #undef AVX_LENGTH
 #undef HAP_TYPE
 #undef MASK_TYPE
 #undef MASK_ALL_ONES
+#undef MASK_VEC
 
 #undef SET_VEC_ZERO
 #undef VEC_OR
@@ -37,12 +39,9 @@
 #undef VEC_CMP_EQ
 #undef VEC_SET_LSE
 #undef SHIFT_HAP
-#undef MASK_VEC
 #undef VEC_SSE_TO_AVX
 #undef VEC_SHIFT_LEFT_1BIT
-#undef MASK_ALL_ONES
 #undef COMPARE_VECS
-#undef _256_INT_TYPE
 #undef BITMASK_VEC
 #endif
 
@@ -50,7 +49,7 @@
 
 #define MAIN_TYPE float
 #define MAIN_TYPE_SIZE 32
-#define UNION_TYPE mix_F
+#define UNION_TYPE mix_F256
 #define IF_128 IF_128f
 #define IF_MAIN_TYPE IF_32
 #define SHIFT_CONST1 12
@@ -63,7 +62,7 @@
 #define HAP_TYPE UNION_TYPE
 #define MASK_TYPE uint32_t
 #define MASK_ALL_ONES 0xFFFFFFFF
-#define MASK_VEC MaskVec_F
+#define MASK_VEC MaskVec_F256
 
 #define SET_VEC_ZERO(__vec)                     \
     __vec= _mm256_setzero_ps()
@@ -86,8 +85,8 @@
 #define VEC_BLEND(__v1, __v2, __mask)           \
     _mm256_blend_ps(__v1, __v2, __mask)
 
-#define VEC_BLENDV(__v1, __v2, __maskV)         \
-    _mm256_blendv_ps(__v1, __v2, __maskV)
+#define VEC_BLENDV(__distmChosen, __v1, __v2, __maskV)      \
+    __distmChosen = _mm256_blendv_ps(__v1, __v2, __maskV);
 
 #define VEC_CAST_256_128(__v1)                  \
     _mm256_castps256_ps128 (__v1)

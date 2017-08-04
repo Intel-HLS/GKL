@@ -2,9 +2,9 @@
 #define JAVADATA_H
 
 #include <vector>
+#include <debug.h>
 #include "pairhmm_common.h"
 #include "shacc_pairhmm.h"
-#include "debug.h"
 
 class JavaData {
  public:

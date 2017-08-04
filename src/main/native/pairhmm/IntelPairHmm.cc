@@ -3,12 +3,18 @@
 #endif
 #include <vector>
 #include <math.h>
+#include <debug.h>
+#include <avx.h>
+#include <assert.h>
 #include "IntelPairHmm.h"
 #include "pairhmm_common.h"
-#include "avx-pairhmm.h"
+#include "avx_impl.h"
+#ifndef __APPLE__
+  #include "avx512_impl.h"
+#endif
+#include "Context.h"
 #include "shacc_pairhmm.h"
 #include "JavaData.h"
-#include "debug.h"
 
 bool g_use_double;
 int g_max_threads;
@@ -64,8 +70,21 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
   // set function pointers
-  g_compute_full_prob_float = compute_full_prob_avxs;
-  g_compute_full_prob_double = compute_full_prob_avxd;
+  if(is_avx512_supported())
+  {
+#ifndef __APPLE__
+    DBG("Using CPU-supported AVX-512 instructions");
+    g_compute_full_prob_float = compute_fp_avx512s;
+    g_compute_full_prob_double = compute_fp_avx512d;
+#else
+    assert(false);
+#endif
+  }
+  else
+  {
+    g_compute_full_prob_float = compute_fp_avxs;
+    g_compute_full_prob_double = compute_fp_avxd;
+  }
 
   // init convert char table
   ConvertChar::init();
