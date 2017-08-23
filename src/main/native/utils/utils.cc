@@ -9,23 +9,8 @@
 #endif
 
 #include "utils.h"
-#include <cpuid.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#define OSXSAVEFlag (1UL<<27)
-#define AVXFlag     ((1UL<<28)|OSXSAVEFlag)
-
-
-#define DEBUG
-
-#ifdef DEBUG
-#  define DBG(M, ...)  fprintf(stdout, "[DEBUG] (%s %s:%d) " M "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#else
-#  define DBG(M, ...)
-#endif
-
-
 
 /*
  * Class:     com_intel_gkl_IntelGKLUtils
@@ -64,13 +49,8 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_IntelGKLUtils_setFlushToZeroNative
 JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvxSupportedNative
   (JNIEnv *env, jobject obj)
 {
-  jint eax, ebx, ecx, edx;
-
-  __cpuid(0, eax, ebx, ecx, edx);
-
-  if ((ecx && AVXFlag) == 0 ) return false;
-
-  return true;
+  __builtin_cpu_init();
+  return __builtin_cpu_supports("avx") ? true : false;
 }
 
 /*
