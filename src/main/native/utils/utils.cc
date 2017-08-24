@@ -49,7 +49,9 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_IntelGKLUtils_setFlushToZeroNative
 JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvxSupportedNative
   (JNIEnv *env, jobject obj)
 {
+#if !defined(__clang__)
   __builtin_cpu_init();
+#endif
   return __builtin_cpu_supports("avx") ? true : false;
 }
 
