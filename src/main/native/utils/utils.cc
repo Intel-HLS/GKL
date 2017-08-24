@@ -52,7 +52,8 @@ JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvxSupportedNative
 #if !defined(__clang__)
   __builtin_cpu_init();
 #endif
-  return __builtin_cpu_supports("avx") ? true : false;
+  volatile int r = __builtin_cpu_supports("avx");
+  return r ? true : false;
 }
 
 /*
