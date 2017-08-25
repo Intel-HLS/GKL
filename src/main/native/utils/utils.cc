@@ -42,7 +42,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_IntelGKLUtils_setFlushToZeroNative
 }
 
 // helper function
-static 
+static
 void run_cpuid(uint32_t eax, uint32_t ecx, uint32_t* abcd)
 {
 #if defined(_MSC_VER)
@@ -58,11 +58,11 @@ void run_cpuid(uint32_t eax, uint32_t ecx, uint32_t* abcd)
             "+a" (eax), "+c" (ecx), "=d" (edx) );
   abcd[0] = eax; abcd[1] = ebx; abcd[2] = ecx; abcd[3] = edx;
 #endif
-}     
+}
 
 // helper function
 static
-int check_xcr0_ymm() 
+int check_xcr0_ymm()
 {
   uint32_t xcr0;
 #if defined(_MSC_VER)
@@ -85,7 +85,7 @@ JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvxSupportedNative
   uint32_t avx_mask = (1 << 27) | (1 << 28);
 
   run_cpuid(1, 0, abcd);
-  if((abcd[2] & avx_mask) != avx_mask) 
+  if((abcd[2] & avx_mask) != avx_mask)
   {
     return false;
   }
