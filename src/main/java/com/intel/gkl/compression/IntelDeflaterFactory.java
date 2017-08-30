@@ -1,8 +1,7 @@
 package com.intel.gkl.compression;
 
 import htsjdk.samtools.util.zip.DeflaterFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.zip.Deflater;
@@ -11,7 +10,7 @@ import java.util.zip.Deflater;
  * Provides an IntelDeflater object using the DeflaterFactory API defined in HTSJDK
  */
 public class IntelDeflaterFactory extends DeflaterFactory {
-    private final static Logger logger = LogManager.getLogger(IntelDeflaterFactory.class);
+    private final static Logger logger = Logger.getLogger(IntelDeflaterFactory.class);
     private boolean intelDeflaterSupported;
 
     public IntelDeflaterFactory(File tmpDir) {
