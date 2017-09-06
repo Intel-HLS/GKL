@@ -22,7 +22,7 @@ ExternalProject_Add(
    isalExternal
    URL ${CMAKE_CURRENT_SOURCE_DIR}/../isa-l-master
    UPDATE_COMMAND <SOURCE_DIR>/autogen.sh
-#PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/isa-l.patch
+   PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/isa-l.patch
    CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> 
    BUILD_COMMAND make
    INSTALL_COMMAND make install
@@ -60,7 +60,7 @@ ExternalProject_Add(
    zlib-1.2.8devn-jtkv5External
    URL ${CMAKE_CURRENT_SOURCE_DIR}/../otc_zlib
    PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/zlib.patch
-   CONFIGURE_COMMAND <SOURCE_DIR>/configure --static --prefix=<INSTALL_DIR>
+   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
    BUILD_COMMAND make
    INSTALL_COMMAND make install
 )
