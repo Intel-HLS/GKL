@@ -1,5 +1,5 @@
 /**********************************************************************
-  Copyright(c) 2011-2016 Intel Corporation All rights reserved.
+  Copyright(c) 2011-2017 Intel Corporation All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -26,76 +26,59 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+
 #include "igzip_lib.h"
+#include "huff_codes.h"
 
-#define BUF_SIZE 8192
-#ifndef LEVEL
-# define LEVEL 0
-#else
-# define LEVEL 1
-#endif
-
-struct isal_zstream stream;
-
-int main(int argc, char *argv[])
+void inline heapify(uint64_t * heap, uint64_t heap_size, uint64_t index)
 {
-	uint8_t inbuf[BUF_SIZE], outbuf[BUF_SIZE];
-	FILE *in, *out;
+	uint64_t child = 2 * index, tmp;
+	while (child <= heap_size) {
+		child = (heap[child] <= heap[child + 1]) ? child : child + 1;
 
-	if (argc != 3) {
-		fprintf(stderr, "Usage: igzip_example infile outfile\n");
-		exit(0);
+		if (heap[index] > heap[child]) {
+			tmp = heap[index];
+			heap[index] = heap[child];
+			heap[child] = tmp;
+			index = child;
+			child = 2 * index;
+		} else
+			break;
 	}
-	in = fopen(argv[1], "rb");
-	if (!in) {
-		fprintf(stderr, "Can't open %s for reading\n", argv[1]);
-		exit(0);
+}
+
+void build_heap(uint64_t * heap, uint64_t heap_size)
+{
+	uint64_t i;
+	heap[heap_size + 1] = -1;
+	for (i = heap_size / 2; i > 0; i--)
+		heapify(heap, heap_size, i);
+
+}
+
+uint32_t build_huff_tree(struct heap_tree *heap_space, uint64_t heap_size, uint64_t node_ptr)
+{
+	uint64_t *heap = (uint64_t *) heap_space;
+	uint64_t h1, h2;
+
+	while (heap_size > 1) {
+		h1 = heap[1];
+		heap[1] = heap[heap_size];
+		heap[heap_size--] = -1;
+
+		heapify(heap, heap_size, 1);
+
+		h2 = heap[1];
+		heap[1] = ((h1 + h2) & ~0xFFFFull) | node_ptr;
+
+		heapify(heap, heap_size, 1);
+
+		*(uint16_t *) (&heap[node_ptr]) = h1;
+		*(uint16_t *) (&heap[node_ptr - 1]) = h2;
+		node_ptr -= 2;
+
 	}
-	out = fopen(argv[2], "wb");
-	if (!out) {
-		fprintf(stderr, "Can't open %s for writing\n", argv[2]);
-		exit(0);
-	}
-
-	printf("igzip_example\nWindow Size: %d K\n", IGZIP_HIST_SIZE / 1024);
-	fflush(0);
-
-	isal_deflate_init(&stream);
-	stream.end_of_stream = 0;
-	stream.flush = NO_FLUSH;
-
-	if (LEVEL == 1) {
-		stream.level = 1;
-		stream.level_buf = malloc(ISAL_DEF_LVL1_DEFAULT);
-		stream.level_buf_size = ISAL_DEF_LVL1_DEFAULT;
-		if (stream.level_buf == 0) {
-			printf("Failed to allocate level compression buffer\n");
-			exit(0);
-		}
-	}
-
-	do {
-		stream.avail_in = (uint32_t) fread(inbuf, 1, BUF_SIZE, in);
-		stream.end_of_stream = feof(in) ? 1 : 0;
-		stream.next_in = inbuf;
-		do {
-			stream.avail_out = BUF_SIZE;
-			stream.next_out = outbuf;
-
-			isal_deflate(&stream);
-
-			fwrite(outbuf, 1, BUF_SIZE - stream.avail_out, out);
-		} while (stream.avail_out == 0);
-
-		assert(stream.avail_in == 0);
-	} while (stream.internal_state.state != ZSTATE_END);
-
-	fclose(out);
-	fclose(in);
-
-	printf("End of igzip_example\n\n");
-	return 0;
+	h1 = heap[1];
+	*(uint16_t *) (&heap[node_ptr]) = h1;
+	return node_ptr;
 }
