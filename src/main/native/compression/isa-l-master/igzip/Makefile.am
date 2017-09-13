@@ -27,21 +27,40 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
 
-lsrc        += 	igzip/igzip.c igzip/hufftables_c.c \
+lsrc        += 	igzip/igzip.c \
+		igzip/hufftables_c.c \
+		igzip/igzip_base.c \
+		igzip/igzip_icf_base.c \
+		igzip/crc32_gzip_base.c \
+		igzip/flatten_ll.c \
+		igzip/encode_df.c
+
+lsrc_base_aliases += igzip/igzip_base_aliases.c igzip/proc_heap_base.c
+lsrc_x86_32       += igzip/igzip_base_aliases.c igzip/proc_heap_base.c
+
+lsrc_x86_64 +=  \
 		igzip/igzip_body_01.asm \
 		igzip/igzip_body_02.asm \
 		igzip/igzip_body_04.asm \
 		igzip/igzip_finish.asm \
-		igzip/crc_data.asm \
+		igzip/igzip_icf_body_01.asm \
+		igzip/igzip_icf_body_02.asm \
+		igzip/igzip_icf_body_04.asm \
+		igzip/igzip_icf_finish.asm \
 		igzip/rfc1951_lookup.asm \
 		igzip/crc32_gzip.asm igzip/detect_repeated_char.asm \
+		igzip/adler32_sse.asm \
+		igzip/adler32_avx2_4.asm \
 		igzip/igzip_multibinary.asm \
-		igzip/igzip_base.c \
 		igzip/igzip_update_histogram_01.asm \
 		igzip/igzip_update_histogram_04.asm \
 		igzip/igzip_decode_block_stateless_01.asm \
 		igzip/igzip_decode_block_stateless_04.asm \
-		igzip/igzip_inflate_multibinary.asm
+		igzip/igzip_inflate_multibinary.asm \
+		igzip/encode_df_04.asm \
+		igzip/encode_df_06.asm \
+		igzip/proc_heap.asm \
+		igzip/igzip_deflate_hash.asm
 
 src_include += -I $(srcdir)/igzip
 extern_hdrs +=	include/igzip_lib.h
@@ -49,26 +68,38 @@ extern_hdrs +=	include/igzip_lib.h
 pkginclude_HEADERS += include/types.h
 
 check_tests +=  igzip/igzip_rand_test
+unit_tests  +=  igzip/checksum32_funcs_test
 
 perf_tests  +=  igzip/igzip_perf igzip/igzip_sync_flush_perf
 
 other_tests +=  igzip/igzip_file_perf igzip/igzip_sync_flush_file_perf igzip/igzip_stateless_file_perf igzip/igzip_hist_perf
 other_tests +=  igzip/igzip_semi_dyn_file_perf
 
-other_src   += 	igzip/bitbuf2.asm igzip/data_struct2.asm \
+other_src   += 	igzip/bitbuf2.asm  \
+		igzip/data_struct2.asm \
 		igzip/inflate_data_structs.asm \
-		igzip/igzip_body.asm igzip/igzip_finish.asm \
-		igzip/lz0a_const.asm igzip/options.asm igzip/stdmac.asm igzip/igzip_compare_types.asm \
-		igzip/bitbuf2.h igzip/repeated_char_result.h \
 		igzip/igzip_body.asm \
+		igzip/igzip_icf_body.asm \
+		igzip/igzip_finish.asm \
+		igzip/lz0a_const.asm \
+		igzip/options.asm \
+		igzip/stdmac.asm \
+		igzip/igzip_compare_types.asm \
+		igzip/bitbuf2.h \
+		igzip/repeated_char_result.h \
 		igzip/igzip_update_histogram.asm \
 		igzip/huffman.asm \
 		include/reg_sizes.asm \
 		include/multibinary.asm \
 		include/test.h \
 		igzip/huffman.h \
+		igzip/igzip_level_buf_structs.h \
 		igzip/igzip_decode_block_stateless.asm \
-		igzip/inflate_std_vects.h
+		igzip/inflate_std_vects.h \
+		igzip/flatten_ll.h \
+		igzip/encode_df.h \
+		igzip/heap_macros.asm \
+		igzip/igzip_checksums.h
 
 examples    += 	igzip/igzip_example igzip/igzip_sync_flush_example
 
@@ -76,7 +107,6 @@ igzip_igzip_rand_test_LDADD = libisal.la
 
 # Include tools to make custom Huffman tables based on sample data
 other_tests += igzip/generate_custom_hufftables
-other_tests += igzip/generate_constant_block_header
 other_src   += igzip/huff_codes.h
 lsrc        += igzip/huff_codes.c
 
@@ -85,7 +115,7 @@ other_tests += igzip/igzip_inflate_perf
 other_tests += igzip/igzip_inflate_test
 other_tests += igzip/igzip_fuzz_inflate
 lsrc   += igzip/igzip_inflate.c
-other_src   += igzip/crc_inflate.h
+other_src   += igzip/checksum_test_ref.h
 
 igzip_inflate_perf: LDLIBS += -lz
 igzip_igzip_inflate_perf_LDADD = libisal.la

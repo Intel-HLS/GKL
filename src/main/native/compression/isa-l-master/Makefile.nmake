@@ -2,7 +2,7 @@
 #  Copyright(c) 2011-2016 Intel Corporation All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
-#  modification, are permitted provided that the following conditions 
+#  modification, are permitted provided that the following conditions
 #  are met:
 #    * Redistributions of source code must retain the above copyright
 #      notice, this list of conditions and the following disclaimer.
@@ -80,11 +80,13 @@ objs =  \
 	bin\pq_check_sse.obj \
 	bin\pq_gen_avx.obj \
 	bin\pq_gen_avx2.obj \
+	bin\pq_gen_avx512.obj \
 	bin\pq_gen_sse.obj \
 	bin\raid_base.obj \
 	bin\raid_multibinary.obj \
 	bin\xor_check_sse.obj \
 	bin\xor_gen_avx.obj \
+	bin\xor_gen_avx512.obj \
 	bin\xor_gen_sse.obj \
 	bin\crc16_t10dif_01.obj \
 	bin\crc16_t10dif_by4.obj \
@@ -102,7 +104,7 @@ objs =  \
 	bin\crc64_jones_refl_by8.obj \
 	bin\crc64_multibinary.obj \
 	bin\crc_base.obj \
-	bin\crc_data.obj \
+	bin\crc32_gzip_base.obj \
 	bin\crc_multibinary.obj \
 	bin\huff_codes.obj \
 	bin\hufftables_c.obj \
@@ -114,13 +116,26 @@ objs =  \
 	bin\igzip_decode_block_stateless_01.obj \
 	bin\igzip_decode_block_stateless_04.obj \
 	bin\igzip_finish.obj \
+	bin\flatten_ll.obj \
+	bin\encode_df.obj \
+	bin\encode_df_04.obj \
+	bin\proc_heap.obj \
+	bin\igzip_icf_body_01.obj \
+	bin\igzip_icf_body_02.obj \
+	bin\igzip_icf_body_04.obj \
+	bin\igzip_icf_finish.obj \
+	bin\igzip_icf_base.obj \
 	bin\igzip_inflate.obj \
 	bin\igzip_inflate_multibinary.obj \
 	bin\igzip_multibinary.obj \
 	bin\igzip_update_histogram_01.obj \
 	bin\igzip_update_histogram_04.obj \
 	bin\rfc1951_lookup.obj \
-	bin\detect_repeated_char.obj
+	bin\detect_repeated_char.obj \
+	bin\crc32_gzip_refl_by8.obj \
+	bin\adler32_sse.obj \
+	bin\adler32_avx2_4.obj \
+	bin\igzip_deflate_hash.obj
 
 INCLUDES  = -I./ -Ierasure_code/ -Iraid/ -Icrc/ -Iigzip/ -Iinclude/
 LINKFLAGS = /nologo
@@ -136,10 +151,14 @@ dll: bin isa-l.dll
 bin: ; -mkdir $@
 
 isa-l_static.lib: $(objs)
-	lib -out:$@ $?
+	lib -out:$@ @<<
+$?
+<<
 
 isa-l.dll: $(objs)
-	link -out:$@ -dll -def:isa-l.def $?
+	link -out:$@ -dll -def:isa-l.def @<<
+$?
+<<
 
 {erasure_code}.c.obj:
 	$(CC) $(CFLAGS) /c -Fo$@ $?
@@ -163,7 +182,7 @@ isa-l.dll: $(objs)
 
 
 # Examples
-ex = xor_example.exe crc_simple_test.exe igzip_example.exe igzip_sync_flush_example.exe
+ex = xor_example.exe crc_simple_test.exe crc64_example.exe igzip_example.exe igzip_sync_flush_example.exe
 ex: lib $(ex)
 
 $(ex): $(@B).obj
@@ -185,7 +204,8 @@ checks = \
 	crc32_ieee_test.exe \
 	crc32_iscsi_test.exe \
 	crc64_funcs_test.exe \
-	igzip_rand_test.exe
+	igzip_rand_test.exe \
+	crc32_gzip_refl_test.exe
 
 checks: lib $(checks)
 $(checks): $(@B).obj
@@ -228,7 +248,8 @@ perfs = \
 	crc32_ieee_perf.exe \
 	crc32_iscsi_perf.exe \
 	igzip_perf.exe \
-	igzip_sync_flush_perf.exe
+	igzip_sync_flush_perf.exe \
+	crc32_gzip_refl_perf.exe
 
 perfs: lib $(perfs)
 $(perfs): $(@B).obj

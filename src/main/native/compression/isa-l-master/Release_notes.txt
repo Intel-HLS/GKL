@@ -1,25 +1,32 @@
-=============================================================================
-v2.17 Intel Intelligent Storage Acceleration Library Release Notes
-=============================================================================
+v2.19 Intel Intelligent Storage Acceleration Library Release Notes
+==================================================================
 
-=============================================================================
 RELEASE NOTE CONTENTS
-=============================================================================
 1. KNOWN ISSUES
 2. FIXED ISSUES
 3. CHANGE LOG & FEATURES ADDED
 
-=============================================================================
-1.  KNOWN ISSUES
-=============================================================================
+1. KNOWN ISSUES
+----------------
 
 * Perf tests do not run in Windows environment.
 
 * 32-bit lib is not supported in Windows.
 
-=============================================================================
 2. FIXED ISSUES
-=============================================================================
+---------------
+
+v2.19
+
+* Fix erasure code test that violates rs matrix bounds.
+
+* Fix 0 length file and looping errors in igzip_inflate_test.
+
+v2.18
+
+* Mac OS X/darwin systems no longer require the --target=darwin config option.
+  The autoconf canonical build should detect.
+
 v2.17
 
 * Fix igzip using 32K window and a shared object
@@ -46,9 +53,36 @@ v2.10
   affects windows versions of erasure code.  GP register saves/restore were
   pushed to same stack area as XMM.
 
-=============================================================================
-3. CHANGE LOG & FEATURES ADDED 
-=============================================================================
+3. CHANGE LOG & FEATURES ADDED
+------------------------------
+
+v2.19
+
+* Igzip improvements
+
+  - Add optimized Adler-32 checksum.
+
+  - Implement zlib compression format.
+
+  - Add stateful dictionary support.
+
+  - Add struct reset functions for both deflate and inflate.
+
+* Reflected IEEE format CRC32 is released out. Function interface is named
+  crc32_gzip_refl.
+
+* Exact work condition of Erasure Code Reed-Solomon Matrix is determined by new
+  added program gen_rs_matrix_limits.
+
+v2.18
+
+* New 2-pass fully-dynamic deflate compression (level -1).  ISA-L fast deflate
+  now has two levels.  Level 0 (default) is the same as previous generations.
+  Setting to level 1 will switch to the fully-dynamic compression that will
+  typically reach higher compression ratios.
+
+* RAID AVX512 functions.
+
 v2.17
 
 * New fast decompression (inflate)

@@ -30,9 +30,9 @@
 #include <stdint.h>
 #include "igzip_lib.h"
 #include "huff_codes.h"
+#include "igzip_checksums.h"
 
 extern int decode_huffman_code_block_stateless(struct inflate_state *);
-extern uint32_t crc32_gzip(uint32_t init_crc, const unsigned char *buf, uint64_t len);
 
 /* structure contain lookup data based on RFC 1951 */
 struct rfc1951_tables {
@@ -81,11 +81,17 @@ struct slver {
 struct slver isal_inflate_init_slver_00010088;
 struct slver isal_inflate_init_slver = { 0x0088, 0x01, 0x00 };
 
+struct slver isal_inflate_reset_slver_0001008f;
+struct slver isal_inflate_reset_slver = { 0x008f, 0x01, 0x00 };
+
 struct slver isal_inflate_stateless_slver_00010089;
 struct slver isal_inflate_stateless_slver = { 0x0089, 0x01, 0x00 };
 
 struct slver isal_inflate_slver_0001008a;
 struct slver isal_inflate_slver = { 0x008a, 0x01, 0x00 };
+
+struct slver isal_inflate_set_dict_slver_0001008d;
+struct slver isal_inflate_set_dict_slver = { 0x008d, 0x01, 0x00 };
 
 /*Performs a copy of length repeat_length data starting at dest -
  * lookback_distance into dest. This copy copies data previously copied when the
@@ -96,6 +102,26 @@ static void inline byte_copy(uint8_t * dest, uint64_t lookback_distance, int rep
 
 	for (; repeat_length > 0; repeat_length--)
 		*dest++ = *src++;
+}
+
+static void update_checksum(struct inflate_state *state, uint8_t * start_in, uint64_t length)
+{
+	switch (state->crc_flag) {
+	case ISAL_GZIP:
+	case ISAL_GZIP_NO_HDR:
+		state->crc = crc32_gzip(state->crc, start_in, length);
+		break;
+	case ISAL_ZLIB:
+	case ISAL_ZLIB_NO_HDR:
+		state->crc = isal_adler32_bam1(state->crc, start_in, length);
+		break;
+	}
+}
+
+static void finalize_adler32(struct inflate_state *state)
+{
+
+	state->crc = (state->crc & 0xffff0000) | (((state->crc & 0xffff) + 1) % ADLER_MOD);
 }
 
 /*
@@ -1044,7 +1070,7 @@ int decode_huffman_code_block_stateless_base(struct inflate_state *state)
 				return ISAL_END_INPUT;
 			}
 
-			if (look_back_dist > state->total_out)
+			if (look_back_dist > state->total_out + state->dict_length)
 				return ISAL_INVALID_LOOKBACK;
 
 			if (state->avail_out < repeat_length) {
@@ -1083,6 +1109,7 @@ void isal_inflate_init(struct inflate_state *state)
 	state->next_out = NULL;
 	state->avail_out = 0;
 	state->total_out = 0;
+	state->dict_length = 0;
 	state->block_state = ISAL_BLOCK_NEW_HDR;
 	state->bfinal = 0;
 	state->crc_flag = 0;
@@ -1095,6 +1122,43 @@ void isal_inflate_init(struct inflate_state *state)
 	state->tmp_out_valid = 0;
 }
 
+void isal_inflate_reset(struct inflate_state *state)
+{
+	state->read_in = 0;
+	state->read_in_length = 0;
+	state->total_out = 0;
+	state->dict_length = 0;
+	state->block_state = ISAL_BLOCK_NEW_HDR;
+	state->bfinal = 0;
+	state->crc = 0;
+	state->type0_block_len = 0;
+	state->copy_overflow_length = 0;
+	state->copy_overflow_distance = 0;
+	state->tmp_in_size = 0;
+	state->tmp_out_processed = 0;
+	state->tmp_out_valid = 0;
+}
+
+int isal_inflate_set_dict(struct inflate_state *state, uint8_t * dict, uint32_t dict_len)
+{
+
+	if (state->block_state != ISAL_BLOCK_NEW_HDR
+	    || state->tmp_out_processed != state->tmp_out_valid)
+		return ISAL_INVALID_STATE;
+
+	if (dict_len > IGZIP_HIST_SIZE) {
+		dict = dict + dict_len - IGZIP_HIST_SIZE;
+		dict_len = IGZIP_HIST_SIZE;
+	}
+
+	memcpy(state->tmp_out_buffer, dict, dict_len);
+	state->tmp_out_processed = dict_len;
+	state->tmp_out_valid = dict_len;
+	state->dict_length = dict_len;
+
+	return COMP_OK;
+}
+
 int isal_inflate_stateless(struct inflate_state *state)
 {
 	uint32_t ret = 0;
@@ -1103,6 +1167,7 @@ int isal_inflate_stateless(struct inflate_state *state)
 	state->read_in = 0;
 	state->read_in_length = 0;
 	state->block_state = ISAL_BLOCK_NEW_HDR;
+	state->dict_length = 0;
 	state->bfinal = 0;
 	state->crc = 0;
 	state->total_out = 0;
@@ -1126,9 +1191,11 @@ int isal_inflate_stateless(struct inflate_state *state)
 			state->block_state = ISAL_BLOCK_FINISH;
 	}
 
-	if (state->crc_flag)
-		state->crc = crc32_gzip(state->crc, start_out, state->next_out - start_out);
-
+	if (state->crc_flag) {
+		update_checksum(state, start_out, state->next_out - start_out);
+		if (state->crc_flag == ISAL_ZLIB || state->crc_flag == ISAL_ZLIB_NO_HDR)
+			finalize_adler32(state);
+	}
 	/* Undo count stuff of bytes read into the read buffer */
 	state->next_in -= state->read_in_length / 8;
 	state->avail_in += state->read_in_length / 8;
@@ -1175,8 +1242,9 @@ int isal_inflate(struct inflate_state *state)
 				if (ret)
 					break;
 				if (state->bfinal != 0
-				    && state->block_state == ISAL_BLOCK_NEW_HDR)
+				    && state->block_state == ISAL_BLOCK_NEW_HDR) {
 					state->block_state = ISAL_BLOCK_INPUT_DONE;
+				}
 			}
 
 			/* Copy valid data from internal buffer into out_buffer */
@@ -1214,9 +1282,7 @@ int isal_inflate(struct inflate_state *state)
 			/* Set total_out to not count data in tmp_out_buffer */
 			state->total_out -= state->tmp_out_valid - state->tmp_out_processed;
 			if (state->crc_flag)
-				state->crc =
-				    crc32_gzip(state->crc, start_out,
-					       state->next_out - start_out);
+				update_checksum(state, start_out, state->next_out - start_out);
 			return ret;
 		}
 
@@ -1244,8 +1310,7 @@ int isal_inflate(struct inflate_state *state)
 		}
 
 		if (state->crc_flag)
-			state->crc =
-			    crc32_gzip(state->crc, start_out, state->next_out - start_out);
+			update_checksum(state, start_out, state->next_out - start_out);
 
 		if (state->block_state != ISAL_BLOCK_INPUT_DONE) {
 			/* Save decompression history in tmp_out buffer */
@@ -1284,8 +1349,12 @@ int isal_inflate(struct inflate_state *state)
 			    || ret == ISAL_INVALID_SYMBOL)
 				return ret;
 
-		} else if (state->tmp_out_valid == state->tmp_out_processed)
+		} else if (state->tmp_out_valid == state->tmp_out_processed) {
 			state->block_state = ISAL_BLOCK_FINISH;
+			if (state->crc_flag == ISAL_ZLIB
+			    || state->crc_flag == ISAL_ZLIB_NO_HDR)
+				finalize_adler32(state);
+		}
 	}
 
 	return ISAL_DECOMP_OK;

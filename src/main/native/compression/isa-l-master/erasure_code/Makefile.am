@@ -1,8 +1,8 @@
 ########################################################################
-#  Copyright(c) 2011-2015 Intel Corporation All rights reserved.
+#  Copyright(c) 2011-2017 Intel Corporation All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
-#  modification, are permitted provided that the following conditions 
+#  modification, are permitted provided that the following conditions
 #  are met:
 #    * Redistributions of source code must retain the above copyright
 #      notice, this list of conditions and the following disclaimer.
@@ -27,8 +27,12 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
 
-lsrc         += erasure_code/ec_highlevel_func.c \
-		erasure_code/ec_base.c \
+lsrc         += erasure_code/ec_base.c
+
+lsrc_base_aliases += erasure_code/ec_base_aliases.c
+
+lsrc_x86_64  += \
+		erasure_code/ec_highlevel_func.c \
 		erasure_code/gf_vect_mul_sse.asm \
 		erasure_code/gf_vect_mul_avx.asm \
 		erasure_code/gf_vect_dot_prod_sse.asm  \
@@ -70,7 +74,8 @@ lsrc         += erasure_code/ec_highlevel_func.c \
 		erasure_code/ec_multibinary.asm
 
 #if HAVE_AVX512
-lsrc +=		erasure_code/gf_vect_dot_prod_avx512.asm \
+lsrc_x86_64  += \
+		erasure_code/gf_vect_dot_prod_avx512.asm \
 		erasure_code/gf_2vect_dot_prod_avx512.asm \
 		erasure_code/gf_3vect_dot_prod_avx512.asm \
 		erasure_code/gf_4vect_dot_prod_avx512.asm \
@@ -79,9 +84,9 @@ lsrc +=		erasure_code/gf_vect_dot_prod_avx512.asm \
 		erasure_code/gf_3vect_mad_avx512.asm \
 		erasure_code/gf_4vect_mad_avx512.asm
 
-lsrc32	     += erasure_code/ec_highlevel_func.c \
+lsrc_x86_32  += \
+		erasure_code/ec_highlevel_func.c \
 		erasure_code/ec_multibinary.asm \
-		erasure_code/ec_base.c \
 		erasure_code/gf_vect_dot_prod_avx.asm \
 		erasure_code/gf_2vect_dot_prod_avx.asm \
 		erasure_code/gf_3vect_dot_prod_avx.asm \
@@ -166,6 +171,8 @@ perf_tests   += erasure_code/gf_vect_mul_perf \
 		erasure_code/erasure_code_base_perf \
 		erasure_code/erasure_code_sse_perf \
 		erasure_code/erasure_code_update_perf
+
+other_tests  += erasure_code/gen_rs_matrix_limits
 
 other_src    += include/test.h \
 		include/types.h

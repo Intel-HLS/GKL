@@ -27,15 +27,21 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************/
 
+#define _FILE_OFFSET_BITS 64
 #include <stdint.h>
 #include <stdio.h>
 #include <zlib.h>
 #include "igzip_lib.h"
 #include "huff_codes.h"
+#include "test.h"
 
 /*Don't use file larger memory can support because compression and decompression
  * are done in a stateless manner. */
+#if __WORDSIZE == 64
 #define MAX_INPUT_FILE_SIZE 2L*1024L*1024L*1024L
+#else
+#define MAX_INPUT_FILE_SIZE 512L*1024L*1024L
+#endif
 
 int inflate_multi_pass(uint8_t * compress_buf, uint64_t compress_len,
 		       uint8_t * uncompress_buf, uint32_t * uncompress_len)
@@ -149,7 +155,7 @@ int test(uint8_t * compressed_stream,
 {
 	int ret;
 	ret =
-	    compress2(compressed_stream, compressed_length,
+	    compress2(compressed_stream, (uLongf *) compressed_length,
 		      uncompressed_stream, uncompressed_length, 6);
 	if (ret) {
 		printf("Failed compressing input with exit code %d", ret);
@@ -223,6 +229,12 @@ int main(int argc, char **argv)
 	if (argc == 1)
 		printf("Error, no input file\n");
 	for (i = 1; i < argc; i++) {
+
+		file = NULL;
+		uncompressed_stream = NULL;
+		compressed_stream = NULL;
+		uncompressed_test_stream = NULL;
+
 		file = fopen(argv[i], "r");
 		if (file == NULL) {
 			printf("Error opening file %s\n", argv[i]);
@@ -230,34 +242,35 @@ int main(int argc, char **argv)
 		} else
 			printf("Starting file %s", argv[i]);
 		fflush(0);
-		fseek(file, 0, SEEK_END);
-		file_length = ftell(file);
-		fseek(file, 0, SEEK_SET);
-		file_length -= ftell(file);
+		file_length = get_filesize(file);
 		if (file_length > MAX_INPUT_FILE_SIZE) {
-			printf("File too large to run on this test\n");
+			printf("\nFile too large to run on this test,"
+			       " Max 512MB for 32bit OS, 2GB for 64bit OS.\n");
+			printf(" ... Fail\n");
 			fclose(file);
 			continue;
 		}
 
 		compressed_length = compressBound(file_length);
+
 		if (file_length != 0) {
 			uncompressed_stream = malloc(file_length);
 			uncompressed_test_stream = malloc(file_length);
 		}
+
 		compressed_stream = malloc(compressed_length);
 		if (uncompressed_stream == NULL && file_length != 0) {
-			printf("Failed to allocate memory\n");
+			printf("\nFailed to allocate input memory\n");
 			exit(0);
 		}
 
 		if (compressed_stream == NULL) {
-			printf("Failed to allocate memory\n");
+			printf("\nFailed to allocate output memory\n");
 			exit(0);
 		}
 
-		if (uncompressed_test_stream == NULL) {
-			printf("Failed to allocate memory\n");
+		if (uncompressed_test_stream == NULL && file_length != 0) {
+			printf("\nFailed to allocate decompressed memory\n");
 			exit(0);
 		}
 
@@ -280,7 +293,8 @@ int main(int argc, char **argv)
 
 		fflush(0);
 		fclose(file);
-		free(compressed_stream);
+		if (compressed_stream != NULL)
+			free(compressed_stream);
 		if (uncompressed_stream != NULL)
 			free(uncompressed_stream);
 		if (uncompressed_test_stream != NULL)
