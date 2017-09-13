@@ -3,6 +3,7 @@
 #---------------------------------------------------------------------
 if(NOT APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-as-needed")
+endif()
 
 #---------------------------------------------------------------------
 # pairhmm_shacc (stub version)
