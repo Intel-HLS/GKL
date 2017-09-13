@@ -1,7 +1,8 @@
 #---------------------------------------------------------------------
 # common
 #---------------------------------------------------------------------
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-as-needed")
+if(NOT APPLE)
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-as-needed")
 
 #---------------------------------------------------------------------
 # pairhmm_shacc (stub version)
