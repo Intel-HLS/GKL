@@ -2,7 +2,7 @@
   Copyright(c) 2011-2015 Intel Corporation All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions 
+  modification, are permitted provided that the following conditions
   are met:
     * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
@@ -29,18 +29,6 @@
 #include <limits.h>
 #include "erasure_code.h"
 #include "types.h"
-
-void ec_init_tables(int k, int rows, unsigned char *a, unsigned char *g_tbls)
-{
-	int i, j;
-
-	for (i = 0; i < rows; i++) {
-		for (j = 0; j < k; j++) {
-			gf_vect_mul_init(*a++, g_tbls);
-			g_tbls += 32;
-		}
-	}
-}
 
 void ec_encode_data_sse(int len, int k, int rows, unsigned char *g_tbls, unsigned char **data,
 			unsigned char **coding)

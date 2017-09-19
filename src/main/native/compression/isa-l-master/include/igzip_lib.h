@@ -2,7 +2,7 @@
   Copyright(c) 2011-2016 Intel Corporation All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions 
+  modification, are permitted provided that the following conditions
   are met:
     * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
@@ -50,7 +50,10 @@
  *   in sync flush but also ensures that subsequent block's history does not
  *   look back beyond this point and new blocks are fully independent.
  *
- * Igzip contians some behaviour configurable at compile time. These
+ * Igzip also supports compression levels from ISAL_DEF_MIN_LEVEL to
+ * ISAL_DEF_MAX_LEVEL.
+ *
+ * Igzip contains some behaviour configurable at compile time. These
  * configureable options are:
  *
  * - IGZIP_HIST_SIZE - Defines the window size. The default value is 32K (note K
@@ -143,6 +146,8 @@ enum {IGZIP_LIT_TABLE_SIZE = ISAL_DEF_LIT_SYMBOLS};
 #define IGZIP_DEFLATE	0	/* Default */
 #define IGZIP_GZIP	1
 #define IGZIP_GZIP_NO_HDR	2
+#define IGZIP_ZLIB	3
+#define IGZIP_ZLIB_NO_HDR	4
 
 /* Compression Return values */
 #define COMP_OK 0
@@ -150,9 +155,10 @@ enum {IGZIP_LIT_TABLE_SIZE = ISAL_DEF_LIT_SYMBOLS};
 #define INVALID_PARAM -8
 #define STATELESS_OVERFLOW -1
 #define ISAL_INVALID_OPERATION -9
-
+#define ISAL_INVALID_LEVEL -4	/* Invalid Compression level set */
+#define ISAL_INVALID_STATE -3
 /**
- *  @enum isal_zstate
+ *  @enum isal_zstate_state
  *  @brief Compression State please note ZSTATE_TRL only applies for GZIP compression
  */
 
@@ -163,16 +169,22 @@ enum {IGZIP_LIT_TABLE_SIZE = ISAL_DEF_LIT_SYMBOLS};
 enum isal_zstate_state {
 	ZSTATE_NEW_HDR,  //!< Header to be written
 	ZSTATE_HDR,	//!< Header state
+	ZSTATE_CREATE_HDR, //!< Header to be created
 	ZSTATE_BODY,	//!< Body state
 	ZSTATE_FLUSH_READ_BUFFER, //!< Flush buffer
+	ZSTATE_FLUSH_ICF_BUFFER,
+	ZSTATE_TYPE0_HDR, //! Type0 block header to be written
+	ZSTATE_TYPE0_BODY, //!< Type0 block body to be written
 	ZSTATE_SYNC_FLUSH, //!< Write sync flush block
 	ZSTATE_FLUSH_WRITE_BUFFER, //!< Flush bitbuf
 	ZSTATE_TRL,	//!< Trailer state
 	ZSTATE_END,	//!< End state
 	ZSTATE_TMP_NEW_HDR, //!< Temporary Header to be written
 	ZSTATE_TMP_HDR,	//!< Temporary Header state
+	ZSTATE_TMP_CREATE_HDR, //!< Temporary Header to be created state
 	ZSTATE_TMP_BODY,	//!< Temporary Body state
 	ZSTATE_TMP_FLUSH_READ_BUFFER, //!< Flush buffer
+	ZSTATE_TMP_FLUSH_ICF_BUFFER,
 	ZSTATE_TMP_SYNC_FLUSH, //!< Write sync flush block
 	ZSTATE_TMP_FLUSH_WRITE_BUFFER, //!< Flush bitbuf
 	ZSTATE_TMP_TRL,	//!< Temporary Trailer state
@@ -198,6 +210,14 @@ enum isal_block_state {
 	ISAL_BLOCK_FINISH	/* Decompression of input is completed and all data has been flushed to output */
 };
 
+
+/* Inflate Flags */
+#define ISAL_DEFLATE	0	/* Default */
+#define ISAL_GZIP	1
+#define ISAL_GZIP_NO_HDR	2
+#define ISAL_ZLIB	3
+#define ISAL_ZLIB_NO_HDR	4
+
 /* Inflate Return values */
 #define ISAL_DECOMP_OK 0	/* No errors encountered while decompressing */
 #define ISAL_END_INPUT 1	/* End of input reached */
@@ -205,7 +225,6 @@ enum isal_block_state {
 #define ISAL_INVALID_BLOCK -1	/* Invalid deflate block found */
 #define ISAL_INVALID_SYMBOL -2	/* Invalid deflate symbol found */
 #define ISAL_INVALID_LOOKBACK -3	/* Invalid lookback distance found */
-
 
 /******************************************************************************/
 /* Compression structures */
@@ -216,6 +235,38 @@ struct isal_huff_histogram {
 	uint64_t dist_histogram[ISAL_DEF_DIST_SYMBOLS]; //!< Histogram of Distance Symbols seen
 	uint16_t hash_table[IGZIP_HASH_SIZE]; //!< Tmp space used as a hash table
 };
+
+struct isal_mod_hist {
+    uint32_t d_hist[30];
+    uint32_t ll_hist[513];
+};
+
+#define ISAL_DEF_MIN_LEVEL 0
+#define ISAL_DEF_MAX_LEVEL 1
+
+/* Defines used set level data sizes */
+#define ISAL_DEF_LVL0_REQ 0
+#define ISAL_DEF_LVL1_REQ 4 * IGZIP_K /* has to be at least sizeof(struct level_2_buf) */
+#define ISAL_DEF_LVL1_TOKEN_SIZE 4
+
+/* Data sizes for level specific data options */
+#define ISAL_DEF_LVL0_MIN ISAL_DEF_LVL0_REQ
+#define ISAL_DEF_LVL0_SMALL ISAL_DEF_LVL0_REQ
+#define ISAL_DEF_LVL0_MEDIUM ISAL_DEF_LVL0_REQ
+#define ISAL_DEF_LVL0_LARGE ISAL_DEF_LVL0_REQ
+#define ISAL_DEF_LVL0_EXTRA_LARGE ISAL_DEF_LVL0_REQ
+#define ISAL_DEF_LVL0_DEFAULT ISAL_DEF_LVL0_REQ
+
+#define ISAL_DEF_LVL1_MIN (ISAL_DEF_LVL1_REQ + ISAL_DEF_LVL1_TOKEN_SIZE * 1 * IGZIP_K)
+#define ISAL_DEF_LVL1_SMALL (ISAL_DEF_LVL1_REQ + ISAL_DEF_LVL1_TOKEN_SIZE * 16 * IGZIP_K)
+#define ISAL_DEF_LVL1_MEDIUM (ISAL_DEF_LVL1_REQ + ISAL_DEF_LVL1_TOKEN_SIZE * 32 * IGZIP_K)
+#define ISAL_DEF_LVL1_LARGE (ISAL_DEF_LVL1_REQ + ISAL_DEF_LVL1_TOKEN_SIZE * 64 * IGZIP_K)
+#define ISAL_DEF_LVL1_EXTRA_LARGE (ISAL_DEF_LVL1_REQ + ISAL_DEF_LVL1_TOKEN_SIZE * 128 * IGZIP_K)
+#define ISAL_DEF_LVL1_DEFAULT ISAL_DEF_LVL1_LARGE
+
+#define IGZIP_NO_HIST 0
+#define IGZIP_HIST 1
+#define IGZIP_DICT_HIST 2
 
 /** @brief Holds Bit Buffer information*/
 struct BitBuf2 {
@@ -243,9 +294,12 @@ struct isal_zstate {
 	uint8_t tmp_out_buff[16];	//!< temporary array
 	uint32_t tmp_out_start;	//!< temporary variable
 	uint32_t tmp_out_end;	//!< temporary variable
+	uint32_t has_wrap_hdr;	//!< keeps track of wrapper header
 	uint32_t has_eob;	//!< keeps track of eob on the last deflate block
 	uint32_t has_eob_hdr;	//!< keeps track of eob hdr (with BFINAL set)
 	uint32_t has_hist;	//!< flag to track if there is match history
+
+	struct isal_mod_hist hist;
 
 	DECLARE_ALIGNED(uint8_t buffer[2 * IGZIP_HIST_SIZE + ISAL_LOOK_AHEAD], 32);	//!< Internal buffer
 	DECLARE_ALIGNED(uint16_t head[IGZIP_HASH_SIZE], 16);	//!< Hash array
@@ -278,6 +332,9 @@ struct isal_zstream {
 	uint32_t total_out;	//!< total number of bytes written so far
 
 	struct isal_hufftables *hufftables; //!< Huffman encoding used when compressing
+	uint32_t level; //!< Compression level to use
+	uint32_t level_buf_size; //!< Size of level_buf
+	uint8_t * level_buf; //!< User allocated buffer required for different compression levels
 	uint32_t end_of_stream;	//!< non-zero if this is the last input buffer
 	uint32_t flush;	//!< Flush type can be NO_FLUSH, SYNC_FLUSH or FULL_FLUSH
 	uint32_t gzip_flag; //!< Indicate if gzip compression is to be performed
@@ -349,7 +406,7 @@ struct inflate_huff_code_small {
 /** @brief Holds decompression state information*/
 struct inflate_state {
 	uint8_t *next_out;	//!< Next output Byte
-	uint32_t avail_out;	//!< Number of bytes available at next_out 
+	uint32_t avail_out;	//!< Number of bytes available at next_out
 	uint32_t total_out;	//!< Total bytes written out so far
 	uint8_t *next_in;	//!< Next input byte
 	uint64_t read_in;	//!< Bits buffered to handle unaligned streams
@@ -358,6 +415,7 @@ struct inflate_state {
 	struct inflate_huff_code_large lit_huff_code;	//!< Structure for decoding lit/len symbols
 	struct inflate_huff_code_small dist_huff_code;	//!< Structure for decoding dist symbols
 	enum isal_block_state block_state;	//!< Current decompression state
+	uint32_t dict_length;	//!< Length of dictionary used
 	uint32_t bfinal;	//!< Flag identifying final block
 	uint32_t crc_flag;	//!< Flag identifying whether to track of crc
 	uint32_t crc;		//!< Contains crc of output if crc_flag is set
@@ -394,9 +452,8 @@ void isal_update_histogram(uint8_t * in_stream, int length, struct isal_huff_his
  *  distances are assigned a code.
  *
  * @param hufftables: the output structure containing the huffman code
- * @param lit_histogram: histogram containing frequency of literal symbols and
- * repeat lengths
- * @param dist_histogram: histogram containing frequency of of lookback distances
+ * @param histogram: histogram containing frequency of literal symbols,
+ *        repeat lengths and lookback distances
  * @returns Returns a non zero value if an invalid huffman code was created.
  */
 int isal_create_hufftables(struct isal_hufftables * hufftables,
@@ -408,9 +465,8 @@ int isal_create_hufftables(struct isal_hufftables * hufftables,
  * are not assigned a code
  *
  * @param hufftables: the output structure containing the huffman code
- * @param lit_histogram: histogram containing frequency of literal symbols and
- * repeat lengths
- * @param dist_histogram: histogram containing frequency of of lookback distances
+ * @param histogram: histogram containing frequency of literal symbols,
+ *        repeat lengths and lookback distances
  * @returns Returns a non zero value if an invalid huffman code was created.
  */
 int isal_create_hufftables_subset(struct isal_hufftables * hufftables,
@@ -423,6 +479,17 @@ int isal_create_hufftables_subset(struct isal_hufftables * hufftables,
  * @returns none
  */
 void isal_deflate_init(struct isal_zstream *stream);
+
+/**
+ * @brief Reinitialize compression stream data structure. Performs the same
+ * action as isal_deflate_init, but does not change user supplied input such as
+ * the level, flush type, compression wrapper (like gzip), hufftables, and
+ * end_of_stream_flag.
+ *
+ * @param stream Structure holding state information on the compression streams.
+ * @returns none
+ */
+void isal_deflate_reset(struct isal_zstream *stream);
 
 /**
  * @brief Set stream to use a new Huffman code
@@ -457,7 +524,28 @@ void isal_deflate_stateless_init(struct isal_zstream *stream);
 
 
 /**
+ * @brief Set compression dictionary to use
+ *
+ * This function is to be called after isal_deflate_init, or after completing a
+ * SYNC_FLUSH or FULL_FLUSH and before the next call do isal_deflate. If the
+ * dictionary is longer than IGZIP_HIST_SIZE, only the last IGZIP_HIST_SIZE
+ * bytes will be used.
+ *
+ * @param stream Structure holding state information on the compression streams.
+ * @param dict: Array containing dictionary to use.
+ * @param dict_len: Lenth of dict.
+ * @returns COMP_OK,
+ *          ISAL_INVALID_STATE (dictionary could not be set)
+ */
+int isal_deflate_set_dict(struct isal_zstream *stream, uint8_t *dict, uint32_t dict_len);
+
+/**
  * @brief Fast data (deflate) compression for storage applications.
+ *
+ * The call to isal_deflate() will take data from the input buffer (updating
+ * next_in, avail_in and write a compressed stream to the output buffer
+ * (updating next_out and avail_out). The function returns when either the input
+ * buffer is empty or the output buffer is full.
  *
  * On entry to isal_deflate(), next_in points to an input buffer and avail_in
  * indicates the length of that buffer. Similarly next_out points to an empty
@@ -466,21 +554,33 @@ void isal_deflate_stateless_init(struct isal_zstream *stream);
  * The fields total_in and total_out start at 0 and are updated by
  * isal_deflate(). These reflect the total number of bytes read or written so far.
  *
- * The call to isal_deflate() will take data from the input buffer (updating
- * next_in, avail_in and write a compressed stream to the output buffer
- * (updating next_out and avail_out). The function returns when either the input
- * buffer is empty or the output buffer is full.
- *
  * When the last input buffer is passed in, signaled by setting the
  * end_of_stream, the routine will complete compression at the end of the input
  * buffer, as long as the output buffer is big enough.
  *
+ * The compression level can be set by setting level to any value between
+ * ISAL_DEF_MIN_LEVEL and ISAL_DEF_MAX_LEVEL. When the compression level is
+ * ISAL_DEF_MIN_LEVEL, hufftables can be set to a table trained for the the
+ * specific data type being compressed to achieve better compression. When a
+ * higher compression level is desired, a larger generic memory buffer needs to
+ * be supplied by setting level_buf and level_buf_size to represent the chunk of
+ * memory. For level x, the suggest size for this buffer this buffer is
+ * ISAL_DEFL_LVLx_DEFAULT. The defines ISAL_DEFL_LVLx_MIN, ISAL_DEFL_LVLx_SMALL,
+ * ISAL_DEFL_LVLx_MEDIUM, ISAL_DEFL_LVLx_LARGE, and ISAL_DEFL_LVLx_EXTRA_LARGE
+ * are also provided as other suggested sizes.
+ *
  * The equivalent of the zlib FLUSH_SYNC operation is currently supported.
  * Flush types can be NO_FLUSH, SYNC_FLUSH or FULL_FLUSH. Default flush type is
  * NO_FLUSH. A SYNC_ OR FULL_ flush will byte align the deflate block by
- * appending an empty stored block.  Additionally FULL_FLUSH will ensure
- * look back history does not include previous blocks so new blocks are fully
- * independent. Switching between flush types is supported.
+ * appending an empty stored block once all input has been compressed, including
+ * the buffered input. Checking that the out_buffer is not empty or that
+ * internal_state.state = ZSTATE_NEW_HDR is sufficient to guarantee all input
+ * has been flushed. Additionally FULL_FLUSH will ensure look back history does
+ * not include previous blocks so new blocks are fully independent. Switching
+ * between flush types is supported.
+ *
+ * If a compression dictionary is required, the dictionary can be set calling
+ * isal_deflate_set_dictionary before calling isal_deflate.
  *
  * If the gzip_flag is set to IGZIP_GZIP, a generic gzip header and the gzip
  * trailer are written around the deflate compressed data. If gzip_flag is set
@@ -489,6 +589,7 @@ void isal_deflate_stateless_init(struct isal_zstream *stream);
  * @param  stream Structure holding state information on the compression streams.
  * @return COMP_OK (if everything is ok),
  *         INVALID_FLUSH (if an invalid FLUSH is selected),
+ *         ISAL_INVALID_LEVEL (if an invalid compression level is selected).
  */
 int isal_deflate(struct isal_zstream *stream);
 
@@ -502,6 +603,9 @@ int isal_deflate(struct isal_zstream *stream);
  * expansion is limited to the input size plus the header size of a stored/raw
  * block.
  *
+ * When the compression level is set to 1, unlike in isal_deflate(), level_buf
+ * may be optionally set depending on what what permormance is desired.
+ *
  * For stateless the flush types NO_FLUSH and FULL_FLUSH are supported.
  * FULL_FLUSH will byte align the output deflate block so additional blocks can
  * be easily appended.
@@ -512,6 +616,8 @@ int isal_deflate(struct isal_zstream *stream);
  *
  * @param  stream Structure holding state information on the compression streams.
  * @return COMP_OK (if everything is ok),
+ *         INVALID_FLUSH (if an invalid FLUSH is selected),
+ *         ISAL_INVALID_LEVEL (if an invalid compression level is selected),
  *         STATELESS_OVERFLOW (if output buffer will not fit output).
  */
 int isal_deflate_stateless(struct isal_zstream *stream);
@@ -529,6 +635,29 @@ int isal_deflate_stateless(struct isal_zstream *stream);
 void isal_inflate_init(struct inflate_state *state);
 
 /**
+ * @brief Reinitialize decompression state data structure
+ *
+ * @param state Structure holding state information on the compression streams.
+ * @returns none
+ */
+void isal_inflate_reset(struct inflate_state *state);
+
+/**
+ * @brief Set decompression dictionary to use
+ *
+ * This function is to be called after isal_inflate_init. If the dictionary is
+ * longer than IGZIP_HIST_SIZE, only the last IGZIP_HIST_SIZE bytes will be
+ * used.
+ *
+ * @param state: Structure holding state information on the decompression stream.
+ * @param dict: Array containing dictionary to use.
+ * @param dict_len: Lenth of dict.
+ * @returns COMP_OK,
+ *          ISAL_INVALID_STATE (dictionary could not be set)
+ */
+int isal_inflate_set_dict(struct inflate_state *state, uint8_t *dict, uint32_t dict_len);
+
+/**
  * @brief Fast data (deflate) decompression for storage applications.
  *
  * On entry to isal_inflate(), next_in points to an input buffer and avail_in
@@ -543,7 +672,12 @@ void isal_inflate_init(struct inflate_state *state);
  * (updating next_out and avail_out). The function returns when the input buffer
  * is empty, the output buffer is full or invalid data is found. The current
  * state of the decompression on exit can be read from state->block-state. If
- * the crc_flag is set, the gzip crc of the output is stored in state->crc.
+ * the crc_flag is set to ISAL_GZIP_NO_HDR the gzip crc of the output is stored
+ * in state->crc. Alternatively, if the crc_flag is set to ISAL_ZLIB_NO_HDR the
+ * adler32 of the output is stored in state->crc.
+ *
+ * If a dictionary is required, a call to isal_inflate_set_dict will set the
+ * dictionary.
  *
  * @param  state Structure holding state information on the compression streams.
  * @return ISAL_DECOMP_OK (if everything is ok),
@@ -553,6 +687,7 @@ void isal_inflate_init(struct inflate_state *state);
  *         ISAL_INVALID_SYMBOL,
  *         ISAL_INVALID_LOOKBACK.
  */
+
 int isal_inflate(struct inflate_state *state);
 
 /**

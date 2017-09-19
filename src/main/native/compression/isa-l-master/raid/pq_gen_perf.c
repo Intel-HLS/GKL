@@ -2,7 +2,7 @@
   Copyright(c) 2011-2015 Intel Corporation All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions 
+  modification, are permitted provided that the following conditions
   are met:
     * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
@@ -40,7 +40,7 @@
 // Cached test, loop many times over small dataset
 # define TEST_SOURCES 10
 # define TEST_LEN     8*1024
-# define TEST_LOOPS   40000
+# define TEST_LOOPS   800000
 # define TEST_TYPE_STR "_warm"
 #else
 # ifndef TEST_CUSTOM
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	for (i = 0; i < TEST_SOURCES + 2; i++) {
 		int ret;
 		void *buf;
-		ret = posix_memalign(&buf, 32, TEST_LEN);
+		ret = posix_memalign(&buf, 64, TEST_LEN);
 		if (ret) {
 			printf("alloc error: Fail");
 			return 1;

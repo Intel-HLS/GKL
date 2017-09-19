@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.69)
 AC_INIT([libisal],
-        [2.17.0],
+        [2.19.0],
         [sg.support.isal@intel.com],
         [isa-l],
         [http://01.org/storage-acceleration-library])
@@ -21,6 +21,17 @@ AM_INIT_AUTOMAKE([
 	subdir-objects
 ])
 AM_PROG_AS
+
+AC_CANONICAL_HOST
+CPU=""
+AS_CASE([$host_cpu],
+  [x86_64], [CPU="x86_64"],
+  [amd64], [CPU="x86_64"],
+  [i?86], [CPU="x86_32"],
+)
+AM_CONDITIONAL([CPU_X86_64], [test "$CPU" = "x86_64"])
+AM_CONDITIONAL([CPU_X86_32], [test "$CPU" = "x86_32"])
+AM_CONDITIONAL([CPU_UNDEFINED], [test "x$CPU" = "x"])
 
 # Check for programs
 AC_PROG_CC_STDC
@@ -88,7 +99,7 @@ else
 fi
 
 # Pick an assembler yasm or nasm
-if test x"$AS" == x""; then
+if test x"$AS" = x""; then
   if test x"$yasm_knows_avx512" = x"yes"; then
     AS=yasm
   elif test x"$nasm_knows_avx512" = x"yes"; then
@@ -114,7 +125,7 @@ AM_CONDITIONAL(USE_NASM, test x"$AS" = x"nasm")
 AM_CONDITIONAL(WITH_AVX512, test x"$have_as_knows_avx512" = x"yes")
 
 
-case $target in
+case $host_os in
      *linux*)	arch=linux   yasm_args="-f elf64";;
      *darwin*)	arch=darwin  yasm_args="-f macho64 --prefix=_ ";;
      *netbsd*)	arch=netbsd  yasm_args="-f elf64";;

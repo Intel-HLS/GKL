@@ -1,7 +1,36 @@
-#ifndef INFLATE_CRC_TABLE
-#define INFLATE_CRC_TABLE
+/**********************************************************************
+  Copyright(c) 2011-2017 Intel Corporation All rights reserved.
 
-uint32_t inflate_crc_table[256] = {
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
+      the documentation and/or other materials provided with the
+      distribution.
+    * Neither the name of Intel Corporation nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**********************************************************************/
+
+#include <stdint.h>
+#include "igzip_checksums.h"
+
+uint32_t crc32_table_gzip_base[256] = {
 	0x00000000, 0x77073096, 0xee0e612c, 0x990951ba,
 	0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
 	0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -65,17 +94,46 @@ uint32_t inflate_crc_table[256] = {
 	0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6,
 	0xbad03605, 0xcdd70693, 0x54de5729, 0x23d967bf,
 	0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
-	0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d};
+	0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d,
+};
 
-
-uint32_t find_crc(uint8_t * start, uint32_t length)
+uint32_t crc32_gzip_base(uint32_t crc, uint8_t * start, uint32_t length)
 {
-	uint32_t crc = ~0;
 	uint8_t *end = start + length;
-
+	crc = ~crc;
 	while (start < end)
-		crc = (crc >> 8) ^ inflate_crc_table[(crc & 0x000000FF) ^ *start++];
+		crc = (crc >> 8) ^ crc32_table_gzip_base[(crc & 0xff) ^ *start++];
 	return ~crc;
 }
 
-#endif
+uint32_t adler32_base(uint32_t adler32, uint8_t * start, uint32_t length)
+{
+	uint8_t *end, *next = start;
+	uint64_t A, B;
+
+	A = adler32 & 0xffff;
+	B = adler32 >> 16;
+
+	while (length > MAX_ADLER_BUF) {
+		end = next + MAX_ADLER_BUF;
+		for (; next < end; next++) {
+			A += *next;
+			B += A;
+		}
+
+		A = A % ADLER_MOD;
+		B = B % ADLER_MOD;
+		length -= MAX_ADLER_BUF;
+	}
+
+	end = next + length;
+	for (; next < end; next++) {
+		A += *next;
+		B += A;
+	}
+
+	A = A % ADLER_MOD;
+	B = B % ADLER_MOD;
+
+	return B << 16 | A;
+}

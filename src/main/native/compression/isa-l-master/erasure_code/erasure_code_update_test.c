@@ -2,7 +2,7 @@
   Copyright(c) 2011-2015 Intel Corporation All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions 
+  modification, are permitted provided that the following conditions
   are met:
     * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
@@ -55,6 +55,8 @@
 
 #define MMAX TEST_SOURCES
 #define KMAX TEST_SOURCES
+
+#define EFENCE_TEST_MAX_SIZE 0x100
 
 #ifdef EC_ALIGNED_ADDR
 // Define power of 2 range to check ptr, len alignment
@@ -285,7 +287,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	// Pick a first test
-	m = 15;
+	m = 14;
 	k = 10;
 	if (m > MMAX || k > KMAX)
 		return -1;
@@ -592,7 +594,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		for (size = 0; size <= TEST_SIZE; size += align) {
+		for (size = 0; size <= EFENCE_TEST_MAX_SIZE; size += align) {
 			for (i = 0; i < m; i++) {	// Line up TEST_SIZE from end
 				efence_buffs[i] = buffs[i] + TEST_LEN - size;
 				efence_update_buffs[i] = update_buffs[i] + TEST_LEN - size;
