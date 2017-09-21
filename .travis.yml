@@ -6,7 +6,5 @@ jdk:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y yasm
-
-
-
-
+  - gcc --version
+  - which gcc
