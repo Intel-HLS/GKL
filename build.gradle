@@ -49,7 +49,7 @@ task cmakeConfig(type: Exec) {
 
 task cmakeBuild(type: Exec) {
     // hide stdout, but print stderr
-    //standardOutput = new ByteArrayOutputStream()
+    standardOutput = new ByteArrayOutputStream()
     workingDir nativeBuildDir
     commandLine 'make', 'install'
     // always run this task
