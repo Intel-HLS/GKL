@@ -69,7 +69,7 @@ void CONCAT(CONCAT(update_masks_for_cols_,SIMD_ENGINE), PRECISION)(int maskIndex
 
 inline void CONCAT(CONCAT(computeDistVec,SIMD_ENGINE), PRECISION) (BITMASK_VEC& bitMaskVec, SIMD_TYPE& distm, SIMD_TYPE& _1_distm, SIMD_TYPE& distmChosen) {
 
-    distmChosen = VEC_BLENDV(distm, _1_distm, bitMaskVec.getCombinedMask()) ;
+    VEC_BLENDV(distmChosen, distm, _1_distm, bitMaskVec.getCombinedMask());
 
     bitMaskVec.shift_left_1bit() ;
 }

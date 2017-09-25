@@ -1,5 +1,5 @@
 #include "shacc_pairhmm.h"
-#include "debug.h"
+#include <debug.h>
 
 namespace shacc_pairhmm {
 

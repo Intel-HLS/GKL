@@ -1,12 +1,60 @@
 language: java
 dist: trusty
+
 jdk:
 - oraclejdk8
 
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y yasm
+- sudo unlink /usr/bin/gcc 
+- sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc
+- sudo unlink /usr/bin/g++
+- sudo ln -s /usr/bin/g++-5 /usr/bin/g++
+# kill old binutils
+- sudo rm /usr/bin/objdump
+- sudo rm /usr/bin/nm
+- sudo rm /usr/bin/as
+- sudo rm /usr/bin/ranlib
+- sudo rm /usr/bin/strip
+- sudo rm /usr/bin/strings
+- sudo rm /usr/bin/addr2line
+- sudo rm /usr/bin/elfedit
+- sudo rm /usr/bin/ar
+- sudo rm /usr/bin/gprof
+- sudo rm /usr/bin/ld.bfd
+- sudo rm /usr/bin/dwp
+- sudo rm /usr/bin/readelf
+- sudo rm /usr/bin/ld.gold
+- sudo rm /usr/bin/c++filt
+- sudo rm /usr/bin/objcopy
+- sudo rm /usr/bin/size
+# replace with new binutils
+- sudo ln -s /usr/bin/objdump-2.26 /usr/bin/objdump
+- sudo ln -s /usr/bin/nm-2.26 /usr/bin/nm
+- sudo ln -s /usr/bin/as-2.26 /usr/bin/as
+- sudo ln -s /usr/bin/ranlib-2.26 /usr/bin/ranlib
+- sudo ln -s /usr/bin/strip-2.26 /usr/bin/strip
+- sudo ln -s /usr/bin/strings-2.26 /usr/bin/strings
+- sudo ln -s /usr/bin/addr2line-2.26 /usr/bin/addr2line
+- sudo ln -s /usr/bin/elfedit-2.26 /usr/bin/elfedit
+- sudo ln -s /usr/bin/ar-2.26 /usr/bin/ar
+- sudo ln -s /usr/bin/gprof-2.26 /usr/bin/gprof
+- sudo ln -s /usr/bin/ld.bfd-2.26 /usr/bin/ld.bfd
+- sudo ln -s /usr/bin/dwp-2.26 /usr/bin/dwp
+- sudo ln -s /usr/bin/readelf-2.26 /usr/bin/readelf
+- sudo ln -s /usr/bin/ld.gold-2.26 /usr/bin/ld.gold
+- sudo ln -s /usr/bin/c++filt-2.26 /usr/bin/c++filt
+- sudo ln -s /usr/bin/objcopy-2.26 /usr/bin/objcopy
+- sudo ln -s /usr/bin/size-2.26 /usr/bin/size
 
+env:
+- VERBOSE=1
 
-
-
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - gcc-5
+    - g++-5
+    - yasm
+    - binutils-2.26

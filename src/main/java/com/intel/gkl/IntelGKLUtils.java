@@ -84,6 +84,10 @@ public final class IntelGKLUtils implements NativeLibrary {
         return isAvxSupportedNative();
     }
 
+    public boolean isAvx512Supported() {
+        return isAvx512SupportedNative();
+    }
+
     /**
      * Get the number of available OpenMP threads, when enabled.
      * @return  Number of available threads, as reported by OpenMP.
@@ -95,5 +99,6 @@ public final class IntelGKLUtils implements NativeLibrary {
     private native boolean getFlushToZeroNative();
     private native void setFlushToZeroNative(boolean value);
     private native boolean isAvxSupportedNative();
+    private native boolean isAvx512SupportedNative();
     private native int getAvailableOmpThreadsNative();
 }

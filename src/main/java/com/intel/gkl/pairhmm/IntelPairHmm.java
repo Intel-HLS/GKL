@@ -43,13 +43,12 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     public synchronized boolean load(File tempDir) {
         boolean isLoaded = gklUtils.load(null);
 
-        if(!isLoaded)
-        {
+        if(!isLoaded) {
             logger.warn("Intel GKL Utils not loaded");
             return false;
         }
 
-        if (!gklUtils.isAvxSupported()) {
+        if(!gklUtils.isAvxSupported()) {
             return false;
         }
 
@@ -68,6 +67,10 @@ public class IntelPairHmm implements PairHMMNativeBinding {
             args.maxNumberOfThreads = 1;
         }
 
+        if(!useFpga && gklUtils.isAvx512Supported()) {
+            logger.info("Using CPU-supported AVX-512 instructions");
+        }
+
         if (args.useDoublePrecision && useFpga) {
             logger.warn("FPGA PairHMM does not support double precision floating-point. Using AVX PairHMM");
         }
@@ -75,6 +78,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
         if(!gklUtils.getFlushToZero()) {
             logger.warn("Flush-to-zero (FTZ) is enabled when running PairHMM");
         }
+
         initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads, useFpga);
 
         // log information about threads

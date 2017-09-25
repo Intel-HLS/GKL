@@ -43,6 +43,4 @@ class ConvertChar {
   }
 };
 
-uint8_t ConvertChar::conversionTable[255];
-
 #endif // PAIRHMM_COMMON_H

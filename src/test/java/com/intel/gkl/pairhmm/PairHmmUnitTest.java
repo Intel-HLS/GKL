@@ -141,55 +141,59 @@ public class PairHmmUnitTest {
         final boolean isSupported = new IntelPairHmm().load(null);
         Assert.assertTrue(isSupported);
 
-        // instantiate and initialize IntelPairHmm
-        final IntelPairHmm pairHmm = new IntelPairHmm();
+        boolean[] udvals = {false, true};
+        for(boolean useDbl : udvals) {
+            // instantiate and initialize IntelPairHmm
+            final IntelPairHmm pairHmm = new IntelPairHmm();
 
-        final PairHMMNativeArguments args = new PairHMMNativeArguments();
-        args.maxNumberOfThreads = 1;
-        args.useDoublePrecision = false;
-        pairHmm.initialize(args);
+            final PairHMMNativeArguments args = new PairHMMNativeArguments();
+            args.maxNumberOfThreads = 1;
+            args.useDoublePrecision = useDbl;
+            pairHmm.initialize(args);
 
-        // data structures
-        ReadDataHolder[] readDataArray = new ReadDataHolder[1];
-        readDataArray[0] = new ReadDataHolder();
-        HaplotypeDataHolder[] haplotypeDataArray = new HaplotypeDataHolder[1];
-        haplotypeDataArray[0] = new HaplotypeDataHolder();
-        double[] likelihoodArray = new double[1];
+            // data structures
+            ReadDataHolder[] readDataArray = new ReadDataHolder[1];
+            readDataArray[0] = new ReadDataHolder();
+            HaplotypeDataHolder[] haplotypeDataArray = new HaplotypeDataHolder[1];
+            haplotypeDataArray[0] = new HaplotypeDataHolder();
+            double[] likelihoodArray = new double[1];
 
-        // read test data from file
-        Scanner s = null;
-        try {
-            s = new Scanner(new BufferedReader(new FileReader(pairHMMTestData)));
+            // read test data from file
+            Scanner s = null;
+            try {
+                s = new Scanner(new BufferedReader(new FileReader(pairHMMTestData)));
 
-            while (s.hasNext()) {
-                // skip comment lines
-                while (s.hasNext("#")) {
-                    s.nextLine();
+                while (s.hasNext()) {
+                    // skip comment lines
+                    if(s.hasNext("#.*")) {
+                        s.nextLine();
+                        continue;
+                    }
+
+                    haplotypeDataArray[0].haplotypeBases = s.next().getBytes();
+                    readDataArray[0].readBases = s.next().getBytes();
+                    readDataArray[0].readQuals = normalize(s.next().getBytes(), 6);
+                    readDataArray[0].insertionGOP = normalize(s.next().getBytes());
+                    readDataArray[0].deletionGOP = normalize(s.next().getBytes());
+                    readDataArray[0].overallGCP = normalize(s.next().getBytes());
+                    double expectedResult = s.nextDouble();
+
+                    // call pairHMM
+                    pairHmm.computeLikelihoods(readDataArray, haplotypeDataArray, likelihoodArray);
+
+                    // check result
+                    Assert.assertEquals(likelihoodArray[0], expectedResult, 1e-5, "Likelihood not in expected range.");
                 }
-
-                haplotypeDataArray[0].haplotypeBases = s.next().getBytes();
-                readDataArray[0].readBases = s.next().getBytes();
-                readDataArray[0].readQuals = normalize(s.next().getBytes(), 6);
-                readDataArray[0].insertionGOP = normalize(s.next().getBytes());
-                readDataArray[0].deletionGOP = normalize(s.next().getBytes());
-                readDataArray[0].overallGCP = normalize(s.next().getBytes());
-                double expectedResult = s.nextDouble();
-
-                // call pairHMM
-                pairHmm.computeLikelihoods(readDataArray, haplotypeDataArray, likelihoodArray);
-
-                // check result
-                Assert.assertEquals(likelihoodArray[0], expectedResult, 1e-5, "Likelihood not in expected range.");
+            } catch (FileNotFoundException e) {
+                Assert.fail("File not found : " + pairHMMTestData);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Assert.fail("Unexpected exception");
             }
-        } catch (FileNotFoundException e) {
-            Assert.fail("File not found : " + pairHMMTestData);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail("Unexpected exception");
-        }
 
-        s.close();
-        pairHmm.done();
+            s.close();
+            pairHmm.done();
+        }
     }
 
     @Test(enabled = false)
@@ -222,8 +226,9 @@ public class PairHmmUnitTest {
             int batchSize = 0;
             while (s.hasNext()) {
                 // skip comment lines
-                while (s.hasNext("#")) {
+                if(s.hasNext("#.*")) {
                     s.nextLine();
+                    continue;
                 }
 
                 haplotypeDataArray[batchSize].haplotypeBases = s.next().getBytes();
