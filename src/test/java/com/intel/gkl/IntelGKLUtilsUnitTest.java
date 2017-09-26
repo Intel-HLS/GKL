@@ -1,13 +1,12 @@
 package com.intel.gkl;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import com.intel.gkl.pairhmm.IntelPairHmmOMP;
 
 public class IntelGKLUtilsUnitTest {
-    private final static Logger log = LogManager.getLogger(IntelGKLUtilsUnitTest.class);
+    private final static Logger log = Logger.getLogger(IntelGKLUtilsUnitTest.class);
 
     @Test(enabled = true)
     public void simpleTest() {
