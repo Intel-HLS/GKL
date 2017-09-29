@@ -10,6 +10,7 @@
 #ifndef _PAIRWISESW_H
 #define _PAIRWISESW_H
 
+#define __STDC_LIMIT_MACROS
 #include <stdint.h>
 #include <string.h>
 #include <immintrin.h>

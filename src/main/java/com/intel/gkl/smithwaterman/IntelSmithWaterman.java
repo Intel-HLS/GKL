@@ -1,7 +1,5 @@
 package com.intel.gkl.smithwaterman;
 
-
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.intel.gkl.IntelGKLUtils;
@@ -15,8 +13,6 @@ import htsjdk.samtools.Cigar;
 import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.CigarOperator;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWNativeAlignerResult;
-
-
 
 import java.io.File;
 import java.lang.Object;
@@ -125,7 +121,5 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
 
     private native static int alignNative(byte[] refArray, byte[] altArray, byte[] cigar, int match, int mismatch, int open, int extend, int strategy);
     private native static void doneNative();
-
-
-
 }
+

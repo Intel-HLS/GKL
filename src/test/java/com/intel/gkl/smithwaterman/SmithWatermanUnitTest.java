@@ -1,6 +1,5 @@
 package com.intel.gkl.smithwaterman;
 
-
 import com.intel.gkl.smithwaterman.IntelSmithWaterman;
 import com.intel.gkl.IntelGKLUtils;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
@@ -10,7 +9,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.*;
-
 
 public class SmithWatermanUnitTest {
 
@@ -43,33 +41,25 @@ public class SmithWatermanUnitTest {
             //SWParameters SWparameters = new SWParameters(3, -1, -4, -3);
             SWOverhangStrategy SWstrategy = SWOverhangStrategy.SOFTCLIP;
 
+            while(in.readLine() !=null) {
+                refString = in.readLine();
+                ref = refString.getBytes();
 
-          while(in.readLine() !=null) {
+                altString = in.readLine();
+                alt = altString.getBytes();
 
+                //Get the results for one pair
+                SWNativeAlignerResult result = SmithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
 
-              refString = in.readLine();
-              ref = refString.getBytes();
-
-              altString = in.readLine();
-              alt = altString.getBytes();
-
-
-              //Get the results for one pair
-              SWNativeAlignerResult result = SmithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
-
-              //  output.write(result.cigar);
-              //  output.write(" ");
-              //  output.write(result.alignment_offset);
-              //  output.write("\n");
-
-               }
-
-            } catch (java.io.IOException e) {
-                e.printStackTrace();
-
+                //  output.write(result.cigar);
+                //  output.write(" ");
+                //  output.write(result.alignment_offset);
+                //  output.write("\n");
             }
+
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
         }
-
+    }
 }
-
 

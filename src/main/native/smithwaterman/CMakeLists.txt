@@ -1,5 +1,3 @@
-
-
 #---------------------------------------------------------------------
 # smithwaterman
 #---------------------------------------------------------------------
@@ -12,3 +10,4 @@ add_library(${TARGET} SHARED
     PairWiseSW.cpp)
 
 install(TARGETS ${TARGET} DESTINATION ${CMAKE_BINARY_DIR})
+
