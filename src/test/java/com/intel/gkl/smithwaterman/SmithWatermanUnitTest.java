@@ -6,11 +6,16 @@ import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWNativeAlignerResult;
 import org.testng.Assert;
+import org.testng.SkipException;
 import org.testng.annotations.Test;
 
 import java.io.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SmithWatermanUnitTest {
+
+    private final static Logger logger = LogManager.getLogger(SmithWatermanUnitTest.class);
 
     static final String smithwatermanData = IntelGKLUtils.pathToTestResource("smith-waterman.SOFTCLIP.in");
     static final String smithwatermanOutput = IntelGKLUtils.pathToTestResource("smith-waterman.SOFTCLIP.out");
@@ -19,10 +24,16 @@ public class SmithWatermanUnitTest {
     @Test(enabled = true)
     public void simpleTest() {
 
-        final boolean isloaded = new IntelSmithWaterman().load(null);
+        final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
 
-        final IntelSmithWaterman SmithWaterman = new IntelSmithWaterman();
-        Assert.assertTrue(isloaded);
+        // skip test if SW could not be loaded (most likely cause: AVX2
+        // not supported)
+        final boolean isLoaded = smithWaterman.load(null);
+        if(!isLoaded) {
+            String err = "Could not load IntelSmithWaterman; skipping test...";
+            logger.warn(err);
+            throw new SkipException(err);
+        }
 
         try {
 
@@ -49,7 +60,7 @@ public class SmithWatermanUnitTest {
                 alt = altString.getBytes();
 
                 //Get the results for one pair
-                SWNativeAlignerResult result = SmithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
+                SWNativeAlignerResult result = smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
 
                 //  output.write(result.cigar);
                 //  output.write(" ");

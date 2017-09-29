@@ -33,6 +33,14 @@ JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvxSupportedNative
 
 /*
  * Class:     com_intel_gkl_IntelGKLUtils
+ * Method:    isAvx2SupportedNative
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvx2SupportedNative
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_intel_gkl_IntelGKLUtils
  * Method:    isAvx512SupportedNative
  * Signature: ()Z
  */

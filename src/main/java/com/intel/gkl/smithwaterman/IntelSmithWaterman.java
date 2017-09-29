@@ -60,7 +60,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             return false;
         }
 
-        if (!gklUtils.isAvxSupported()) {
+        if (!gklUtils.isAvxSupported() || !gklUtils.isAvx2Supported()) {
             return false;
         }
 

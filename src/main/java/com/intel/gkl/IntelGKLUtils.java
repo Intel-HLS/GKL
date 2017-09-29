@@ -84,6 +84,10 @@ public final class IntelGKLUtils implements NativeLibrary {
         return isAvxSupportedNative();
     }
 
+    public boolean isAvx2Supported() {
+        return isAvx2SupportedNative();
+    }
+
     public boolean isAvx512Supported() {
         return isAvx512SupportedNative();
     }
@@ -99,6 +103,7 @@ public final class IntelGKLUtils implements NativeLibrary {
     private native boolean getFlushToZeroNative();
     private native void setFlushToZeroNative(boolean value);
     private native boolean isAvxSupportedNative();
+    private native boolean isAvx2SupportedNative();
     private native boolean isAvx512SupportedNative();
     private native int getAvailableOmpThreadsNative();
 }
