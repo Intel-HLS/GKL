@@ -1,25 +1,21 @@
 package com.intel.gkl.smithwaterman;
 
-import com.intel.gkl.IntelGKLUtils;
+
 import com.intel.gkl.smithwaterman.IntelSmithWaterman;
-import htsjdk.samtools.util.BlockCompressedInputStream;
-import org.broadinstitute.gatk.nativebindings.smithwaterman.SWAlignerArguments;
-import org.broadinstitute.gatk.nativebindings.smithwaterman.SWAlignmentResult;
+import com.intel.gkl.IntelGKLUtils;
+import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
+import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
+import org.broadinstitute.gatk.nativebindings.smithwaterman.SWNativeAlignerResult;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.InputStream;
+import java.io.*;
 
-/**
- * Created by pnvaidya on 4/17/17.
- */
+
 public class SmithWatermanUnitTest {
 
     static final String smithwatermanData = IntelGKLUtils.pathToTestResource("smith-waterman.SOFTCLIP.in");
+    static final String smithwatermanOutput = IntelGKLUtils.pathToTestResource("smith-waterman.SOFTCLIP.out");
     int MAX_SEQ_LEN = 1024;
 
     @Test(enabled = true)
@@ -27,47 +23,53 @@ public class SmithWatermanUnitTest {
 
         final boolean isloaded = new IntelSmithWaterman().load(null);
 
-        final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
+        final IntelSmithWaterman SmithWaterman = new IntelSmithWaterman();
         Assert.assertTrue(isloaded);
 
-            try {
+        try {
 
-                final File inputFile = new File(smithwatermanData);
-                long inputBytes = inputFile.length();
-                final FileReader input = new FileReader(inputFile);
-                final BufferedReader in = new BufferedReader(input);
+            final File inputFile = new File(smithwatermanData);
+            final File outputFile = new File(smithwatermanOutput);
+            long inputBytes = inputFile.length();
+            final FileReader input = new FileReader(inputFile);
+            final FileWriter output = new FileWriter(outputFile);
+            final BufferedReader in = new BufferedReader(input);
 
-                byte[] ref = new byte[1024*4];
-                byte[] alt = new byte[1024*4];
-                byte[] res = new byte[1024*4];
-                String refString, altString;
+            byte[] ref;
+            byte[] alt;
 
-                for(int i=0;i<MAX_SEQ_LEN;i++) {
+            String refString, altString;
+            SWParameters SWparameters = new SWParameters(200, -150, -260, -11);
+            //SWParameters SWparameters = new SWParameters(3, -1, -4, -3);
+            SWOverhangStrategy SWstrategy = SWOverhangStrategy.SOFTCLIP;
 
-                    SWAlignerArguments args = new SWAlignerArguments(SWAlignerArguments.OverhangStrategy.SOFTCLIP,-11,200,-150,-260);
 
-                    smithWaterman.initialize(args);
-                    refString = in.readLine();
-                    ref = refString.getBytes();
+          while(in.readLine() !=null) {
 
-                    altString = in.readLine();
-                    alt = altString.getBytes();
 
-                    if(refString == null) break;
-                    if(altString == null) break;
+              refString = in.readLine();
+              ref = refString.getBytes();
 
-                    //Get the results for one pair
-                    SWAlignmentResult result = smithWaterman.align(ref, alt);
+              altString = in.readLine();
+              alt = altString.getBytes();
 
-                    res = result.cigar.getBytes();
 
-                }
+              //Get the results for one pair
+              SWNativeAlignerResult result = SmithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
+
+              //  output.write(result.cigar);
+              //  output.write(" ");
+              //  output.write(result.alignment_offset);
+              //  output.write("\n");
+
+               }
 
             } catch (java.io.IOException e) {
                 e.printStackTrace();
 
             }
-    }
+        }
+
 }
 
 

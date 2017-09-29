@@ -17,14 +17,10 @@
 
 #define DEF_MEM_LEVEL 8
 
-int64_t SW_cells = 0;
 
 
-static jfieldID FID_w_match;
-static jfieldID FID_w_mismatch;
-static jfieldID FID_w_open;
-static jfieldID FID_w_extend;
-static jfieldID FID_strategy;
+static jfieldID FID_reflength;
+static jfieldID FID_altlength;
 
 /**
  *  Cache the Java field IDs. Called once when the native library is loaded.
@@ -33,10 +29,8 @@ static jfieldID FID_strategy;
 JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initNative
 (JNIEnv* env, jclass cls) {
 
-  FID_w_match = env->GetFieldID(cls, "w_match", "I");
-  FID_w_mismatch = env->GetFieldID(cls, "w_mismatch", "I");
-  FID_w_extend = env->GetFieldID(cls, "w_extend", "I");
-  FID_w_open = env->GetFieldID(cls, "w_open", "I");
+  FID_reflength = env->GetFieldID(cls, "refLength", "I");
+  FID_altlength = env->GetFieldID(cls, "altLength", "I");
 
 }
 
@@ -46,7 +40,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initN
  */
 
 JNIEXPORT int JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignNative
-(JNIEnv* env, jobject obj,jbyteArray ref, jbyteArray alt, jbyteArray cigar, jint match, jint mismatch, jint open, jint extend, jint strategy)
+(JNIEnv* env, jobject obj, jbyteArray ref, jbyteArray alt, jbyteArray cigar, jint match, jint mismatch, jint open, jint extend, jint strategy)
 {
 
     jbyte* reference = (jbyte*)env->GetPrimitiveArrayCritical(ref, 0);
@@ -56,14 +50,14 @@ JNIEXPORT int JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignN
     jint count = 0;
     jint offset = 0;
 
-
-    int len1 = strlen((char*)reference);
-    int len2 = strlen((char*)alternate);
-
     // call the low level routine
 
+    jint refLength = env->GetArrayLength(ref);
+    jint altLength = env->GetArrayLength(alt);
+
+
     PairWiseSW *pwsw = new PairWiseSW(match, mismatch, open, extend);
-    offset = pwsw->runSWOnePairBT((uint8_t*) reference, (uint8_t*) alternate,len1, len2, strategy, (int16_t*) cigarArray, (int16_t*) &count);
+    offset = pwsw->runSWOnePairBT((uint8_t*) reference, (uint8_t*) alternate,refLength, altLength, strategy, (char *) cigarArray, (int16_t*) &count);
 
 
     // release buffers
@@ -78,3 +72,8 @@ JNIEXPORT int JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignN
 }
 
 
+JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_doneNative
+(JNIEnv* env, jobject obj)
+{
+
+}

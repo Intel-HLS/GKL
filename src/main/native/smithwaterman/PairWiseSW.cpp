@@ -67,6 +67,7 @@ PairWiseSW::PairWiseSW(int32_t w_match, int32_t w_mismatch, int32_t w_open, int3
     totalTicks = 0;
     E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN + SIMD_WIDTH)) * sizeof(int32_t), 64);
     backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * SIMD_WIDTH) * sizeof(int16_t), 64);
+    cigarBuf_  = (int16_t *)_mm_malloc(4 * MAX_SEQ_LEN * sizeof(int16_t), 64);
 #ifdef PERF_DEBUG
 	mainLoopTicks = 0;
 	mainLoopCount = 0;
@@ -80,9 +81,9 @@ PairWiseSW::~PairWiseSW()
 }
 
 #ifdef DEBUG
-int32_t PairWiseSW::runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, int16_t *cigarArray, int16_t *cigarCount, int32_t *score)
+int32_t PairWiseSW::runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount, int32_t *score)
 #else
-int32_t PairWiseSW::runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, int16_t *cigarArray, int16_t *cigarCount)
+int32_t PairWiseSW::runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount)
 #endif
 {
     SeqPair p;
@@ -103,6 +104,7 @@ int32_t PairWiseSW::runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, i
 }
 
 
+#if 0
 void PairWiseSW::runSmithWaterman(SeqPair *pairArray, int32_t numPairs, int8_t bt, int32_t numThreads)
 {
     int i;
@@ -113,13 +115,13 @@ void PairWiseSW::runSmithWaterman(SeqPair *pairArray, int32_t numPairs, int8_t b
     E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN + SIMD_WIDTH)) * numThreads * sizeof(int32_t), 64);
     int16_t *backTrack = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * SIMD_WIDTH) * numThreads * sizeof(int16_t), 64);
     int16_t *cigarArray = (int16_t *)_mm_malloc(4 * MAX_SEQ_LEN * numPairs * sizeof(int16_t), 64);
-    //startTick = __rdtsc();
+    startTick = __rdtsc();
     if(bt)
     {
 #pragma omp parallel num_threads(numThreads)
         {
             int64_t st, et;
-           // st = __rdtsc();
+            st = __rdtsc();
             int32_t tid = omp_get_thread_num();
             int16_t *myBTrack = backTrack + tid * (2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * SIMD_WIDTH);
 #pragma omp for
@@ -133,7 +135,7 @@ void PairWiseSW::runSmithWaterman(SeqPair *pairArray, int32_t numPairs, int8_t b
 #endif
                 getCIGAR(pairArray + i, tid);
             }
-           // et = __rdtsc();
+            et = __rdtsc();
             //printf("%d] %ld ticks\n", tid, et - st);
         }
     }
@@ -141,12 +143,13 @@ void PairWiseSW::runSmithWaterman(SeqPair *pairArray, int32_t numPairs, int8_t b
     {
         smithWatermanOnePairWrapper(pairArray, numPairs);
     }
-   // endTick = __rdtsc();
+    endTick = __rdtsc();
 #ifdef SEP_ANALYSIS
 	VTPauseSampling();
 #endif
     totalTicks = endTick - startTick;
 }
+#endif
 
 #ifdef PERF_DEBUG
 void PairWiseSW::getBTStats(SeqPair *p)
@@ -491,7 +494,7 @@ void PairWiseSW::getCIGAR(SeqPair *p, int32_t tid)
     int32_t overhangStrategy = p->overhangStrategy;
 
     int32_t i, j;
-    int16_t *cigarArray = p->cigar;
+    int16_t *cigarArray = cigarBuf_;
 
     int32_t cigarId = 0;
     
@@ -629,7 +632,33 @@ void PairWiseSW::getCIGAR(SeqPair *p, int32_t tid)
              
     }
 
-    p->cigarCount = newId;
+    int curSize = 0;
+    for(i = newId; i >= 0; i--)
+    {
+        int bytesWritten = sprintf(p->cigar + curSize, "%d", cigarArray[2 * i + 1]);
+        curSize += bytesWritten;
+
+        switch(cigarArray[2 * i])
+        {
+            case MATCH:
+                sprintf(p->cigar + curSize, "M");
+                break;
+            case INSERT:
+                sprintf(p->cigar + curSize, "I");
+                break;
+            case DELETE:
+                sprintf(p->cigar + curSize, "D");
+                break;
+            case SOFTCLIP:
+                sprintf(p->cigar + curSize, "S");
+                break;
+            default:
+                sprintf(p->cigar + curSize, "R");
+                break;
+        }
+        curSize++;
+    }
+    p->cigarCount = strlen(p->cigar);
 }
 
 

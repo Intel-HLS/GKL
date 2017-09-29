@@ -1,20 +1,27 @@
 package com.intel.gkl.smithwaterman;
 
 
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
-import org.broadinstitute.gatk.nativebindings.NativeLibrary;
-import org.broadinstitute.gatk.nativebindings.smithwaterman.SWAlignerArguments;
+
+import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
+import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWAlignerNativeBinding;
 
 import htsjdk.samtools.Cigar;
 import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.CigarOperator;
-import org.broadinstitute.gatk.nativebindings.smithwaterman.SWAlignmentResult;
+import org.broadinstitute.gatk.nativebindings.smithwaterman.SWNativeAlignerResult;
+
+
 
 import java.io.File;
+import java.lang.Object;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 
 /**
  * Provides a native SmithWaterman implementation accelerated for the Intel Architecture.
@@ -68,36 +75,10 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
 
             initialized = true;
         }
+
         return true;
     }
 
-    /**
-     * Initialize native SmithWaterman with the supplied args.
-     *
-     * @param args the args used to configure native SmithWaterman
-     */
-
-    public void initialize(SWAlignerArguments args) {
-        if(args == null)
-        {
-                args = new SWAlignerArguments(SWAlignerArguments.OverhangStrategy.SOFTCLIP,1,-1,1,1);
-        }
-        else {
-            w_extend = args.w_extend;
-            w_match = args.w_match;
-            w_mismatch = args.w_mismatch;
-            w_open = args.w_open;
-            strategy = args.strategy;
-        }
-
-    }
-
-    public int w_extend;
-    public int w_match;
-    public int w_mismatch;
-    public int w_open;
-    public SWAlignerArguments.OverhangStrategy strategy;
-    private native static int alignNative(byte[] refArray, byte[] altArray, byte[] cigar, int match, int mismatch, int open, int extend, int strategy);
 
     /**
      *Implements the native implementation of SmithWaterman, and returns the Cigar String and alignment_offset
@@ -107,15 +88,18 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
      *
      */
 
-    public SWAlignmentResult align(byte[] refArray, byte[] altArray)
+    @Override
+    public SWNativeAlignerResult align(byte[] refArray, byte[] altArray, SWParameters parameters, SWOverhangStrategy overhangStrategy)
     {
-        int intStrategy =  getStrategy(strategy);
-        byte[] cigar = new byte[200];
-        int offset = alignNative(refArray, altArray, cigar, w_match, w_mismatch, w_open, w_extend, intStrategy);
-        return new SWAlignmentResult(new String(cigar),offset);
+        int intStrategy =  getStrategy(overhangStrategy);
+        byte[] cigar = new byte[Integer.max(refArray.length, altArray.length)];
+
+        int offset = alignNative(refArray, altArray, cigar, parameters.getMatchValue(), parameters.getMismatchPenalty(), parameters.getGapOpenPenalty(), parameters.getGapExtendPenalty(), intStrategy);
+
+        return new SWNativeAlignerResult(new String(cigar).trim(),offset);
     }
 
-    public static int getStrategy(SWAlignerArguments.OverhangStrategy strategy)
+    public int getStrategy(SWOverhangStrategy strategy)
     {
         int intStrategy=0;
 
@@ -133,6 +117,15 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
         return intStrategy;
 
     }
+
+    public void close()
+    {
+        doneNative();
+    }
+
+    private native static int alignNative(byte[] refArray, byte[] altArray, byte[] cigar, int match, int mismatch, int open, int extend, int strategy);
+    private native static void doneNative();
+
 
 
 }

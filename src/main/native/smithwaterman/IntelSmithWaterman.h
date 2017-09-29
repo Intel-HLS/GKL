@@ -13,6 +13,9 @@ JNIEXPORT int JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignN
 JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initNative
     (JNIEnv* env, jclass cls);
 
+JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_doneNative
+    (JNIEnv* env, jclass cls);
+
 #ifdef __cplusplus
 }
 #endif

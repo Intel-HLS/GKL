@@ -10,8 +10,8 @@
 #ifndef _PAIRWISESW_H
 #define _PAIRWISESW_H
 
-#define __STDC_LIMIT_MACROS
 #include <stdint.h>
+#include <string.h>
 #include <immintrin.h>
 #include <omp.h>
 
@@ -36,7 +36,7 @@ typedef struct dnaSeqPair
         int16_t max_i;
         int16_t max_j;
         int16_t *btrack;
-        int16_t *cigar;
+        char *cigar;
         int16_t cigarCount;
         int16_t alignmentOffset;
 }SeqPair;
@@ -59,9 +59,9 @@ public:
 	~PairWiseSW();
 	void runSmithWaterman(SeqPair *pairArray, int32_t numPairs, int8_t bt, int32_t numThreads);
 #ifdef DEBUG
-    int32_t runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, int16_t *cigarArray, int16_t *cigarCount, int32_t *score);
+    int32_t runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount, int32_t *score);
 #else
-    int32_t runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, int16_t *cigarArray, int16_t *cigarCount);
+    int32_t runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount);
 #endif
 	int64_t getTicks();
 
@@ -87,6 +87,7 @@ private:
 
     int32_t *E_;
     int16_t *backTrack_;
+    int16_t *cigarBuf_;
 };
 #endif
 
