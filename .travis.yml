@@ -46,9 +46,6 @@ before_install:
 - sudo ln -s /usr/bin/objcopy-2.26 /usr/bin/objcopy
 - sudo ln -s /usr/bin/size-2.26 /usr/bin/size
 
-env:
-- VERBOSE=1
-
 addons:
   apt:
     sources:
@@ -58,3 +55,5 @@ addons:
     - g++-5
     - yasm
     - binutils-2.26
+
+script: ./gradlew --stacktrace --debug check
