@@ -42,7 +42,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
     env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
     env->ReleasePrimitiveArrayCritical(cigar, cigarArray, 0);
 
-    free(pwsw);
+    delete pwsw;
     return offset;
 }
 
