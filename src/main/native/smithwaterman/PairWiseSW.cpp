@@ -78,6 +78,9 @@ PairWiseSW::PairWiseSW(int32_t w_match, int32_t w_mismatch, int32_t w_open, int3
 
 PairWiseSW::~PairWiseSW()
 {
+   free(E_);
+   free(backTrack_);
+   free(cigarBuf_);
 }
 
 #ifdef DEBUG
