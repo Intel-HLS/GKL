@@ -88,7 +88,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
     public SWNativeAlignerResult align(byte[] refArray, byte[] altArray, SWParameters parameters, SWOverhangStrategy overhangStrategy)
     {
         int intStrategy =  getStrategy(overhangStrategy);
-        byte[] cigar = new byte[Integer.max(refArray.length, altArray.length)];
+        byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];
 
         int offset = alignNative(refArray, altArray, cigar, parameters.getMatchValue(), parameters.getMismatchPenalty(), parameters.getGapOpenPenalty(), parameters.getGapExtendPenalty(), intStrategy);
 
