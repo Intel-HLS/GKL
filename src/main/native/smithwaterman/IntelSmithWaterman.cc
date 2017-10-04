@@ -19,7 +19,6 @@ static jfieldID FID_altlength;
 /*
  * Class:     com_intel_gkl_smithwaterman_IntelSmithWaterman
  * Method:    alignNative
- * Signature: ([B[B[BIIIII)I
  */
 JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignNative
   (JNIEnv * env, jclass obj, jbyteArray ref, jbyteArray alt, jbyteArray cigar, jint match, jint mismatch, jint open, jint extend, jint strategy)
