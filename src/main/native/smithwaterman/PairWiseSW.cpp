@@ -1,11 +1,3 @@
-/***********************************************
-* # Copyright 2017. Sanchit Misra
-* # Contact: Sanchit Misra
-* #          sanchit.misra@intel.com
-* #
-* # GPL 2.0 applies.
-* #
-* ************************************************/
 
 #include <stdio.h>
 #include <stdlib.h>

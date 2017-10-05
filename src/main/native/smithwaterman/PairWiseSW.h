@@ -1,12 +1,3 @@
-/***********************************************
-* # Copyright 2017. Sanchit Misra
-* # Contact: Sanchit Misra
-* #          sanchit.misra@intel.com
-* #
-* # GPL 2.0 applies.
-* #
-* ************************************************/
-
 #ifndef _PAIRWISESW_H
 #define _PAIRWISESW_H
 
