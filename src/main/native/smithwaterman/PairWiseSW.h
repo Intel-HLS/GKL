@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <immintrin.h>
-#include <omp.h>
+
 
 #define MATCH 0
 #define INSERT 1

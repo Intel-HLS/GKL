@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <immintrin.h>
-#include <omp.h>
 #include <assert.h>
 
 #define DEF_MEM_LEVEL 8
