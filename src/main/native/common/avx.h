@@ -64,6 +64,41 @@ bool is_avx_supported()
 }
 
 /*
+ * Determine if AVX-2 is supported. Returns true if supported.
+ */
+inline
+bool is_avx2_supported()
+{
+    uint32_t a, b, c, d;
+    uint32_t osxsave_mask = (1 << 27); // OSX.
+    uint32_t avx2_bmi_mask = (1 << 5) | // AVX2
+                               (1 << 3) | // BMI1
+                               (1 << 8);  // BMI2
+
+    // step 1 - must ensure OS supports extended processor state management
+    __cpuid_count(1, 0, a, b, c, d);
+    if((c & osxsave_mask) != osxsave_mask)
+    {
+        return true;
+    }
+
+    // step 2 - must ensure OS supports YMM registers (and XMM)
+    if(!check_xcr0_ymm())
+    {
+        return false;
+    }
+
+    // step 3 - must ensure AVX2 is supported
+    __cpuid_count(7, 0, a, b, c, d);
+    if((b & avx2_bmi_mask) != avx2_bmi_mask)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/*
  * Determine if AVX512 is supported. Returns true if supported.
  */
 inline
@@ -77,7 +112,6 @@ bool is_avx512_supported()
                                (1 << 31);  // AVX-512VL
 
     // step 1 - must ensure OS supports extended processor state management
-    //run_cpuid(1, 0, abcd);
     __cpuid_count(1, 0, a, b, c, d);
     if((c & osxsave_mask) != osxsave_mask)
     {
@@ -91,7 +125,6 @@ bool is_avx512_supported()
     }
 
     // step 3 - must ensure AVX512 is supported
-    //run_cpuid(7, 0, abcd);
     __cpuid_count(7, 0, a, b, c, d);
     if((b & avx512_skx_mask) != avx512_skx_mask)
     {
