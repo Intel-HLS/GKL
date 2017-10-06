@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "PairWiseSW.h"
@@ -203,7 +202,7 @@ void PairWiseSW::smithWatermanOnePair(SeqPair *p)
     for(i = 1; i < nrow; i++)
     {
         int32_t eij = lowInitValue;
-        int32_t hdiag = 0; 
+        int32_t hdiag = 0;
         int32_t hij;
         for(j = 1; j <=ncol; j++)
         {
@@ -233,7 +232,7 @@ void PairWiseSW::smithWatermanOnePair(SeqPair *p)
     }
     {
         int32_t eij = lowInitValue;
-        int32_t hdiag = 0; 
+        int32_t hdiag = 0;
         int32_t hij;
         for(j = 1; j <=ncol; j++)
         {
@@ -492,7 +491,7 @@ void PairWiseSW::getCIGAR(SeqPair *p, int32_t tid)
     int16_t *cigarArray = cigarBuf_;
 
     int32_t cigarId = 0;
-    
+
     if (overhangStrategy == INDEL)
     {
         i = nrow;
@@ -624,7 +623,6 @@ void PairWiseSW::getCIGAR(SeqPair *p, int32_t tid)
             cigarArray[newId * 2 + 1] = cigarArray[i * 2 + 1];
             prev = cur;
         }
-             
     }
 
     int curSize = 0;

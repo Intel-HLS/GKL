@@ -55,5 +55,3 @@ addons:
     - g++-5
     - yasm
     - binutils-2.26
-
-script: ./gradlew --stacktrace --debug check
