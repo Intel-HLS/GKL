@@ -92,22 +92,22 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
 
         int offset = alignNative(refArray, altArray, cigar, parameters.getMatchValue(), parameters.getMismatchPenalty(), parameters.getGapOpenPenalty(), parameters.getGapExtendPenalty(), intStrategy);
 
-        return new SWNativeAlignerResult(new String(cigar).trim(),offset);
+        return new SWNativeAlignerResult(new String(cigar).trim(), offset);
     }
 
     public int getStrategy(SWOverhangStrategy strategy)
     {
-        int intStrategy=0;
+        int intStrategy = 0;
 
         switch(strategy){
             case SOFTCLIP: intStrategy = 9;
-                return intStrategy;
+                break;
             case INDEL: intStrategy = 10;
-                return intStrategy;
+                break;
             case LEADING_INDEL: intStrategy = 11;
-                return intStrategy;
+                break;
             case IGNORE: intStrategy = 12;
-                return intStrategy;
+                break;
         }
 
         return intStrategy;
