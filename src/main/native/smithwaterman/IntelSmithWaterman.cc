@@ -1,7 +1,8 @@
 #include <vector>
 #include <math.h>
+#include <avx.h>
 #include "IntelSmithWaterman.h"
-#include "PairWiseSW.h"
+#include "smithwaterman_common.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,12 +10,40 @@
 #include <string.h>
 #include <immintrin.h>
 #include <assert.h>
+#include <debug.h>
+#include "avx_impl.h"
+#ifndef __APPLE__
+  #include "avx512_impl.h"
+#endif
+
 
 #define DEF_MEM_LEVEL 8
 
 static jfieldID FID_reflength;
 static jfieldID FID_altlength;
 
+int32_t (*g_runSWOnePairBT)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount);
+
+JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initNative
+  (JNIEnv * env, jclass obj )
+{
+
+if(is_avx512_supported())
+      {
+    #ifndef __APPLE__
+        DBG("Using CPU-supported AVX-512 instructions");
+        g_runSWOnePairBT = runSWOnePairBT_fp_avx512;
+
+    #else
+        assert(false);
+    #endif
+      }
+      else
+      {
+        g_runSWOnePairBT = runSWOnePairBT_fp_avx2;
+      }
+      return;
+}
 /*
  * Class:     com_intel_gkl_smithwaterman_IntelSmithWaterman
  * Method:    alignNative
@@ -33,15 +62,14 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
     jint refLength = env->GetArrayLength(ref);
     jint altLength = env->GetArrayLength(alt);
 
-    PairWiseSW *pwsw = new PairWiseSW(match, mismatch, open, extend);
-    offset = pwsw->runSWOnePairBT((uint8_t*) reference, (uint8_t*) alternate,refLength, altLength, strategy, (char *) cigarArray, (int16_t*) &count);
+    offset = g_runSWOnePairBT(match, mismatch, open, extend,(uint8_t*) reference, (uint8_t*) alternate,refLength, altLength, strategy, (char *) cigarArray, (int16_t*) &count);
 
     // release buffers
     env->ReleasePrimitiveArrayCritical(ref, reference, 0);
     env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
     env->ReleasePrimitiveArrayCritical(cigar, cigarArray, 0);
 
-    delete pwsw;
+
     return offset;
 }
 

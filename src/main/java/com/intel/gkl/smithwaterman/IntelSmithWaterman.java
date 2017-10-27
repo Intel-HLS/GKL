@@ -72,6 +72,10 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             initialized = true;
         }
 
+        /*
+         Initializes the function pointers to use machine specific optimized code
+         */
+        initNative();
         return true;
     }
 
@@ -119,6 +123,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
         doneNative();
     }
 
+    private native static void initNative();
     private native static int alignNative(byte[] refArray, byte[] altArray, byte[] cigar, int match, int mismatch, int open, int extend, int strategy);
     private native static void doneNative();
 }
