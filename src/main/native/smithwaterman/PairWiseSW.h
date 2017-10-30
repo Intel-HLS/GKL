@@ -1,6 +1,5 @@
 #include<stdio.h>
 
-
 #define MAIN_CODE(bt_vec) \
             { \
             VEC_INT_TYPE e10 = VEC_LOADU(&E[inde]); \
@@ -38,43 +37,19 @@
             }
 
 
-
-
-
-int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount)
+void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, int32_t open, int32_t extend, int32_t* E_,int32_t tid)
 {
-
-   int32_t  w_match = match;
-     int32_t   w_mismatch = mismatch;
-     int32_t   w_open = open;
-     int32_t   w_extend = extend;
-
-     int32_t   *E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN+ AVX_LENGTH)) * sizeof(int32_t), 64);
-      int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * AVX_LENGTH) * sizeof(int16_t), 64);
-      int16_t  *cigarBuf_  = (int16_t *)_mm_malloc(4 * MAX_SEQ_LEN * sizeof(int16_t), 64);
-
-    SeqPair p;
-    p.seq1 = seq1;
-    p.seq2 = seq2;
-    p.len1 = len1;
-    p.len2 = len2;
-    p.overhangStrategy = overhangStrategy;
-    p.btrack = backTrack_;
-    p.cigar = cigarArray;
-    int32_t tid=0;
-    //smithWatermanBackTrack(&p, 0);
-    //getCIGAR(&p, 0);
-    uint32_t vseq1[MAX_SEQ_LEN];
+    uint32_t seq1[MAX_SEQ_LEN];
     uint32_t seq1Rev[MAX_SEQ_LEN];
-    uint32_t vseq2[MAX_SEQ_LEN];
-    int32_t nrow = p.len1;
-    int32_t ncol = p.len2;
-    int32_t voverhangStrategy = p.overhangStrategy;
+    uint32_t seq2[MAX_SEQ_LEN];
+    int32_t nrow = p->len1;
+    int32_t ncol = p->len2;
+    int32_t overhangStrategy = p->overhangStrategy;
 
-    VEC_INT_TYPE w_match_vec = VEC_SET1_VAL32(w_match);
-    VEC_INT_TYPE w_mismatch_vec = VEC_SET1_VAL32(w_mismatch);
-    VEC_INT_TYPE w_open_vec = VEC_SET1_VAL32(w_open);
-    VEC_INT_TYPE w_extend_vec = VEC_SET1_VAL32(w_extend);
+    VEC_INT_TYPE w_match_vec = VEC_SET1_VAL32(match);
+    VEC_INT_TYPE w_mismatch_vec = VEC_SET1_VAL32(mismatch);
+    VEC_INT_TYPE w_open_vec = VEC_SET1_VAL32(open);
+    VEC_INT_TYPE w_extend_vec = VEC_SET1_VAL32(extend);
 
     int32_t i, j;
     int32_t lowInitValue = LOW_INIT_VALUE;
@@ -105,15 +80,15 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
 
     for(i = 0; i < nrow; i++)
     {
-        vseq1[i] = p.seq1[i];
-        seq1Rev[MAX_SEQ_LEN - 1 - i] = p.seq1[i];
+        seq1[i] = p->seq1[i];
+        seq1Rev[MAX_SEQ_LEN - 1 - i] = p->seq1[i];
     }
     for(i = 0; i < ncol; i++)
     {
-        vseq2[i] = p.seq2[i];
+        seq2[i] = p->seq2[i];
     }
 
-    int16_t *backTrack = p.btrack;
+    int16_t *backTrack = p->btrack;
 
     int32_t maxScore = INT32_MIN;
     int32_t max_i = 0;
@@ -132,10 +107,18 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
         cur  = (antiDiag & 1) * hwidth;
 
 #if 1
-
+#ifdef PERF_DEBUG
+        int64_t startTick, endTick;
+        startTick = __rdtsc();
+#endif
         for(j = (jlo + 1); j < (jhi - AVX_LENGTH);)
         {
-
+#ifdef PERF_DEBUG
+            mainLoopCount+=2;
+#endif
+#ifdef IACA_ANALYSIS
+            IACA_START
+#endif
             int32_t backTrackInd = j - jlo - 1;
             VEC_INT_TYPE bt_vec_0, bt_vec_1;
             {
@@ -170,10 +153,14 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
             VEC_INT_TYPE bt_vec   = VEC_PACKS_32(bt_vec_2, bt_vec_3);
             VEC_STREAM(backTrack + antiDiag * MAX_SEQ_LEN + backTrackInd, bt_vec);
         }
-
+#ifdef IACA_ANALYSIS
+        IACA_END
+#endif
         if(j < jhi)
         {
-
+#ifdef PERF_DEBUG
+            mainLoopCount++;
+#endif
             i = antiDiag - j;
             int32_t diag = j - i;
             int32_t diagInd = MAX_SEQ_LEN + diag;
@@ -192,12 +179,15 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
             int32_t backTrackInd = j - jlo - 1;
             VEC_STREAM(backTrack + antiDiag * MAX_SEQ_LEN + backTrackInd, bt_vec);
         }
-
+#ifdef PERF_DEBUG
+        endTick = __rdtsc();
+        mainLoopTicks += endTick - startTick;
 #endif
-        if((voverhangStrategy == INDEL) || (voverhangStrategy == LEADING_INDEL))
+#endif
+        if((overhangStrategy == INDEL) || (overhangStrategy == LEADING_INDEL))
         {
-            H[cur + ((MAX_SEQ_LEN + 2 * jhi - antiDiag) >> 1)] = w_open + (jhi - 1) * w_extend;
-            H[cur + ((MAX_SEQ_LEN + 2 * jlo - antiDiag) >> 1)] = w_open + (ilo - 1) * w_extend;
+            H[cur + ((MAX_SEQ_LEN + 2 * jhi - antiDiag) >> 1)] = open + (jhi - 1) * extend;
+            H[cur + ((MAX_SEQ_LEN + 2 * jlo - antiDiag) >> 1)] = open + (ilo - 1) * extend;
         }
         else
         {
@@ -211,7 +201,7 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
         if(ilo == (nrow + 1))
         {
             int32_t score = H[cur + ((MAX_SEQ_LEN + jlo + 1 - (ilo - 1)) >> 1)];
-            if((voverhangStrategy == SOFTCLIP) || (voverhangStrategy == IGNORE))
+            if((overhangStrategy == SOFTCLIP) || (overhangStrategy == IGNORE))
             {
                 if((maxScore < score) || ((maxScore == score) && (abs(ilo - jlo - 2) < abs(max_i - max_j))))
                 {
@@ -236,32 +226,36 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
 #endif
     }
     //printf("maxScore = %d, max_i = %d, max_j = %d\n", maxScore, max_i, max_j);
-    if(voverhangStrategy == INDEL)
-        p.score = H[cur + ((MAX_SEQ_LEN + ncol - nrow) >> 1)];
+    if(overhangStrategy == INDEL)
+        p->score = H[cur + ((MAX_SEQ_LEN + ncol - nrow) >> 1)];
     else
-        p.score = maxScore;
-   // p.score = maxScore;
-    //p.max_i = max_i;
-    //p.max_j = max_j;
+        p->score = maxScore;
+    p->score = maxScore;
+    p->max_i = max_i;
+    p->max_j = max_j;
+    return;
+}
 
-    int16_t *btrack = p.btrack;
-    //int32_t max_i = p.max_i;
-    //int32_t max_j = p.max_j;
-   // int32_t nrow = p.len1;
-   // int32_t ncol = p.len2;
-   // int32_t overhangStrategy = p.overhangStrategy;
+void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
+{
+    int16_t *btrack = p->btrack;
+    int32_t max_i = p->max_i;
+    int32_t max_j = p->max_j;
+    int32_t nrow = p->len1;
+    int32_t ncol = p->len2;
+    int32_t overhangStrategy = p->overhangStrategy;
 
-   // int32_t i, j;
-    int16_t *vcigarArray = cigarBuf_;
+    int32_t i, j;
+    int16_t *cigarArray = cigarBuf_;
 
     int32_t cigarId = 0;
 
-    if (voverhangStrategy == INDEL)
+    if (overhangStrategy == INDEL)
     {
         i = nrow;
         j = ncol;
     }
-    else if(voverhangStrategy == LEADING_INDEL)
+    else if(overhangStrategy == LEADING_INDEL)
     {
         i = max_i;
         j = ncol;
@@ -274,8 +268,8 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
 
     if(j < ncol)
     {
-        vcigarArray[cigarId * 2] = SOFTCLIP;
-        vcigarArray[cigarId * 2 + 1] = ncol - j;
+        cigarArray[cigarId * 2] = SOFTCLIP;
+        cigarArray[cigarId * 2 + 1] = ncol - j;
         cigarId++;
     }
     int state = 0;
@@ -296,13 +290,13 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
         if(state == INSERT_EXT)
         {
             j--;
-            vcigarArray[cigarId * 2 - 1]++;
+            cigarArray[cigarId * 2 - 1]++;
             state = btr & INSERT_EXT;
         }
         else if(state == DELETE_EXT)
         {
             i--;
-            vcigarArray[cigarId * 2 - 1]++;
+            cigarArray[cigarId * 2 - 1]++;
             state = btr & DELETE_EXT;
         }
         else
@@ -312,79 +306,79 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
                 case MATCH:
                     i--;
                     j--;
-                    vcigarArray[cigarId * 2] = MATCH;
-                    vcigarArray[cigarId * 2 + 1] = 1;
+                    cigarArray[cigarId * 2] = MATCH;
+                    cigarArray[cigarId * 2 + 1] = 1;
                     state = 0;
                     cigarId++;
                     break;
                 case INSERT:
                     j--;
-                    vcigarArray[cigarId * 2] = INSERT;
-                    vcigarArray[cigarId * 2 + 1] = 1;
+                    cigarArray[cigarId * 2] = INSERT;
+                    cigarArray[cigarId * 2 + 1] = 1;
                     state = btr & INSERT_EXT;
                     cigarId++;
                     break;
                 case DELETE:
                     i--;
-                    vcigarArray[cigarId * 2] = DELETE;
-                    vcigarArray[cigarId * 2 + 1] = 1;
+                    cigarArray[cigarId * 2] = DELETE;
+                    cigarArray[cigarId * 2 + 1] = 1;
                     state = btr & DELETE_EXT;
                     cigarId++;
                     break;
             }
         }
     }
-    if(voverhangStrategy == SOFTCLIP)
+    if(overhangStrategy == SOFTCLIP)
     {
         if(j > 0)
         {
-            vcigarArray[cigarId * 2] = SOFTCLIP;
-            vcigarArray[cigarId * 2 + 1] = j;
+            cigarArray[cigarId * 2] = SOFTCLIP;
+            cigarArray[cigarId * 2 + 1] = j;
             cigarId++;
         }
-        p.alignmentOffset = i;
+        p->alignmentOffset = i;
     }
-    else if(voverhangStrategy == IGNORE)
+    else if(overhangStrategy == IGNORE)
     {
         if(j > 0)
         {
-            vcigarArray[cigarId * 2] = cigarArray[(cigarId - 1) * 2];
-            vcigarArray[cigarId * 2 + 1] = j;
+            cigarArray[cigarId * 2] = cigarArray[(cigarId - 1) * 2];
+            cigarArray[cigarId * 2 + 1] = j;
             cigarId++;
         }
-        p.alignmentOffset = i - j;
+        p->alignmentOffset = i - j;
     }
     else // overhangStrategy == INDEL || overhangStrategy == LEADING_INDEL
     {
         if (i > 0)
         {
-            vcigarArray[cigarId * 2] = DELETE;
-            vcigarArray[cigarId * 2 + 1] = i;
+            cigarArray[cigarId * 2] = DELETE;
+            cigarArray[cigarId * 2 + 1] = i;
             cigarId++;
         }
         else if(j > 0)
         {
-            vcigarArray[cigarId * 2] = INSERT;
-            vcigarArray[cigarId * 2 + 1] = j;
+            cigarArray[cigarId * 2] = INSERT;
+            cigarArray[cigarId * 2 + 1] = j;
             cigarId++;
         }
-        p.alignmentOffset = 0;
+        p->alignmentOffset = 0;
     }
     int32_t newId = 0;
-     prev = vcigarArray[newId * 2];
+    int32_t prev = cigarArray[newId * 2];
     //printf("cigarId = %d\n", cigarId);
     for(i = 1; i < cigarId; i++)
     {
-        int32_t cur = vcigarArray[i * 2];
+        int32_t cur = cigarArray[i * 2];
         if(cur == prev)
         {
-            vcigarArray[newId * 2 + 1] += vcigarArray[i * 2 + 1];
+            cigarArray[newId * 2 + 1] += cigarArray[i * 2 + 1];
         }
         else
         {
             newId++;
-            vcigarArray[newId * 2] = cur;
-            vcigarArray[newId * 2 + 1] = vcigarArray[i * 2 + 1];
+            cigarArray[newId * 2] = cur;
+            cigarArray[newId * 2 + 1] = cigarArray[i * 2 + 1];
             prev = cur;
         }
 
@@ -393,39 +387,63 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     int curSize = 0;
     for(i = newId; i >= 0; i--)
     {
-        int bytesWritten = sprintf(p.cigar + curSize, "%d", vcigarArray[2 * i + 1]);
+        int bytesWritten = sprintf(p->cigar + curSize, "%d", cigarArray[2 * i + 1]);
         curSize += bytesWritten;
 
-        switch(vcigarArray[2 * i])
+        switch(cigarArray[2 * i])
         {
             case MATCH:
-                sprintf(p.cigar + curSize, "M");
+                sprintf(p->cigar + curSize, "M");
                 break;
             case INSERT:
-                sprintf(p.cigar + curSize, "I");
+                sprintf(p->cigar + curSize, "I");
                 break;
             case DELETE:
-                sprintf(p.cigar + curSize, "D");
+                sprintf(p->cigar + curSize, "D");
                 break;
             case SOFTCLIP:
-                sprintf(p.cigar + curSize, "S");
+                sprintf(p->cigar + curSize, "S");
                 break;
             default:
-                sprintf(p.cigar + curSize, "R");
+                sprintf(p->cigar + curSize, "R");
                 break;
         }
         curSize++;
     }
-    p.cigarCount = strlen(p.cigar);
-
-
-    (*cigarCount) = p.cigarCount;
-    free(E_);
-       free(backTrack_);
-       free(cigarBuf_);
-    return p.alignmentOffset;
+    p->cigarCount = strlen(p->cigar);
 }
 
 
+int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount)
+{
 
 
+
+   int32_t  w_match = match;
+     int32_t   w_mismatch = mismatch;
+     int32_t   w_open = open;
+     int32_t   w_extend = extend;
+
+     int32_t   *E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN+ AVX_LENGTH)) * sizeof(int32_t), 64);
+      int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * AVX_LENGTH) * sizeof(int16_t), 64);
+      int16_t  *cigarBuf_  = (int16_t *)_mm_malloc(4 * MAX_SEQ_LEN * sizeof(int16_t), 64);
+
+
+    SeqPair p;
+    p.seq1 = seq1;
+    p.seq2 = seq2;
+    p.len1 = len1;
+    p.len2 = len2;
+    p.overhangStrategy = overhangStrategy;
+    p.btrack = backTrack_;
+    p.cigar = cigarArray;
+    smithWatermanBackTrack(&p, match, mismatch,  open, extend, E_, 0);
+    getCIGAR(&p, cigarBuf_, 0);
+
+    (*cigarCount) = p.cigarCount;
+
+    free(E_);
+    free(backTrack_);
+    free(cigarBuf_);
+    return p.alignmentOffset;
+    }
