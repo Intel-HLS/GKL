@@ -54,7 +54,7 @@ public class SmithWatermanUnitTest {
 
 
             while(in.readLine() !=null) {
-        
+
                refString = in.readLine();
                 ref = refString.getBytes();
 
@@ -65,7 +65,7 @@ public class SmithWatermanUnitTest {
                 //Get the results for one pair
                 SWNativeAlignerResult result = smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
 
-                System.out.println(result.cigar);
+                //System.out.println(result.cigar);
 
                 //  output.write(result.cigar);
                 //  output.write(" ");

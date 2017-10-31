@@ -7,12 +7,12 @@
   #include <x86intrin.h> // SIMD intrinsics for GCC
 #endif
 
-
+#define __STDC_LIMIT_MACROS
 
 #include <stdint.h>
 #include <string.h>
 #include <immintrin.h>
-#include <omp.h>
+
 
 
 #define CAT(X,Y) X##Y
@@ -53,18 +53,6 @@ typedef struct dnaSeqPair
 #define min(x, y) ((x)<(y)?(x):(y))
 #define DUMMY1 'B'
 #define DUMMY2 'D'
-
-/*
-    void PairWiseSWInit(int32_t w_match, int32_t w_mismatch, int32_t w_open, int32_t w_extend);
-	void PairWiseSWClose();
-	void runSmithWaterman(SeqPair *pairArray, int32_t numPairs, int8_t bt, int32_t numThreads);
-
-    int32_t runSWOnePairBT(uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount);
-
-
-    void smithWatermanBackTrack(SeqPair *p, int32_t tid);
-    void getCIGAR(SeqPair *p, int32_t tid);
-  */
 
 
 #endif

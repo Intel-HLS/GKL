@@ -10,25 +10,10 @@
 #include <string.h>
 #include <immintrin.h>
 #include <assert.h>
-//#include <debug.h>
+#include <debug.h>
 #include "avx_impl.h"
 #ifndef __APPLE__
   #include "avx512_impl.h"
-#endif
-
-#define DEBUG
-#define DEF_MEM_LEVEL 8
-
-#ifdef DEBUG
-#  define DBG(M, ...) fprintf(stderr, "[DEBUG] (%s:%d) : " M "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#  define INFO(M, ...) fprintf(stderr, "[INFO] (%s:%d) : " M "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#  define WARN(M, ...) fprintf(stderr, "[WARNING] (%s:%d) : " M "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#  define ERROR(M, ...) fprintf(stderr, "[ERROR] (%s:%d) :" M "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#else
-#  define DBG(M, ...)
-#  define INFO(M, ...) fprintf(stderr, "[INFO] " M "\n", ##__VA_ARGS__)
-#  define WARN(M, ...) fprintf(stderr, "[WARNING] " M "\n", ##__VA_ARGS__)
-#  define ERROR(M, ...) fprintf(stderr, "[ERROR] " M "\n", ##__VA_ARGS__)
 #endif
 
 
@@ -75,14 +60,9 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
     jint refLength = env->GetArrayLength(ref);
     jint altLength = env->GetArrayLength(alt);
 
-    //DBG("%d",match);
-    //DBG("%d",mismatch);
-    //DBG("%d", refLength);
 
     offset = g_runSWOnePairBT(match, mismatch, open, extend,(uint8_t*) reference, (uint8_t*) alternate,refLength, altLength, strategy, (char *) cigarArray, (int16_t*) &count);
 
-    //DBG("%d\n",offset);
-   // DBG("%s\n",cigarArray);
     // release buffers
     env->ReleasePrimitiveArrayCritical(ref, reference, 0);
     env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
