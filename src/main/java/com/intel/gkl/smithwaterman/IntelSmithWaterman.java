@@ -96,8 +96,6 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
 
         int offset = alignNative(refArray, altArray, cigar, parameters.getMatchValue(), parameters.getMismatchPenalty(), parameters.getGapOpenPenalty(), parameters.getGapExtendPenalty(), intStrategy);
 
-        //System.out.println(new String(cigar));
-
         return new SWNativeAlignerResult(new String(cigar).trim(), offset);
     }
 

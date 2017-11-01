@@ -11,7 +11,7 @@
 #include <immintrin.h>
 #include <assert.h>
 #include <debug.h>
-#include "avx_impl.h"
+#include "avx2_impl.h"
 #ifndef __APPLE__
   #include "avx512_impl.h"
 #endif

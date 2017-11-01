@@ -65,12 +65,6 @@ public class SmithWatermanUnitTest {
                 //Get the results for one pair
                 SWNativeAlignerResult result = smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
 
-                //System.out.println(result.cigar);
-
-                //  output.write(result.cigar);
-                //  output.write(" ");
-                //  output.write(result.alignment_offset);
-                //  output.write("\n");
             }
 
         } catch (java.io.IOException e) {
