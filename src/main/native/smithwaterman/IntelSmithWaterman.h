@@ -7,6 +7,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initNative
+  (JNIEnv * env, jclass obj );
 /*
  * Class:     com_intel_gkl_smithwaterman_IntelSmithWaterman
  * Method:    alignNative

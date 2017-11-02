@@ -109,6 +109,7 @@ bool is_avx512_supported()
     uint32_t osxsave_mask = (1 << 27); // OSX.
     uint32_t avx512_skx_mask = (1 << 16) | // AVX-512F
                                (1 << 17) | // AVX-512DQ
+                               (1 << 30) | // AVX-512BW
                                (1 << 31);  // AVX-512VL
 
     // step 1 - must ensure OS supports extended processor state management

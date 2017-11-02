@@ -52,20 +52,19 @@ public class SmithWatermanUnitTest {
             //SWParameters SWparameters = new SWParameters(3, -1, -4, -3);
             SWOverhangStrategy SWstrategy = SWOverhangStrategy.SOFTCLIP;
 
+
             while(in.readLine() !=null) {
-                refString = in.readLine();
+
+               refString = in.readLine();
                 ref = refString.getBytes();
 
                 altString = in.readLine();
-                alt = altString.getBytes();
+               alt = altString.getBytes();
+
 
                 //Get the results for one pair
                 SWNativeAlignerResult result = smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
 
-                //  output.write(result.cigar);
-                //  output.write(" ");
-                //  output.write(result.alignment_offset);
-                //  output.write("\n");
             }
 
         } catch (java.io.IOException e) {
