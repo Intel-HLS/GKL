@@ -72,6 +72,10 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             initialized = true;
         }
 
+        if(gklUtils.isAvx512Supported()) {
+            logger.info("Using CPU-supported AVX-512 instructions");
+        }
+
         /*
          Initializes the function pointers to use machine specific optimized code
          */
