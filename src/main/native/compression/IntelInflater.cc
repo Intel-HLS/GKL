@@ -151,7 +151,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
         env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
 
         if (ret == ISAL_END_INPUT && lz_stream->avail_in == 0) {
-          env->SetBooleanField(obj, FID_inf_finished, true);
+          env->SetLongField(obj, FID_inf_finished, true);
         }
 
         return bytes_out;

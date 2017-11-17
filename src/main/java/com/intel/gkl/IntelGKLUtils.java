@@ -28,7 +28,8 @@
 
 package com.intel.gkl;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
@@ -38,7 +39,7 @@ import java.io.IOException;
  * Provides utilities used by the GKL library.
  */
 public final class IntelGKLUtils implements NativeLibrary {
-    private final static Logger logger = Logger.getLogger(IntelGKLUtils.class);
+    private final static Logger logger = LogManager.getLogger(IntelGKLUtils.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_utils";
     private static boolean initialized = false;
 
@@ -83,6 +84,10 @@ public final class IntelGKLUtils implements NativeLibrary {
         return isAvxSupportedNative();
     }
 
+    public boolean isAvx2Supported() {
+        return isAvx2SupportedNative();
+    }
+
     public boolean isAvx512Supported() {
         return isAvx512SupportedNative();
     }
@@ -98,6 +103,7 @@ public final class IntelGKLUtils implements NativeLibrary {
     private native boolean getFlushToZeroNative();
     private native void setFlushToZeroNative(boolean value);
     private native boolean isAvxSupportedNative();
+    private native boolean isAvx2SupportedNative();
     private native boolean isAvx512SupportedNative();
     private native int getAvailableOmpThreadsNative();
 }

@@ -1,6 +1,7 @@
 package com.intel.gkl.pairhmm;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
@@ -15,7 +16,7 @@ import java.io.File;
  * Provides a native PairHMM implementation accelerated for the Intel Architecture.
  */
 public class IntelPairHmm implements PairHMMNativeBinding {
-    private final static Logger logger = Logger.getLogger(IntelPairHmm.class);
+    private final static Logger logger = LogManager.getLogger(IntelPairHmm.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_pairhmm";
     private String nativeLibraryName = "gkl_pairhmm";
     private IntelGKLUtils gklUtils = new IntelGKLUtils();
