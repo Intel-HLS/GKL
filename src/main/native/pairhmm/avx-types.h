@@ -1,7 +1,6 @@
 #ifndef AVX_TEMPLATE_H
 #define AVX_TEMPLATE_H
 
-
 #define ALIGNED __attribute__((aligned(32)))
 
 typedef union __attribute__((aligned(32))) {

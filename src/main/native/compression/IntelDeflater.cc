@@ -317,6 +317,7 @@ Java_com_intel_gkl_compression_IntelDeflater_endNative(JNIEnv *env, jobject obj)
   if (level != 1) {
     z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
     deflateEnd(lz_stream);
+    free(lz_stream);
   }
   else {
    isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
