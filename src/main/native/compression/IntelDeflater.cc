@@ -256,7 +256,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 
     // set finished if endOfStream was set and all input processed
     if (endOfStream && lz_stream->avail_in == 0) {
-      env->SetLongField(obj, FID_finished, true);
+      env->SetBooleanField(obj, FID_finished, true);
     }
 
     // return number of bytes written to output buffer
@@ -299,7 +299,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
     env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
 
     if (ret == Z_STREAM_END && lz_stream->avail_in == 0) { 
-      env->SetLongField(obj, FID_finished, true);
+      env->SetBooleanField(obj, FID_finished, true);
     }
 
     return bytes_out;
