@@ -49,6 +49,9 @@ if(is_avx512_supported())
 JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignNative
   (JNIEnv * env, jclass obj, jbyteArray ref, jbyteArray alt, jbyteArray cigar, jint match, jint mismatch, jint open, jint extend, jint strategy)
 {
+    jint refLength = env->GetArrayLength(ref);
+    jint altLength = env->GetArrayLength(alt);
+
     jbyte* reference = (jbyte*)env->GetPrimitiveArrayCritical(ref, 0);
     jbyte* alternate = (jbyte*)env->GetPrimitiveArrayCritical(alt, 0);
     jbyte* cigarArray = (jbyte*)env->GetPrimitiveArrayCritical(cigar, 0);
@@ -57,17 +60,12 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
     jint offset = 0;
 
     // call the low level routine
-    jint refLength = env->GetArrayLength(ref);
-    jint altLength = env->GetArrayLength(alt);
-
-
     offset = g_runSWOnePairBT(match, mismatch, open, extend,(uint8_t*) reference, (uint8_t*) alternate,refLength, altLength, strategy, (char *) cigarArray, (int16_t*) &count);
 
     // release buffers
     env->ReleasePrimitiveArrayCritical(ref, reference, 0);
     env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
     env->ReleasePrimitiveArrayCritical(cigar, cigarArray, 0);
-
 
     return offset;
 }
