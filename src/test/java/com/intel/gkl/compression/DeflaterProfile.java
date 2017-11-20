@@ -28,7 +28,9 @@ public class DeflaterProfile {
         final String filename = System.getProperty("input", INPUT_FILE);
         final File inputFile = new File(filename);
         final File outputFile = File.createTempFile("output", ".bam");
-        //outputFile.deleteOnExit();
+        outputFile.deleteOnExit();
+        final File profileFile = File.createTempFile("profile", ".csv");
+        profileFile.deleteOnExit();
 
         SamReaderFactory readerFactory =
                 SamReaderFactory.makeDefault().validationStringency(ValidationStringency.SILENT);
@@ -50,7 +52,7 @@ public class DeflaterProfile {
         deflaterFactories.add(javaDeflaterFactory);
 
         // create profile log file
-        final FileWriter fileWriter = new FileWriter("profile.csv");
+        final FileWriter fileWriter = new FileWriter(profileFile);
 
         fileWriter.write("level, time(sec), filesize\n");
 

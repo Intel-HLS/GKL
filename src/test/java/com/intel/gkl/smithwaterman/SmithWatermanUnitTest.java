@@ -18,7 +18,6 @@ public class SmithWatermanUnitTest {
     private final static Logger logger = LogManager.getLogger(SmithWatermanUnitTest.class);
 
     static final String smithwatermanData = IntelGKLUtils.pathToTestResource("smith-waterman.SOFTCLIP.in");
-    static final String smithwatermanOutput = IntelGKLUtils.pathToTestResource("smith-waterman.SOFTCLIP.out");
     int MAX_SEQ_LEN = 1024;
 
     @Test(enabled = true)
@@ -38,10 +37,8 @@ public class SmithWatermanUnitTest {
         try {
 
             final File inputFile = new File(smithwatermanData);
-            final File outputFile = new File(smithwatermanOutput);
             long inputBytes = inputFile.length();
             final FileReader input = new FileReader(inputFile);
-            final FileWriter output = new FileWriter(outputFile);
             final BufferedReader in = new BufferedReader(input);
 
             byte[] ref;
