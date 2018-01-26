@@ -45,11 +45,6 @@ set_target_properties(isal PROPERTIES IMPORTED_LOCATION
   ${CMAKE_CURRENT_BINARY_DIR}/isalExternal-prefix/lib/libisal.a
 )
 
-#---------------------------------------------------------------------
-# common includes
-#---------------------------------------------------------------------
-include_directories(../common)
-
 
 #---------------------------------------------------------------------
 # gkl_compression

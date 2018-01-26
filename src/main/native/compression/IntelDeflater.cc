@@ -28,7 +28,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "avx.h"
 
 #include <sys/time.h>
 #include "IntelDeflater.h"
