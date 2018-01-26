@@ -54,7 +54,7 @@ DeflaterIntegrationTest {
         log.info("deflater level, time (sec), filesize");
 
         for (DeflaterFactory deflaterFactory : deflaterFactories) {
-            for (int compressionLevel = 0; compressionLevel < 10; compressionLevel++) {
+            for (int compressionLevel = 1; compressionLevel < 4; compressionLevel++) {
 
                 long totalRecords = 0;
                 try (final SamReader reader = readerFactory.open(inputFile)) {

@@ -39,7 +39,7 @@
 #ifdef CACHED_TEST
 // Cached test, loop many times over small dataset
 # define TEST_LEN     8*1024
-# define TEST_LOOPS   400000
+# define TEST_LOOPS   4000000
 # define TEST_TYPE_STR "_warm"
 #else
 // Uncached test.  Pull from large mem base.

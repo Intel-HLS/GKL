@@ -33,9 +33,13 @@ default: lib
 
 include $(foreach unit,$(units), $(unit)/Makefile.am)
 
+ifneq (,$(findstring igzip,$(units)))
+ include tests/fuzz/Makefile.am
+endif
+
 # Override individual lib names to make one inclusive library.
 lib_name := bin/isa-l.a
 
 include make.inc
 
-VPATH = . $(units) include
+VPATH = . $(units) include tests/fuzz

@@ -39,7 +39,7 @@
 #	trace - get simulator trace
 #	clean - remove object files
 
-version ?= 2.19.0
+version ?= 2.21.0
 host_cpu ?= $(shell uname -m | sed -e 's/amd/x86_/')
 arch ?= $(shell uname | grep -v -e Linux -e BSD )
 
@@ -88,7 +88,7 @@ endif
 
 ASFLAGS_Darwin = -f macho64 --prefix=_
 ARFLAGS_Darwin = -r $@
-ifeq ($(arch),Darwin)
+ifeq ($(shell uname),Darwin)
   LDFLAGS_so =
   STRIP_gcc  =
 endif
@@ -126,11 +126,19 @@ all_tests = $(notdir $(sort $(perf_tests) $(check_tests) $(unit_tests) $(example
 all_unit_tests = $(notdir $(sort $(check_tests) $(unit_tests)))
 all_perf_tests = $(notdir $(sort $(perf_tests)))
 all_check_tests = $(notdir $(sort $(check_tests)))
+all_llvm_fuzz_tests = $(notdir $(sort $(llvm_fuzz_tests)))
 
 $(all_unit_tests): % : %.c $(lib_name)
 $(all_perf_tests): % : %.c $(lib_name)
 $(sort $(notdir $(examples))): % : %.c $(lib_name)
 $(sort $(notdir $(other_tests))): % : %.c $(lib_name)
+
+$(all_llvm_fuzz_tests): LDLIBS += -lFuzzer
+$(all_llvm_fuzz_tests): CFLAGS += -fsanitize-coverage=trace-pc-guard -fsanitize=address
+$(all_llvm_fuzz_tests): CXXFLAGS += -fsanitize-coverage=trace-pc-guard -fsanitize=address
+$(all_llvm_fuzz_tests): % : %.o $(lib_name)
+	$(CXX) $(CXXFLAGS)  $^ $(LDLIBS) -o $@
+
 
 sim test trace: $(addsuffix .run,$(all_unit_tests))
 perf: $(addsuffix .run,$(all_perf_tests))
@@ -138,6 +146,7 @@ check: $(addsuffix .run,$(all_check_tests))
 ex:   $(notdir $(examples))
 all: lib $(all_tests)
 other: $(notdir $(other_tests))
+llvm_fuzz_tests: $(all_llvm_fuzz_tests)
 tests: $(all_unit_tests)
 perfs: $(all_perf_tests)
 checks: $(all_check_tests)
@@ -273,7 +282,7 @@ perf_report:
 
 clean:
 	@echo Cleaning up
-	@$(RM) -r $(O) *.o *.a $(all_tests) $(lib_name) $(so_lib_name)
+	@$(RM) -r $(O) *.o *.a $(all_tests) $(lib_name) $(so_lib_name) $(all_llvm_fuzz_tests)
 
 
 doc: isa-l.h

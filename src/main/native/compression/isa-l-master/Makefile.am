@@ -31,10 +31,11 @@ include erasure_code/Makefile.am
 include raid/Makefile.am
 include crc/Makefile.am
 include igzip/Makefile.am
+include tests/fuzz/Makefile.am
 
 # LIB version info not necessarily the same as package version
 LIBISAL_CURRENT=2
-LIBISAL_REVISION=19
+LIBISAL_REVISION=21
 LIBISAL_AGE=0
 
 lib_LTLIBRARIES = libisal.la

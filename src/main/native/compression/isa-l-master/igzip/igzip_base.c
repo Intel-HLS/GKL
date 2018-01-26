@@ -12,6 +12,9 @@ static inline void update_state(struct isal_zstream *stream, uint8_t * start_in,
 	struct isal_zstate *state = &stream->internal_state;
 	uint32_t bytes_written;
 
+	if (next_in - start_in > 0)
+		state->has_hist = IGZIP_HIST;
+
 	stream->next_in = next_in;
 	stream->total_in += next_in - start_in;
 	stream->avail_in = end_in - next_in;
@@ -32,6 +35,7 @@ void isal_deflate_body_base(struct isal_zstream *stream)
 	uint64_t code, code_len, code2, code_len2;
 	struct isal_zstate *state = &stream->internal_state;
 	uint16_t *last_seen = state->head;
+	uint8_t *file_start = stream->next_in - stream->total_in;
 
 	if (stream->avail_in == 0) {
 		if (stream->end_of_stream || stream->flush != NO_FLUSH)
@@ -53,9 +57,9 @@ void isal_deflate_body_base(struct isal_zstream *stream)
 		}
 
 		literal = *(uint32_t *) next_in;
-		hash = compute_hash(literal) & HASH_MASK;
-		dist = (next_in - state->file_start - last_seen[hash]) & 0xFFFF;
-		last_seen[hash] = (uint64_t) (next_in - state->file_start);
+		hash = compute_hash(literal) & LVL0_HASH_MASK;
+		dist = (next_in - file_start - last_seen[hash]) & 0xFFFF;
+		last_seen[hash] = (uint64_t) (next_in - file_start);
 
 		/* The -1 are to handle the case when dist = 0 */
 		if (dist - 1 < IGZIP_HIST_SIZE - 1) {
@@ -74,9 +78,8 @@ void isal_deflate_body_base(struct isal_zstream *stream)
 
 				for (; next_hash < end; next_hash++) {
 					literal = *(uint32_t *) next_hash;
-					hash = compute_hash(literal) & HASH_MASK;
-					last_seen[hash] =
-					    (uint64_t) (next_hash - state->file_start);
+					hash = compute_hash(literal) & LVL0_HASH_MASK;
+					last_seen[hash] = (uint64_t) (next_hash - file_start);
 				}
 
 				get_len_code(stream->hufftables, match_length, &code,
@@ -118,6 +121,7 @@ void isal_deflate_finish_base(struct isal_zstream *stream)
 	uint64_t code, code_len, code2, code_len2;
 	struct isal_zstate *state = &stream->internal_state;
 	uint16_t *last_seen = state->head;
+	uint8_t *file_start = stream->next_in - stream->total_in;
 
 	set_buf(&state->bitbuf, stream->next_out, stream->avail_out);
 
@@ -133,9 +137,9 @@ void isal_deflate_finish_base(struct isal_zstream *stream)
 			}
 
 			literal = *(uint32_t *) next_in;
-			hash = compute_hash(literal) & HASH_MASK;
-			dist = (next_in - state->file_start - last_seen[hash]) & 0xFFFF;
-			last_seen[hash] = (uint64_t) (next_in - state->file_start);
+			hash = compute_hash(literal) & LVL0_HASH_MASK;
+			dist = (next_in - file_start - last_seen[hash]) & 0xFFFF;
+			last_seen[hash] = (uint64_t) (next_in - file_start);
 
 			if (dist - 1 < IGZIP_HIST_SIZE - 1) {	/* The -1 are to handle the case when dist = 0 */
 				match_length =
@@ -152,9 +156,9 @@ void isal_deflate_finish_base(struct isal_zstream *stream)
 
 					for (; next_hash < end - 3; next_hash++) {
 						literal = *(uint32_t *) next_hash;
-						hash = compute_hash(literal) & HASH_MASK;
+						hash = compute_hash(literal) & LVL0_HASH_MASK;
 						last_seen[hash] =
-						    (uint64_t) (next_hash - state->file_start);
+						    (uint64_t) (next_hash - file_start);
 					}
 
 					get_len_code(stream->hufftables, match_length, &code,
@@ -209,21 +213,20 @@ void isal_deflate_finish_base(struct isal_zstream *stream)
 	return;
 }
 
-void isal_deflate_hash_lvl0_base(struct isal_zstream *stream, uint8_t * dict,
-				 uint32_t dict_len)
+void isal_deflate_hash_base(uint16_t * hash_table, uint32_t hash_mask,
+			    uint32_t current_index, uint8_t * dict, uint32_t dict_len)
 {
 	uint8_t *next_in = dict;
 	uint8_t *end_in = dict + dict_len - SHORTEST_MATCH;
 	uint32_t literal;
 	uint32_t hash;
-	uint16_t lookup_val = stream->total_in - dict_len;
-	uint16_t *last_seen = stream->internal_state.head;
+	uint16_t index = current_index - dict_len;
 
 	while (next_in <= end_in) {
 		literal = *(uint32_t *) next_in;
-		hash = compute_hash(literal) & HASH_MASK;
-		last_seen[hash] = lookup_val;
-		lookup_val++;
+		hash = compute_hash(literal) & hash_mask;
+		hash_table[hash] = index;
+		index++;
 		next_in++;
 	}
 }

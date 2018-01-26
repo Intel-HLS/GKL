@@ -1,5 +1,5 @@
 /**********************************************************************
-  Copyright(c) 2011-2016 Intel Corporation All rights reserved.
+  Copyright(c) 2011-2017 Intel Corporation All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions
@@ -30,67 +30,63 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include "igzip_lib.h"
+#include <stdint.h>
+#include <sys/time.h>
+#include "crc.h"
 #include "test.h"
 
-#define TEST_LEN   (1024*1024)
-#define IBUF_SIZE  (1024*1024)
-#define OBUF_SIZE  (1024*1024)
+//#define CACHED_TEST
+#ifdef CACHED_TEST
+// Cached test, loop many times over small dataset
+# define TEST_LEN     8*1024
+# define TEST_LOOPS   4000000
+# define TEST_TYPE_STR "_warm"
+#else
+// Uncached test.  Pull from large mem base.
+#  define GT_L3_CACHE  32*1024*1024	/* some number > last level cache */
+#  define TEST_LEN     (2 * GT_L3_CACHE)
+#  define TEST_LOOPS   100
+#  define TEST_TYPE_STR "_cold"
+#endif
 
-#define TEST_LOOPS   400
-#define TEST_TYPE_STR "_warm"
+#ifndef TEST_SEED
+# define TEST_SEED 0x1234
+#endif
 
-void create_data(unsigned char *data, int size)
-{
-	char c = 'a';
-	while (size--)
-		*data++ = c = c < 'z' ? c + 1 : 'a';
-}
+#define TEST_MEM TEST_LEN
 
 int main(int argc, char *argv[])
 {
-	int i = 1;
-	struct isal_zstream stream;
-	unsigned char inbuf[IBUF_SIZE], zbuf[OBUF_SIZE];
+	int i;
+	void *src, *dst;
+	uint16_t crc;
 	struct perf start, stop;
 
-	create_data(inbuf, TEST_LEN);
-	printf("Window Size: %d K\n", IGZIP_HIST_SIZE / 1024);
-	printf("igzip_sync_flush_perf: \n");
-	fflush(0);
+	printf("crc16_t10dif_copy_perf:\n");
 
-	perf_start(&start);
-
-	for (i = 0; i < TEST_LOOPS; i++) {
-		isal_deflate_init(&stream);
-
-		stream.avail_in = TEST_LEN;
-		if (i == (TEST_LOOPS - 1))
-			stream.end_of_stream = 1;
-		else
-			stream.end_of_stream = 0;
-		stream.next_in = inbuf;
-		stream.flush = SYNC_FLUSH;
-
-		do {
-			stream.avail_out = OBUF_SIZE;
-			stream.next_out = zbuf;
-			isal_deflate(&stream);
-		} while (stream.avail_out == 0);
-
-	}
-
-	perf_stop(&stop);
-
-	printf("igzip_sync_flush_perf" TEST_TYPE_STR ": ");
-	perf_print(stop, start, (long long)(TEST_LEN) * (i));
-
-	if (!stream.end_of_stream) {
-		printf("error: compression test could not fit into allocated buffers\n");
+	if (posix_memalign(&src, 1024, TEST_LEN)) {
+		printf("alloc error: Fail");
 		return -1;
 	}
-	printf("End of igzip_sync_flush_perf\n\n");
+	if (posix_memalign(&dst, 1024, TEST_LEN)) {
+		printf("alloc error: Fail");
+		return -1;
+	}
+
+	printf("Start timed tests\n");
 	fflush(0);
+
+	memset(src, 0, TEST_LEN);
+	crc = crc16_t10dif_copy(TEST_SEED, dst, src, TEST_LEN);
+
+	perf_start(&start);
+	for (i = 0; i < TEST_LOOPS; i++) {
+		crc = crc16_t10dif_copy(TEST_SEED, dst, src, TEST_LEN);
+	}
+	perf_stop(&stop);
+	printf("crc16_t10dif_copy" TEST_TYPE_STR ": ");
+	perf_print(stop, start, (long long)TEST_LEN * i);
+
+	printf("finish 0x%x\n", crc);
 	return 0;
 }
