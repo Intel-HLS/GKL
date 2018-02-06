@@ -90,6 +90,7 @@ objs =  \
 	bin\xor_gen_sse.obj \
 	bin\crc16_t10dif_01.obj \
 	bin\crc16_t10dif_by4.obj \
+	bin\crc16_t10dif_copy_by4.obj \
 	bin\crc32_gzip.obj \
 	bin\crc32_ieee_01.obj \
 	bin\crc32_ieee_by4.obj \
@@ -120,9 +121,7 @@ objs =  \
 	bin\encode_df.obj \
 	bin\encode_df_04.obj \
 	bin\proc_heap.obj \
-	bin\igzip_icf_body_01.obj \
-	bin\igzip_icf_body_02.obj \
-	bin\igzip_icf_body_04.obj \
+	bin\igzip_icf_body_h1_gr_bt.obj \
 	bin\igzip_icf_finish.obj \
 	bin\igzip_icf_base.obj \
 	bin\igzip_inflate.obj \
@@ -135,7 +134,10 @@ objs =  \
 	bin\crc32_gzip_refl_by8.obj \
 	bin\adler32_sse.obj \
 	bin\adler32_avx2_4.obj \
-	bin\igzip_deflate_hash.obj
+	bin\igzip_deflate_hash.obj \
+	bin\igzip_gen_icf_map_lh1_06.obj \
+	bin\igzip_set_long_icf_fg_06.obj \
+	bin\igzip_icf_body.obj
 
 INCLUDES  = -I./ -Ierasure_code/ -Iraid/ -Icrc/ -Iigzip/ -Iinclude/
 LINKFLAGS = /nologo
@@ -201,6 +203,7 @@ checks = \
 	xor_check_test.exe \
 	pq_check_test.exe \
 	crc16_t10dif_test.exe \
+	crc16_t10dif_copy_test.exe \
 	crc32_ieee_test.exe \
 	crc32_iscsi_test.exe \
 	crc64_funcs_test.exe \

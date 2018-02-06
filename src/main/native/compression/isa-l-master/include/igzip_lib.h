@@ -115,9 +115,14 @@ extern "C" {
 
 #define ISAL_LIMIT_HASH_UPDATE
 
-#ifndef IGZIP_HASH_SIZE
-#define IGZIP_HASH_SIZE  (8 * IGZIP_K)
-#endif
+#define IGZIP_HASH8K_HASH_SIZE (8 * IGZIP_K)
+#define IGZIP_HASH_HIST_SIZE IGZIP_HIST_SIZE
+#define IGZIP_HASH_MAP_HASH_SIZE IGZIP_HIST_SIZE
+
+#define IGZIP_LVL0_HASH_SIZE  (8 * IGZIP_K)
+#define IGZIP_LVL1_HASH_SIZE  IGZIP_HASH8K_HASH_SIZE
+#define IGZIP_LVL2_HASH_SIZE  IGZIP_HASH_HIST_SIZE
+#define IGZIP_LVL3_HASH_SIZE  IGZIP_HASH_MAP_HASH_SIZE
 
 #ifdef LONGER_HUFFTABLE
 enum {IGZIP_DIST_TABLE_SIZE = 8*1024};
@@ -155,8 +160,10 @@ enum {IGZIP_LIT_TABLE_SIZE = ISAL_DEF_LIT_SYMBOLS};
 #define INVALID_PARAM -8
 #define STATELESS_OVERFLOW -1
 #define ISAL_INVALID_OPERATION -9
-#define ISAL_INVALID_LEVEL -4	/* Invalid Compression level set */
 #define ISAL_INVALID_STATE -3
+#define ISAL_INVALID_LEVEL -4	/* Invalid Compression level set */
+#define ISAL_INVALID_LEVEL_BUF -5 /* Invalid buffer specified for the compression level */
+
 /**
  *  @enum isal_zstate_state
  *  @brief Compression State please note ZSTATE_TRL only applies for GZIP compression
@@ -185,6 +192,8 @@ enum isal_zstate_state {
 	ZSTATE_TMP_BODY,	//!< Temporary Body state
 	ZSTATE_TMP_FLUSH_READ_BUFFER, //!< Flush buffer
 	ZSTATE_TMP_FLUSH_ICF_BUFFER,
+	ZSTATE_TMP_TYPE0_HDR, //! Temporary Type0 block header to be written
+	ZSTATE_TMP_TYPE0_BODY, //!< Temporary Type0 block body to be written
 	ZSTATE_TMP_SYNC_FLUSH, //!< Write sync flush block
 	ZSTATE_TMP_FLUSH_WRITE_BUFFER, //!< Flush bitbuf
 	ZSTATE_TMP_TRL,	//!< Temporary Trailer state
@@ -233,7 +242,7 @@ enum isal_block_state {
 struct isal_huff_histogram {
 	uint64_t lit_len_histogram[ISAL_DEF_LIT_LEN_SYMBOLS]; //!< Histogram of Literal/Len symbols seen
 	uint64_t dist_histogram[ISAL_DEF_DIST_SYMBOLS]; //!< Histogram of Distance Symbols seen
-	uint16_t hash_table[IGZIP_HASH_SIZE]; //!< Tmp space used as a hash table
+	uint16_t hash_table[IGZIP_LVL0_HASH_SIZE]; //!< Tmp space used as a hash table
 };
 
 struct isal_mod_hist {
@@ -242,12 +251,17 @@ struct isal_mod_hist {
 };
 
 #define ISAL_DEF_MIN_LEVEL 0
-#define ISAL_DEF_MAX_LEVEL 1
+#define ISAL_DEF_MAX_LEVEL 3
 
 /* Defines used set level data sizes */
+/* has to be at least sizeof(struct level_buf) + sizeof(struct lvlX_buf */
 #define ISAL_DEF_LVL0_REQ 0
-#define ISAL_DEF_LVL1_REQ 4 * IGZIP_K /* has to be at least sizeof(struct level_2_buf) */
+#define ISAL_DEF_LVL1_REQ (4 * IGZIP_K + 2 * IGZIP_LVL1_HASH_SIZE)
 #define ISAL_DEF_LVL1_TOKEN_SIZE 4
+#define ISAL_DEF_LVL2_REQ (4 * IGZIP_K + 2 * IGZIP_LVL2_HASH_SIZE)
+#define ISAL_DEF_LVL2_TOKEN_SIZE 4
+#define ISAL_DEF_LVL3_REQ 4 * IGZIP_K + 4 * 4 * IGZIP_K + 2 * IGZIP_LVL3_HASH_SIZE
+#define ISAL_DEF_LVL3_TOKEN_SIZE 4
 
 /* Data sizes for level specific data options */
 #define ISAL_DEF_LVL0_MIN ISAL_DEF_LVL0_REQ
@@ -263,6 +277,20 @@ struct isal_mod_hist {
 #define ISAL_DEF_LVL1_LARGE (ISAL_DEF_LVL1_REQ + ISAL_DEF_LVL1_TOKEN_SIZE * 64 * IGZIP_K)
 #define ISAL_DEF_LVL1_EXTRA_LARGE (ISAL_DEF_LVL1_REQ + ISAL_DEF_LVL1_TOKEN_SIZE * 128 * IGZIP_K)
 #define ISAL_DEF_LVL1_DEFAULT ISAL_DEF_LVL1_LARGE
+
+#define ISAL_DEF_LVL2_MIN (ISAL_DEF_LVL2_REQ + ISAL_DEF_LVL2_TOKEN_SIZE * 1 * IGZIP_K)
+#define ISAL_DEF_LVL2_SMALL (ISAL_DEF_LVL2_REQ + ISAL_DEF_LVL2_TOKEN_SIZE * 16 * IGZIP_K)
+#define ISAL_DEF_LVL2_MEDIUM (ISAL_DEF_LVL2_REQ + ISAL_DEF_LVL2_TOKEN_SIZE * 32 * IGZIP_K)
+#define ISAL_DEF_LVL2_LARGE (ISAL_DEF_LVL2_REQ + ISAL_DEF_LVL2_TOKEN_SIZE * 64 * IGZIP_K)
+#define ISAL_DEF_LVL2_EXTRA_LARGE (ISAL_DEF_LVL2_REQ + ISAL_DEF_LVL2_TOKEN_SIZE * 128 * IGZIP_K)
+#define ISAL_DEF_LVL2_DEFAULT ISAL_DEF_LVL2_LARGE
+
+#define ISAL_DEF_LVL3_MIN (ISAL_DEF_LVL3_REQ + ISAL_DEF_LVL3_TOKEN_SIZE * 1 * IGZIP_K)
+#define ISAL_DEF_LVL3_SMALL (ISAL_DEF_LVL3_REQ + ISAL_DEF_LVL3_TOKEN_SIZE * 16 * IGZIP_K)
+#define ISAL_DEF_LVL3_MEDIUM (ISAL_DEF_LVL3_REQ + ISAL_DEF_LVL3_TOKEN_SIZE * 32 * IGZIP_K)
+#define ISAL_DEF_LVL3_LARGE (ISAL_DEF_LVL3_REQ + ISAL_DEF_LVL3_TOKEN_SIZE * 64 * IGZIP_K)
+#define ISAL_DEF_LVL3_EXTRA_LARGE (ISAL_DEF_LVL3_REQ + ISAL_DEF_LVL3_TOKEN_SIZE * 128 * IGZIP_K)
+#define ISAL_DEF_LVL3_DEFAULT ISAL_DEF_LVL3_LARGE
 
 #define IGZIP_NO_HIST 0
 #define IGZIP_HIST 1
@@ -284,26 +312,27 @@ struct BitBuf2 {
 
 /** @brief Holds the internal state information for input and output compression streams*/
 struct isal_zstate {
-	uint32_t b_bytes_valid;	//!< number of bytes of valid data in buffer
-	uint32_t b_bytes_processed;	//!< keeps track of the number of bytes processed in isal_zstate.buffer
-	uint8_t *file_start;	//!< pointer to where file would logically start
-	uint32_t crc;		//!< Current crc
+	uint32_t total_in_start; //!< Start of total_in (inlcuding buffered data) on function call
+	uint32_t block_next;	//!< Start of current deflate block in the input
+	uint32_t block_end;	//!< End of current deflate block in the input
 	struct BitBuf2 bitbuf;	//!< Bit Buffer
+	uint32_t crc;		//!< Current crc
 	enum isal_zstate_state state;	//!< Current state in processing the data stream
+	uint8_t has_wrap_hdr;	//!< keeps track of wrapper header
+	uint8_t has_eob_hdr;	//!< keeps track of eob hdr (with BFINAL set)
+	uint8_t has_eob;	//!< keeps track of eob on the last deflate block
+	uint8_t has_hist;	//!< flag to track if there is match history
+	uint16_t has_level_buf_init; //!< flag to track if user supplied memory has been initialized.
 	uint32_t count;	//!< used for partial header/trailer writes
 	uint8_t tmp_out_buff[16];	//!< temporary array
 	uint32_t tmp_out_start;	//!< temporary variable
 	uint32_t tmp_out_end;	//!< temporary variable
-	uint32_t has_wrap_hdr;	//!< keeps track of wrapper header
-	uint32_t has_eob;	//!< keeps track of eob on the last deflate block
-	uint32_t has_eob_hdr;	//!< keeps track of eob hdr (with BFINAL set)
-	uint32_t has_hist;	//!< flag to track if there is match history
+	uint32_t b_bytes_valid;	//!< number of valid bytes in buffer
+	uint32_t b_bytes_processed;	//!< number of bytes processed in buffer
+	uint8_t buffer[2 * IGZIP_HIST_SIZE + ISAL_LOOK_AHEAD];	//!< Internal buffer
 
-	struct isal_mod_hist hist;
-
-	DECLARE_ALIGNED(uint8_t buffer[2 * IGZIP_HIST_SIZE + ISAL_LOOK_AHEAD], 32);	//!< Internal buffer
-	DECLARE_ALIGNED(uint16_t head[IGZIP_HASH_SIZE], 16);	//!< Hash array
-
+	/* Stream should be setup such that the head is cache aligned*/
+	uint16_t head[IGZIP_LVL0_HASH_SIZE];	//!< Hash array
 };
 
 /** @brief Holds the huffman tree used to huffman encode the input stream **/
@@ -335,8 +364,8 @@ struct isal_zstream {
 	uint32_t level; //!< Compression level to use
 	uint32_t level_buf_size; //!< Size of level_buf
 	uint8_t * level_buf; //!< User allocated buffer required for different compression levels
-	uint32_t end_of_stream;	//!< non-zero if this is the last input buffer
-	uint32_t flush;	//!< Flush type can be NO_FLUSH, SYNC_FLUSH or FULL_FLUSH
+	uint16_t end_of_stream;	//!< non-zero if this is the last input buffer
+	uint16_t flush;	//!< Flush type can be NO_FLUSH, SYNC_FLUSH or FULL_FLUSH
 	uint32_t gzip_flag; //!< Indicate if gzip compression is to be performed
 
 	struct isal_zstate internal_state;	//!< Internal state for this stream
@@ -379,28 +408,51 @@ struct isal_zstream {
  * Since small_code_lookup is a lookup on DECODE_LOOKUP_SIZE bits, it must have
  * size 2^DECODE_LOOKUP_SIZE.
  *
- * Since deflate Huffman are stored such that the code size and the code value
- * form an increasing function, At most 2^(15 - DECODE_LOOKUP_SIZE) - 1 elements
- * of long_code_lookup duplicate an existing symbol. Since there are at most 285
- * - DECODE_LOOKUP_SIZE possible symbols contained in long_code lookup. Rounding
- * this to the nearest 16 byte boundary yields the size of long_code_lookup of
- * 288 + 2^(15 - DECODE_LOOKUP_SIZE).
+ * To determine the amoutn of memory required for long_code_lookup, note that
+ * any element of long_code_lookup corresponds to a code, a duplicate of an
+ * existing code, or a invalid code. Since deflate Huffman are stored such that
+ * the code size and the code value form an increasing function, the number of
+ * duplicates is maximized when all the duplicates are contained in a single
+ * array, thus there are at most 2^(15 - DECODE_LOOKUP_SIZE) -
+ * (DECODE_LOOKUP_SIZE + 1) duplicate elements. Similarly the number of invalid
+ * elements is maximized at 2^(15 - DECODE_LOOKUP_SIZE) - 2^(floor((15 -
+ * DECODE_LOOKUP_SIZE)/2) - 2^(ceil((15 - DECODE_LOOKUP_SIZE)/2) + 1. Thus the
+ * amount of memory requried is: NUM_CODES + 2^(16 - DECODE_LOOKUP_SIZE) -
+ * (DECODE_LOOKUP_SIZE + 1) - 2^(floor((15 - DECODE_LOOKUP_SIZE)/2) -
+ * 2^(ceil((15 - DECODE_LOOKUP_SIZE)/2) + 1. The values used below are those
+ * valuse rounded up to the nearest 16 byte boundary
  *
  * Note that DECODE_LOOKUP_SIZE can be any length even though the offset in
  * small_lookup_code is 9 bits long because the increasing relationship between
  * code length and code value forces the maximum offset to be less than 288.
  */
 
+/* In the following defines, L stands for LARGE and S for SMALL */
+#define ISAL_L_REM (15 - ISAL_DECODE_LONG_BITS)
+#define ISAL_S_REM (15 - ISAL_DECODE_SHORT_BITS)
+
+#define ISAL_L_DUP ((1 << ISAL_L_REM) - (ISAL_L_REM + 1))
+#define ISAL_S_DUP ((1 << ISAL_S_REM) - (ISAL_S_REM + 1))
+
+#define ISAL_L_UNUSED ((1 << ISAL_L_REM) - (1 << ((ISAL_L_REM)/2)) - (1 << ((ISAL_L_REM + 1)/2)) + 1)
+#define ISAL_S_UNUSED ((1 << ISAL_S_REM) - (1 << ((ISAL_S_REM)/2)) - (1 << ((ISAL_S_REM + 1)/2)) + 1)
+
+#define ISAL_L_SIZE (ISAL_DEF_LIT_LEN_SYMBOLS + ISAL_L_DUP + ISAL_L_UNUSED)
+#define ISAL_S_SIZE (ISAL_DEF_DIST_SYMBOLS + ISAL_S_DUP + ISAL_S_UNUSED)
+
+#define ISAL_HUFF_CODE_LARGE_LONG_ALIGNED (ISAL_L_SIZE + (-ISAL_L_SIZE & 0xf))
+#define ISAL_HUFF_CODE_SMALL_LONG_ALIGNED (ISAL_S_SIZE + (-ISAL_S_SIZE & 0xf))
+
 /* Large lookup table for decoding huffman codes */
 struct inflate_huff_code_large {
 	uint16_t short_code_lookup[1 << (ISAL_DECODE_LONG_BITS)];
-	uint16_t long_code_lookup[288 + (1 << (15 - ISAL_DECODE_LONG_BITS))];
+	uint16_t long_code_lookup[ISAL_HUFF_CODE_LARGE_LONG_ALIGNED];
 };
 
 /* Small lookup table for decoding huffman codes */
 struct inflate_huff_code_small {
 	uint16_t short_code_lookup[1 << (ISAL_DECODE_SHORT_BITS)];
-	uint16_t long_code_lookup[32 + (1 << (15 - ISAL_DECODE_SHORT_BITS))];
+	uint16_t long_code_lookup[ISAL_HUFF_CODE_SMALL_LONG_ALIGNED];
 };
 
 /** @brief Holds decompression state information*/
@@ -589,7 +641,8 @@ int isal_deflate_set_dict(struct isal_zstream *stream, uint8_t *dict, uint32_t d
  * @param  stream Structure holding state information on the compression streams.
  * @return COMP_OK (if everything is ok),
  *         INVALID_FLUSH (if an invalid FLUSH is selected),
- *         ISAL_INVALID_LEVEL (if an invalid compression level is selected).
+ *         ISAL_INVALID_LEVEL (if an invalid compression level is selected),
+ *         ISAL_INVALID_LEVEL_BUF (if the level buffer is not large enough).
  */
 int isal_deflate(struct isal_zstream *stream);
 
@@ -618,6 +671,7 @@ int isal_deflate(struct isal_zstream *stream);
  * @return COMP_OK (if everything is ok),
  *         INVALID_FLUSH (if an invalid FLUSH is selected),
  *         ISAL_INVALID_LEVEL (if an invalid compression level is selected),
+ *         ISAL_INVALID_LEVEL_BUF (if the level buffer is not large enough),
  *         STATELESS_OVERFLOW (if output buffer will not fit output).
  */
 int isal_deflate_stateless(struct isal_zstream *stream);

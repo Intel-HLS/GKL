@@ -137,9 +137,9 @@ isal_deflate_body_ %+ ARCH %+ :
 	;; Set stream's next state
 	mov	rdx, ZSTATE_FLUSH_READ_BUFFER
 	mov	rax, ZSTATE_BODY
-	cmp	dword [rcx + _end_of_stream], 0
+	cmp	word [rcx + _end_of_stream], 0
 	cmovne	rax, rdx
-	cmp	dword [rcx + _flush], _NO_FLUSH
+	cmp	word [rcx + _flush], _NO_FLUSH
 	cmovne	rax, rdx
 	mov	dword [rcx + _internal_state_state], eax
 	ret
@@ -164,7 +164,7 @@ skip1:
 	mov [rsp + gpr_save_mem_offset + 7*8], r15
 
 	mov	stream, rcx
-	mov	dword [stream + _internal_state_has_eob], 0
+	mov	byte [stream + _internal_state_has_eob], 0
 
 	MOVDQU	xmask, [mask]
 
@@ -209,10 +209,10 @@ MARK __body_compute_hash_ %+ ARCH
 	shr	tmp3, 8
 	compute_hash	hash2, tmp3
 
-	and	hash, HASH_MASK
-	and	hash2, HASH_MASK
+	and	hash, LVL0_HASH_MASK
+	and	hash2, LVL0_HASH_MASK
 
-	cmp	dword [stream + _internal_state_has_hist], IGZIP_NO_HIST
+	cmp	byte [stream + _internal_state_has_hist], IGZIP_NO_HIST
 	je	write_first_byte
 
 	jmp	loop2
@@ -321,7 +321,7 @@ len_dist_lit_huffman:
 	MOVQ	tmp5, xdata
 	shr	tmp5, 24
 	compute_hash	tmp4, tmp5
-	and	tmp4, HASH_MASK
+	and	tmp4, LVL0_HASH_MASK
 
 	SHLX	code4, code4, code_len3
 	or	code4, code3
@@ -359,15 +359,15 @@ loop3:
 	jae	loop3_done
 	mov     tmp6, [file_start + tmp3]
 	compute_hash    tmp4, tmp6
-	and     tmp4 %+ d, HASH_MASK
+	and     tmp4 %+ d, LVL0_HASH_MASK
 	; state->head[hash] = k;
 	mov     [stream + _internal_state_head + 2 * tmp4], tmp3 %+ w
 	jmp      loop3
 loop3_done:
 %endif
-	; hash = compute_hash(state->file_start + f_i) & HASH_MASK;
-	and	hash %+ d, HASH_MASK
-	and	hash2 %+ d, HASH_MASK
+	; hash = compute_hash(state->file_start + f_i) & LVL0_HASH_MASK;
+	and	hash %+ d, LVL0_HASH_MASK
+	and	hash2 %+ d, LVL0_HASH_MASK
 
 	; continue
 	cmp	f_i, f_end_i
@@ -429,15 +429,15 @@ loop4:
 	jae	loop4_done
 	mov     tmp6, [file_start + tmp3]
 	compute_hash    tmp4, tmp6
-	and     tmp4, HASH_MASK
+	and     tmp4, LVL0_HASH_MASK
 	mov     [stream + _internal_state_head + 2 * tmp4], tmp3 %+ w
 	jmp      loop4
 loop4_done:
 %endif
 
-	; hash = compute_hash(state->file_start + f_i) & HASH_MASK;
-	and	hash %+ d, HASH_MASK
-	and	hash2 %+ d, HASH_MASK
+	; hash = compute_hash(state->file_start + f_i) & LVL0_HASH_MASK;
+	and	hash %+ d, LVL0_HASH_MASK
+	and	hash2 %+ d, LVL0_HASH_MASK
 
 	; continue
 	cmp	f_i, f_end_i
@@ -464,9 +464,9 @@ write_lit_bits:
 input_end:
 	mov	tmp1, ZSTATE_FLUSH_READ_BUFFER
 	mov	tmp5, ZSTATE_BODY
-	cmp	dword [stream + _end_of_stream], 0
+	cmp	word [stream + _end_of_stream], 0
 	cmovne	tmp5, tmp1
-	cmp	dword [stream + _flush], _NO_FLUSH
+	cmp	word [stream + _flush], _NO_FLUSH
 	cmovne	tmp5, tmp1
 	mov	dword [stream + _internal_state_state], tmp5 %+ d
 
@@ -545,7 +545,7 @@ write_first_byte:
 	cmp	m_out_buf, [stream + _internal_state_bitbuf_m_out_end]
 	ja	output_end
 
-	mov	dword [stream + _internal_state_has_hist], IGZIP_HIST
+	mov	byte [stream + _internal_state_has_hist], IGZIP_HIST
 
 	mov	[stream + _internal_state_head + 2 * hash], f_i %+ w
 
@@ -563,5 +563,5 @@ write_first_byte:
 
 section .data
 	align 16
-mask:	dd	HASH_MASK, HASH_MASK, HASH_MASK, HASH_MASK
+mask:	dd	LVL0_HASH_MASK, LVL0_HASH_MASK, LVL0_HASH_MASK, LVL0_HASH_MASK
 const_D: dq	D

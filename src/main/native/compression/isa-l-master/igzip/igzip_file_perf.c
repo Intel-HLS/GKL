@@ -42,6 +42,59 @@
 # define RUN_MEM_SIZE 500000000
 #endif
 
+int level_size_buf[10] = {
+#ifdef ISAL_DEF_LVL0_DEFAULT
+	ISAL_DEF_LVL0_DEFAULT,
+#else
+	0,
+#endif
+#ifdef ISAL_DEF_LVL1_DEFAULT
+	ISAL_DEF_LVL1_DEFAULT,
+#else
+	0,
+#endif
+#ifdef ISAL_DEF_LVL2_DEFAULT
+	ISAL_DEF_LVL2_DEFAULT,
+#else
+	0,
+#endif
+#ifdef ISAL_DEF_LVL3_DEFAULT
+	ISAL_DEF_LVL3_DEFAULT,
+#else
+	0,
+#endif
+#ifdef ISAL_DEF_LVL4_DEFAULT
+	ISAL_DEF_LVL4_DEFAULT,
+#else
+	0,
+#endif
+#ifdef ISAL_DEF_LVL5_DEFAULT
+	ISAL_DEF_LVL5_DEFAULT,
+#else
+	0,
+#endif
+#ifdef ISAL_DEF_LVL6_DEFAULT
+	ISAL_DEF_LVL6_DEFAULT,
+#else
+	0,
+#endif
+#ifdef ISAL_DEF_LVL7_DEFAULT
+	ISAL_DEF_LVL7_DEFAULT,
+#else
+	0,
+#endif
+#ifdef ISAL_DEF_LVL8_DEFAULT
+	ISAL_DEF_LVL8_DEFAULT,
+#else
+	0,
+#endif
+#ifdef ISAL_DEF_LVL9_DEFAULT
+	ISAL_DEF_LVL9_DEFAULT,
+#else
+	0,
+#endif
+};
+
 struct isal_zstream stream;
 
 int usage(void)
@@ -69,7 +122,17 @@ int main(int argc, char *argv[])
 	int level = 0, level_size = 0, avail_in;
 	char *in_file_name = NULL, *out_file_name = NULL, *dict_file_name = NULL;
 
-	while ((c = getopt(argc, argv, "h01i:b:o:d:")) != -1) {
+	while ((c = getopt(argc, argv, "h0123456789i:b:o:d:")) != -1) {
+		if (c >= '0' && c <= '9') {
+			if (c > '0' + ISAL_DEF_MAX_LEVEL)
+				usage();
+			else {
+				level = c - '0';
+				level_size = level_size_buf[level];
+			}
+			continue;
+		}
+
 		switch (c) {
 		case 'o':
 			out_file_name = optarg;
@@ -84,12 +147,6 @@ int main(int argc, char *argv[])
 			break;
 		case 'b':
 			inbuf_size = atoi(optarg);
-			break;
-		case '1':
-			level = 1;
-			level_size = ISAL_DEF_LVL1_LARGE;
-			break;
-		case '0':
 			break;
 		case 'h':
 		default:
@@ -137,9 +194,7 @@ int main(int argc, char *argv[])
 
 	outbuf_size = 2 * infile_size + BUF_SIZE;
 
-	dictfile_size = 0;
-	if (dict_file_name != NULL)
-		dictfile_size = get_filesize(dict);
+	dictfile_size = (dict_file_name != NULL) ? get_filesize(dict) : 0;
 
 	if (iterations == 0) {
 		iterations = infile_size ? RUN_MEM_SIZE / infile_size : MIN_TEST_LOOPS;
@@ -177,6 +232,7 @@ int main(int argc, char *argv[])
 	inbuf_size = inbuf_size ? inbuf_size : infile_size;
 
 	printf("igzip_file_perf: %s %d iterations\n", in_file_name, iterations);
+
 	/* Read complete input file into buffer */
 	stream.avail_in = (uint32_t) fread(inbuf, 1, infile_size, in);
 	if (stream.avail_in != infile_size) {
@@ -184,7 +240,8 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
-	if (dictfile_size != (uint32_t) fread(dictbuf, 1, dictfile_size, dict)) {
+	/* Read complete dictionary into buffer */
+	if ((dictfile_size != 0) && (dictfile_size != fread(dictbuf, 1, dictfile_size, dict))) {
 		fprintf(stderr, "Couldn't fit all of dictionary file into buffer\n");
 		exit(0);
 	}

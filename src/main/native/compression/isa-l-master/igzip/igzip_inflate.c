@@ -832,7 +832,7 @@ static int inline setup_dynamic_header(struct inflate_state *state)
 
 /* Reads in the header pointed to by in_stream and sets up state to reflect that
  * header information*/
-int read_header(struct inflate_state *state)
+static int read_header(struct inflate_state *state)
 {
 	uint8_t bytes;
 	uint32_t btype;
@@ -895,7 +895,7 @@ int read_header(struct inflate_state *state)
 
 /* Reads in the header pointed to by in_stream and sets up state to reflect that
  * header information*/
-int read_header_stateful(struct inflate_state *state)
+static int read_header_stateful(struct inflate_state *state)
 {
 	uint64_t read_in_start = state->read_in;
 	int32_t read_in_length_start = state->read_in_length;
@@ -1213,6 +1213,7 @@ int isal_inflate(struct inflate_state *state)
 	int ret = 0;
 
 	if (state->block_state != ISAL_BLOCK_FINISH) {
+		state->total_out += state->tmp_out_valid - state->tmp_out_processed;
 		/* If space in tmp_out buffer, decompress into the tmp_out_buffer */
 		if (state->tmp_out_valid < 2 * ISAL_DEF_HIST_SIZE) {
 			/* Setup to start decoding into temp buffer */
@@ -1346,8 +1347,11 @@ int isal_inflate(struct inflate_state *state)
 			}
 
 			if (ret == ISAL_INVALID_LOOKBACK || ret == ISAL_INVALID_BLOCK
-			    || ret == ISAL_INVALID_SYMBOL)
+			    || ret == ISAL_INVALID_SYMBOL) {
+				state->total_out -=
+				    state->tmp_out_valid - state->tmp_out_processed;
 				return ret;
+			}
 
 		} else if (state->tmp_out_valid == state->tmp_out_processed) {
 			state->block_state = ISAL_BLOCK_FINISH;
@@ -1355,6 +1359,8 @@ int isal_inflate(struct inflate_state *state)
 			    || state->crc_flag == ISAL_ZLIB_NO_HDR)
 				finalize_adler32(state);
 		}
+
+		state->total_out -= state->tmp_out_valid - state->tmp_out_processed;
 	}
 
 	return ISAL_DECOMP_OK;

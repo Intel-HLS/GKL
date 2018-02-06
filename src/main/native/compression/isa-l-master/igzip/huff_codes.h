@@ -76,7 +76,14 @@
 #define INVALID_DIST_HUFFCODE 1
 #define INVALID_HUFFCODE 1
 
-#define HASH_MASK  (IGZIP_HASH_SIZE - 1)
+#define HASH8K_HASH_MASK  (IGZIP_HASH8K_HASH_SIZE - 1)
+#define HASH_HIST_HASH_MASK  (IGZIP_HASH_HIST_SIZE - 1)
+#define HASH_MAP_HASH_MASK  (IGZIP_HASH_MAP_HASH_SIZE - 1)
+
+#define LVL0_HASH_MASK  (IGZIP_LVL0_HASH_SIZE - 1)
+#define LVL1_HASH_MASK  (IGZIP_LVL1_HASH_SIZE - 1)
+#define LVL2_HASH_MASK  (IGZIP_LVL2_HASH_SIZE - 1)
+#define LVL3_HASH_MASK  (IGZIP_LVL3_HASH_SIZE - 1)
 #define SHORTEST_MATCH  4
 
 #define LENGTH_BITS 5
@@ -95,14 +102,15 @@
  */
 struct huff_code {
 	union {
+                struct {
+                        uint32_t code_and_extra:24;
+                        uint32_t length2:8;
+                };
+
 		struct {
 			uint16_t code;
 			uint8_t extra_bit_count;
 			uint8_t length;
-		};
-		struct {
-			uint32_t code_and_extra:24;
-			uint32_t length2:8;
 		};
 	};
 };

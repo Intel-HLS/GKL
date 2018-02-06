@@ -126,16 +126,16 @@ skip_SLOP:
 
 	mov	curr_data %+ d, [file_start + f_i]
 
-	cmp	dword [stream + _internal_state_has_hist], IGZIP_NO_HIST
+	cmp	byte [stream + _internal_state_has_hist], IGZIP_NO_HIST
 	jne	skip_write_first_byte
 
 	cmp	m_out_buf, [stream + _internal_state_bitbuf_m_out_end]
 	ja	end_loop_2
 
 	compute_hash	hash, curr_data
-	and	hash %+ d, HASH_MASK
+	and	hash %+ d, LVL0_HASH_MASK
 	mov	[stream + _internal_state_head + 2 * hash], f_i %+ w
-	mov	dword [stream + _internal_state_has_hist], IGZIP_HIST
+	mov	byte [stream + _internal_state_has_hist], IGZIP_HIST
 	jmp	encode_literal
 
 skip_write_first_byte:
@@ -145,10 +145,10 @@ loop2:
 	cmp	m_out_buf, [stream + _internal_state_bitbuf_m_out_end]
 	ja	end_loop_2
 
-	; hash = compute_hash(state->file_start + f_i) & HASH_MASK;
+	; hash = compute_hash(state->file_start + f_i) & LVL0_HASH_MASK;
 	mov	curr_data %+ d, [file_start + f_i]
 	compute_hash	hash, curr_data
-	and	hash %+ d, HASH_MASK
+	and	hash %+ d, LVL0_HASH_MASK
 
 	; f_index = state->head[hash];
 	movzx	f_index %+ d, word [stream + _internal_state_head + 2 * hash]
@@ -211,19 +211,19 @@ loop2:
 
 	; only update hash twice
 
-	; hash = compute_hash(state->file_start + k) & HASH_MASK;
+	; hash = compute_hash(state->file_start + k) & LVL0_HASH_MASK;
 	mov	tmp6 %+ d, dword [file_start + tmp3]
 	compute_hash	hash, tmp6
-	and	hash %+ d, HASH_MASK
+	and	hash %+ d, LVL0_HASH_MASK
 	; state->head[hash] = k;
 	mov	[stream + _internal_state_head + 2 * hash], tmp3 %+ w
 
 	add	tmp3, 1
 
-	; hash = compute_hash(state->file_start + k) & HASH_MASK;
+	; hash = compute_hash(state->file_start + k) & LVL0_HASH_MASK;
 	mov	tmp6 %+ d, dword [file_start + tmp3]
 	compute_hash	hash, tmp6
-	and	hash %+ d, HASH_MASK
+	and	hash %+ d, LVL0_HASH_MASK
 	; state->head[hash] = k;
 	mov	[stream + _internal_state_head + 2 * hash], tmp3 %+ w
 
@@ -276,8 +276,8 @@ write_eob:
 
 	write_bits	m_bits, m_bit_count, code2, code_len2, m_out_buf, tmp1
 
-	mov	dword [stream + _internal_state_has_eob], 1
-	cmp	dword [stream + _end_of_stream], 1
+	mov	byte [stream + _internal_state_has_eob], 1
+	cmp	word [stream + _end_of_stream], 1
 	jne	sync_flush
 	;	   state->state = ZSTATE_TRL;
 	mov	dword [stream + _internal_state_state], ZSTATE_TRL
