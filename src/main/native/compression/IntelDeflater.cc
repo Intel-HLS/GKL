@@ -110,12 +110,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 
     }
 
-    uint8_t *level_buf = NULL;
-    lz_stream->level = level;
-    jint level_size =ISAL_DEF_LVL2_DEFAULT;
-    level_buf = (uint8_t*)malloc(level_size);
-    lz_stream->level_buf = level_buf;
-    lz_stream->level_buf_size = ISAL_DEF_LVL2_DEFAULT;
     lz_stream->end_of_stream = 0;
   
    // DBG("lz_stream = 0x%lx", (long)lz_stream);
