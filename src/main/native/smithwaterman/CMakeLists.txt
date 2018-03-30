@@ -19,9 +19,14 @@ include_directories(../common)
 #---------------------------------------------------------------------
 set(TARGET gkl_smithwaterman)
 
-
 add_library(${TARGET} SHARED
     IntelSmithWaterman.cc avx2_impl.cc avx512_impl.cc)
 
 install(TARGETS ${TARGET} DESTINATION ${CMAKE_BINARY_DIR})
 
+set(TARGET gkl_smithwaterman_c)
+
+add_library(${TARGET} SHARED
+    IntelSmithWatermanCSource.cpp avx2_impl.cc avx512_impl.cc)
+
+install(TARGETS ${TARGET} DESTINATION ${CMAKE_BINARY_DIR})

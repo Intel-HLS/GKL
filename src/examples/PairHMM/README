@@ -1,0 +1,9 @@
+In order to run this example using the PairHMM C interfaceAPI, follow the steps as outlined:
+
+1. make sure you have the library path set by setting LD_LIBRARY_PATH to actual path of .so file in build/native/libgkl_pairhmm_c.so
+
+2. run make command
+
+3. pairhmm executable will be generated
+
+4. Point it to the input test via command line argumentsgit
