@@ -76,7 +76,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
         }
 
         if(!gklUtils.getFlushToZero()) {
-            logger.warn("Flush-to-zero (FTZ) is enabled when running PairHMM");
+            logger.info("Flush-to-zero (FTZ) is enabled when running PairHMM");
         }
 
         initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads, useFpga);
