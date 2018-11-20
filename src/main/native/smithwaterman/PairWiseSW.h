@@ -414,12 +414,10 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
 }
 
 
-int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount)
+int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount, int16_t *score)
 {
 
-
-
-   int32_t  w_match = match;
+     int32_t  w_match = match;
      int32_t   w_mismatch = mismatch;
      int32_t   w_open = open;
      int32_t   w_extend = extend;
@@ -430,6 +428,7 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
 
 
     SeqPair p;
+
     p.seq1 = seq1;
     p.seq2 = seq2;
     p.len1 = len1;
@@ -440,10 +439,12 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     smithWatermanBackTrack(&p, match, mismatch,  open, extend, E_, 0);
     getCIGAR(&p, cigarBuf_, 0);
 
+    (*score)= p.score;
+
     (*cigarCount) = p.cigarCount;
 
     free(E_);
     free(backTrack_);
     free(cigarBuf_);
-    return p.alignmentOffset;
-    }
+    return p.alignmentOffset;;
+}

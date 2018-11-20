@@ -20,7 +20,7 @@
 static jfieldID FID_reflength;
 static jfieldID FID_altlength;
 
-int32_t (*g_runSWOnePairBT)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount);
+int32_t (*g_runSWOnePairBT)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount, int16_t *score);
 
 JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initNative
   (JNIEnv * env, jclass obj )
@@ -58,9 +58,10 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
 
     jint count = 0;
     jint offset = 0;
+    jint score =0;
 
     // call the low level routine
-    offset = g_runSWOnePairBT(match, mismatch, open, extend,(uint8_t*) reference, (uint8_t*) alternate,refLength, altLength, strategy, (char *) cigarArray, (int16_t*) &count);
+    offset = g_runSWOnePairBT(match, mismatch, open, extend,(uint8_t*) reference, (uint8_t*) alternate,refLength, altLength, strategy, (char *) cigarArray, (int16_t*) &count, (int16_t*) &score);
 
     // release buffers
     env->ReleasePrimitiveArrayCritical(ref, reference, 0);

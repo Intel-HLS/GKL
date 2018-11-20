@@ -146,36 +146,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 }
 
 
-/**
-* Generate Dynamic Huffman tables
-* This function will be called only if we are implementing the fully dynamic huffman implementation which is not set as default in current implementation
-* current implementation we use semi-dynamic huffman with tables generated using only first 64k block of stream
-*/
-
-JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuffman
-(JNIEnv * env, jobject obj) {
-
-      jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inputBuffer);
-
-      jint level = env->GetIntField(obj, FID_level);
-
-      if(level == 1) {
-      isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
-
-      jbyte* input = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
-
-      struct isal_huff_histogram *histogram;
-      struct isal_hufftables *hufftables_custom;
-
-      memset(histogram, 0, sizeof(isal_huff_histogram));
-      isal_update_histogram((unsigned char*)input, 64*1024, histogram);
-      isal_create_hufftables(hufftables_custom, histogram);
-      lz_stream->hufftables = hufftables_custom;
-
-      env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
-      env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
-      }
-}
 
 /**
  *  Deflate the data.

@@ -49,3 +49,13 @@ set(TARGET gkl_pairhmm_fpga)
 add_library(${TARGET} SHARED IntelPairHmm.cc avx_impl.cc avx512_impl.cc pairhmm_common.cc)
 target_link_libraries(${TARGET} gkl_pairhmm_shacc)
 install(TARGETS ${TARGET} DESTINATION ${CMAKE_BINARY_DIR})
+
+#---------------------------------------------------------------------
+# pairhmm_c
+#---------------------------------------------------------------------
+set(TARGET gkl_pairhmm_c)
+add_library(${TARGET} SHARED IntelPairHmmCSource.cpp avx_impl.cc avx512_impl.cc pairhmm_common.cc)
+if (APPLE)
+  target_link_libraries(${TARGET} gkl_pairhmm_shacc)
+endif()
+install(TARGETS ${TARGET} DESTINATION ${CMAKE_BINARY_DIR})
