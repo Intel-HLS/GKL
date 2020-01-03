@@ -50,16 +50,6 @@ bool is_neon_supported()
 
   return (__res == neon_mask);
   
-/*if (__res == neon_mask)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-*/
-
 }
 
 /*
@@ -79,17 +69,6 @@ bool is_sve_supported()
   __res = ((__val>>32) & ((1<<4)-1));
 
   return (__res == sve_mask);
-
-/*
-  if (__res == sve_mask)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-*/
 
 }
 
