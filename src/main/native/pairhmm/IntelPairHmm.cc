@@ -4,13 +4,21 @@
 #include <vector>
 #include <math.h>
 #include <debug.h>
+#if defined(__aarch64__)
+#include <neon.h>
+#else
 #include <avx.h>
+#endif
 #include <assert.h>
 #include "IntelPairHmm.h"
 #include "pairhmm_common.h"
+#if defined (__aarch64__)
+#include "neon_impl.h"
+#else
 #include "avx_impl.h"
 #ifndef __APPLE__
   #include "avx512_impl.h"
+#endif
 #endif
 #include "Context.h"
 #include "shacc_pairhmm.h"
@@ -63,6 +71,26 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
 
   g_use_fpga = use_fpga;
 
+#if defined(__aarch64__)
+  // enable FTZ
+  if (_AA64_GET_FLUSH_ZERO_MODE() != _AA64_FLUSH_ZERO_ON) {
+    DBG("Flush-to-zero (FTZ) is enabled when running PairHMM");
+  }
+  _AA64_SET_FLUSH_ZERO_MODE(_AA64_FLUSH_ZERO_ON);
+
+  // set function pointers
+  if(is_neon_supported())
+  {
+    DBG("Using CPU-supported NEON instructions");
+    g_compute_full_prob_float = compute_fp_neons;
+    g_compute_full_prob_double = compute_fp_neond;
+  }
+  else
+  {
+    assert(false);
+  }
+
+#else
   // enable FTZ
   if (_MM_GET_FLUSH_ZERO_MODE() != _MM_FLUSH_ZERO_ON) {
     DBG("Flush-to-zero (FTZ) is enabled when running PairHMM");
@@ -85,6 +113,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
     g_compute_full_prob_float = compute_fp_avxs;
     g_compute_full_prob_double = compute_fp_avxd;
   }
+#endif
 
   // init convert char table
   ConvertChar::init();

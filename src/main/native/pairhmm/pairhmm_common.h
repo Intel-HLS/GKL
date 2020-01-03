@@ -1,10 +1,14 @@
 #ifndef PAIRHMM_COMMON_H
 #define PAIRHMM_COMMON_H
 
+#if defined (__aarch64__)
+#include <arm_neon.h>
+#else
 #if defined(_MSC_VER)
   #include <intrin.h> // SIMD intrinsics for Windows
 #else
   #include <x86intrin.h> // SIMD intrinsics for GCC
+#endif
 #endif
 
 #include <assert.h>
