@@ -92,7 +92,7 @@ typedef union __attribute__((aligned(32))) {
         ALIGNED float64x2_t ALIGNED d;
         ALIGNED float32x2_t ALIGNED s[2];
         ALIGNED double  ALIGNED f[2];
-        ALIGNED int32x4_t ALIGNED i;
+        ALIGNED int64x2_t ALIGNED i;
 } ALIGNED mix_D128 ALIGNED;
 
 /* -------------------------------------------------------------------------- */
@@ -106,7 +106,7 @@ typedef union ALIGNED {
 */
 
 typedef union ALIGNED {
-  int32x4_t vec;
+  int64x2_t vec;
   float64x2_t vecf;
   uint64_t masks[2];
 } MaskVec_D128;
