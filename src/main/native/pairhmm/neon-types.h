@@ -33,20 +33,20 @@ typedef union ALIGNED {
   __m256i vec;
   __m256 vecf;
   uint32_t masks[8];
-} MaskVec_F512;
+} MaskVec_F256;
 */
 
 typedef union ALIGNED {
   int32x4_t vec;
   float32x4_t vecf;
   uint32_t masks[4];
-} MaskVec_F256;
+} MaskVec_F128;
 
 typedef union ALIGNED {
   float32x2_t vec;
   float32x2_t vecf;
   uint32_t masks[2];
-} MaskVec_F128;
+} MaskVec_F64;
 
 /* -------------------------------------------------------------------------- */
 
@@ -102,20 +102,20 @@ typedef union ALIGNED {
   __m256i vec;
   __m256d vecf;
   uint64_t masks[4];
-} MaskVec_D512;
+} MaskVec_D256;
 */
 
 typedef union ALIGNED {
   int32x4_t vec;
   float64x2_t vecf;
   uint64_t masks[2];
-} MaskVec_D256;
+} MaskVec_D128;
 
 typedef union ALIGNED {
   float32x2_t vec;
   float32x2_t vecf;
   uint64_t masks[1];
-} MaskVec_D128;
+} MaskVec_D64;
 
 /* -------------------------------------------------------------------------- */
 
