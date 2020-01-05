@@ -1,17 +1,23 @@
 #ifndef SMITHWATERMAN_COMMON_H
 #define SMITHWATERMAN_COMMON_H
 
+#if defined(__aarch64__)
+#include <arm_neon.h>
+#else
 #if defined(_MSC_VER)
   #include <intrin.h> // SIMD intrinsics for Windows
 #else
   #include <x86intrin.h> // SIMD intrinsics for GCC
+#endif
 #endif
 
 #define __STDC_LIMIT_MACROS
 
 #include <stdint.h>
 #include <string.h>
+#if !defined(__aarch64__)
 #include <immintrin.h>
+#endif
 
 
 

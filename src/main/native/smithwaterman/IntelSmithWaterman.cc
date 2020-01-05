@@ -1,6 +1,10 @@
 #include <vector>
 #include <math.h>
+#if defined(__aarch64__)
+#include <neon.h>
+#else
 #include <avx.h>
+#endif
 #include "IntelSmithWaterman.h"
 #include "smithwaterman_common.h"
 
@@ -8,12 +12,18 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#if !defined(__aarch64__)
 #include <immintrin.h>
+#endif
 #include <assert.h>
 #include <debug.h>
+#if defined (__aarch64__)
+#include "neon_impl.h"
+#else
 #include "avx2_impl.h"
 #ifndef __APPLE__
   #include "avx512_impl.h"
+#endif
 #endif
 
 
@@ -26,6 +36,17 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initN
   (JNIEnv * env, jclass obj )
 {
 
+#if defined(__aarch64__)
+  if(is_neon_supported())
+  {
+    DBG("Using CPU-supported NEON instructions");
+    g_runSWOnePairBT = runSWOnePairBT_fp_neon;
+  }
+  else
+  {
+    assert(false);
+  }
+#else
 if(is_avx512_supported())
       {
     #ifndef __APPLE__
@@ -41,6 +62,8 @@ if(is_avx512_supported())
         g_runSWOnePairBT = runSWOnePairBT_fp_avx2;
       }
       return;
+#endif
+
 }
 /*
  * Class:     com_intel_gkl_smithwaterman_IntelSmithWaterman
