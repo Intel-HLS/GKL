@@ -119,7 +119,7 @@
     vdupq_n_f64(__val)
 
 #define VEC_POPCVT_CHAR(__ch)                   \
-    _mm256_cvtepi32_pd(_mm_set1_epi32(__ch))
+    vcvtq_f64_s64(vdupq_n_s64(__ch))
 
 #define VEC_LDPOPCVT_CHAR(__addr)               \
     _mm256_cvtepi32_pd(_mm_load_si128((__m128i const *)__addr))
