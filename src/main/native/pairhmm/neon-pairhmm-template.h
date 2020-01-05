@@ -40,7 +40,7 @@ void CONCAT(CONCAT(init_masks_for_row_,SIMD_ENGINE), PRECISION)(const testcase& 
         rsArr[ri] = ConvertChar::get(tc.rs[ri+beginRowIndex-1]) ;
     }
 
-    for (int ei=0; ei < AVX_LENGTH; ++ei) {
+    for (int ei=0; ei < NEON_LENGTH; ++ei) {
         lastMaskShiftOut[ei] = 0 ;
     }
 }
@@ -55,11 +55,11 @@ void CONCAT(CONCAT(init_masks_for_row_,SIMD_ENGINE), PRECISION)(const testcase& 
 
 void CONCAT(CONCAT(update_masks_for_cols_,SIMD_ENGINE), PRECISION)(int maskIndex, BITMASK_VEC& bitMaskVec, MASK_TYPE (*maskArr) [NUM_DISTINCT_CHARS], char* rsArr, MASK_TYPE* lastMaskShiftOut, int maskBitCnt) {
 
-    for (int ei=0; ei < AVX_LENGTH/2; ++ei) {
+    for (int ei=0; ei < NEON_LENGTH/2; ++ei) {
         SET_MASK_WORD(bitMaskVec.getLowEntry(ei), maskArr[maskIndex][rsArr[ei]],
                 lastMaskShiftOut[ei], ei, maskBitCnt) ;
 
-        int ei2 = ei + AVX_LENGTH/2 ; // the second entry index
+        int ei2 = ei + NEON_LENGTH/2 ; // the second entry index
         SET_MASK_WORD(bitMaskVec.getHighEntry(ei), maskArr[maskIndex][rsArr[ei2]],
                 lastMaskShiftOut[ei2], ei2, maskBitCnt) ;
     }
@@ -69,7 +69,7 @@ void CONCAT(CONCAT(update_masks_for_cols_,SIMD_ENGINE), PRECISION)(int maskIndex
 
 inline void CONCAT(CONCAT(computeDistVec,SIMD_ENGINE), PRECISION) (BITMASK_VEC& bitMaskVec, SIMD_TYPE& distm, SIMD_TYPE& _1_distm, SIMD_TYPE& distmChosen) {
 
-    VEC_BLENDV(distmChosen, distm, _1_distm, bitMaskVec.getCombinedMask());
+    distmChosen = VEC_BLENDV(distm, _1_distm, bitMaskVec.getCombinedMask());
 
     bitMaskVec.shift_left_1bit() ;
 }
@@ -84,7 +84,7 @@ template<class NUMBER> void CONCAT(CONCAT(initializeVectors,SIMD_ENGINE), PRECIS
 {
     NUMBER zero = ctx._(0.0);
     NUMBER init_Y = ctx.INITIAL_CONSTANT / (tc->haplen);
-    for (int s=0;s<ROWS+COLS+AVX_LENGTH;s++)
+    for (int s=0;s<ROWS+COLS+NEON_LENGTH;s++)
     {
         shiftOutM[s] = zero;
         shiftOutX[s] = zero;
@@ -168,8 +168,8 @@ template<class NUMBER> inline void CONCAT(CONCAT(stripeINITIALIZATION,SIMD_ENGIN
         Y_t_1.d = VEC_SET1_VAL(zero);
     }
     else {
-        X_t_1.d = VEC_SET_LSE(shiftOutX[AVX_LENGTH]);
-        M_t_1.d = VEC_SET_LSE(shiftOutM[AVX_LENGTH]);
+        X_t_1.d = VEC_SET_LSE(shiftOutX[NEON_LENGTH]);
+        M_t_1.d = VEC_SET_LSE(shiftOutM[NEON_LENGTH]);
         Y_t_2.d = VEC_SET1_VAL(zero);
         Y_t_1.d = VEC_SET1_VAL(zero);
     }
@@ -200,7 +200,7 @@ inline void CONCAT(CONCAT(computeMXY,SIMD_ENGINE), PRECISION)(UNION_TYPE &M_t, U
 /*
  * This is the main compute function. It operates on the matrix in s stripe manner.
  * The stripe height is determined by the SIMD engine type. 
- * Stripe height: "AVX float": 8, "AVX double": 4
+ * Stripe height: "NEON float": 4, "NEON double": 2
  * For each stripe the operations are anti-diagonal based. 
  * Each anti-diagonal (M_t, Y_t, X_t) depends on the two previous anti-diagonals (M_t_2, X_t_2, Y_t_2, M_t_1, X_t_1, Y_t_1).
  * Each stripe (except the fist one) depends on the last row of the previous stripe.
@@ -211,17 +211,17 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
 {
     int ROWS = tc->rslen + 1;
     int COLS = tc->haplen + 1;
-    int MAVX_COUNT = (ROWS+AVX_LENGTH-1)/AVX_LENGTH;
+    int MNEON_COUNT = (ROWS+NEON_LENGTH-1)/NEON_LENGTH;
 
     /* Probaility arrays */
-    SIMD_TYPE p_MM   [MAVX_COUNT], p_GAPM [MAVX_COUNT], p_MX   [MAVX_COUNT];
-    SIMD_TYPE p_XX   [MAVX_COUNT], p_MY   [MAVX_COUNT], p_YY   [MAVX_COUNT];
+    SIMD_TYPE p_MM   [MNEON_COUNT], p_GAPM [MNEON_COUNT], p_MX   [MNEON_COUNT];
+    SIMD_TYPE p_XX   [MNEON_COUNT], p_MY   [MNEON_COUNT], p_YY   [MNEON_COUNT];
 
     /* For distm precomputation */
-    SIMD_TYPE distm1D[MAVX_COUNT];
+    SIMD_TYPE distm1D[MNEON_COUNT];
 
     /* Carries the values from each stripe to the next stripe */
-    NUMBER shiftOutM[ROWS+COLS+AVX_LENGTH], shiftOutX[ROWS+COLS+AVX_LENGTH], shiftOutY[ROWS+COLS+AVX_LENGTH];
+    NUMBER shiftOutM[ROWS+COLS+NEON_LENGTH], shiftOutX[ROWS+COLS+NEON_LENGTH], shiftOutY[ROWS+COLS+NEON_LENGTH];
 
     /* The vector to keep the anti-diagonals of M, X, Y*/
     /* Current: M_t, X_t, Y_t */
@@ -233,7 +233,7 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
     SIMD_TYPE pGAPM, pMM, pMX, pXX, pMY, pYY;
 
     struct timeval start, end;
-    NUMBER result_avx2;
+    NUMBER result_neon;
     Context<NUMBER> ctx;
     UNION_TYPE rs , rsN;
     HAP_TYPE hap;
@@ -245,8 +245,8 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
     UNION_TYPE packed1;  packed1.d = VEC_SET1_VAL(1.0);
     SIMD_TYPE N_packed256 = VEC_POPCVT_CHAR('N');
     NUMBER init_Y = ctx.INITIAL_CONSTANT / (tc->haplen);
-    int remainingRows = (ROWS-1) % AVX_LENGTH;
-    int stripe_cnt = ((ROWS-1) / AVX_LENGTH) + (remainingRows!=0);
+    int remainingRows = (ROWS-1) % NEON_LENGTH;
+    int stripe_cnt = ((ROWS-1) / NEON_LENGTH) + (remainingRows!=0);
 
     const int maskBitCnt = MAIN_TYPE_SIZE ;
     const int numMaskVecs = (COLS+ROWS+maskBitCnt-1)/maskBitCnt ; // ceil function
@@ -255,8 +255,8 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
     MASK_TYPE maskArr[numMaskVecs][NUM_DISTINCT_CHARS] ;
     CONCAT(CONCAT(precompute_masks_,SIMD_ENGINE), PRECISION)(*tc, COLS, numMaskVecs, maskArr) ;
 
-    char rsArr[AVX_LENGTH] ;
-    MASK_TYPE lastMaskShiftOut[AVX_LENGTH] ;
+    char rsArr[NEON_LENGTH] ;
+    MASK_TYPE lastMaskShiftOut[NEON_LENGTH] ;
 
     /* Precompute initialization for probabilities and shift vector*/
     CONCAT(CONCAT(initializeVectors,SIMD_ENGINE), PRECISION)<NUMBER>(ROWS, COLS, shiftOutM, shiftOutX, shiftOutY,
@@ -267,19 +267,19 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
         //STRIPE_INITIALIZATION
         CONCAT(CONCAT(stripeINITIALIZATION,SIMD_ENGINE), PRECISION)(i, ctx, tc, pGAPM, pMM, pMX, pXX, pMY, pYY, rs.d, rsN, distm, _1_distm, distm1D, N_packed256, p_MM , p_GAPM ,
                 p_MX, p_XX , p_MY, p_YY, M_t_2, X_t_2, M_t_1, X_t_1, Y_t_2, Y_t_1, M_t_1_y, shiftOutX, shiftOutM);
-        CONCAT(CONCAT(init_masks_for_row_,SIMD_ENGINE), PRECISION)(*tc, rsArr, lastMaskShiftOut, i*AVX_LENGTH+1, AVX_LENGTH) ;
-        // Since there are no shift intrinsics in AVX, keep the masks in 2 SSE vectors
+        CONCAT(CONCAT(init_masks_for_row_,SIMD_ENGINE), PRECISION)(*tc, rsArr, lastMaskShiftOut, i*NEON_LENGTH+1, NEON_LENGTH) ;
+        // keep the masks in 2 NEON vectors
 
         BITMASK_VEC bitMaskVec ;
 
-        for (int begin_d=1;begin_d<COLS+AVX_LENGTH;begin_d+=MAIN_TYPE_SIZE)
+        for (int begin_d=1;begin_d<COLS+NEON_LENGTH;begin_d+=MAIN_TYPE_SIZE)
         {
-            int numMaskBitsToProcess = std::min(MAIN_TYPE_SIZE, COLS+AVX_LENGTH-begin_d) ;
+            int numMaskBitsToProcess = std::min(MAIN_TYPE_SIZE, COLS+NEON_LENGTH-begin_d) ;
             CONCAT(CONCAT(update_masks_for_cols_,SIMD_ENGINE), PRECISION)((begin_d-1)/MAIN_TYPE_SIZE, bitMaskVec, maskArr, rsArr, lastMaskShiftOut, maskBitCnt) ;
 
             for (int mbi=0; mbi < numMaskBitsToProcess; ++mbi) {
                 CONCAT(CONCAT(computeDistVec,SIMD_ENGINE), PRECISION) (bitMaskVec, distm, _1_distm, distmChosen) ;
-                int ShiftIdx = begin_d + mbi + AVX_LENGTH;
+                int ShiftIdx = begin_d + mbi + NEON_LENGTH;
 
                 CONCAT(CONCAT(computeMXY,SIMD_ENGINE), PRECISION)(M_t, X_t, Y_t, M_t_y, M_t_2, X_t_2, Y_t_2, M_t_1, X_t_1, M_t_1_y, Y_t_1,
                         pMM, pGAPM, pMX, pXX, pMY, pYY, distmChosen);
@@ -302,14 +302,14 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
         CONCAT(CONCAT(stripeINITIALIZATION,SIMD_ENGINE), PRECISION)(i, ctx, tc, pGAPM, pMM, pMX, pXX, pMY, pYY, rs.d, rsN, distm, _1_distm, distm1D, N_packed256, p_MM , p_GAPM ,
                 p_MX, p_XX , p_MY, p_YY, M_t_2, X_t_2, M_t_1, X_t_1, Y_t_2, Y_t_1, M_t_1_y, shiftOutX, shiftOutM);
 
-        if (remainingRows==0) remainingRows=AVX_LENGTH;
-        CONCAT(CONCAT(init_masks_for_row_,SIMD_ENGINE), PRECISION)(*tc, rsArr, lastMaskShiftOut, i*AVX_LENGTH+1, remainingRows) ;
+        if (remainingRows==0) remainingRows=NEON_LENGTH;
+        CONCAT(CONCAT(init_masks_for_row_,SIMD_ENGINE), PRECISION)(*tc, rsArr, lastMaskShiftOut, i*NEON_LENGTH+1, remainingRows) ;
 
         SIMD_TYPE sumM, sumX;
         sumM = VEC_SET1_VAL(zero);
         sumX = VEC_SET1_VAL(zero);
 
-        // Since there are no shift intrinsics in AVX, keep the masks in 2 SSE vectors
+        // keep the masks in 2 NEON vectors
         BITMASK_VEC bitMaskVec ;
 
         for (int begin_d=1;begin_d<COLS+remainingRows-1;begin_d+=MAIN_TYPE_SIZE)
@@ -320,7 +320,7 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
             for (int mbi=0; mbi < numMaskBitsToProcess; ++mbi) {
 
                 CONCAT(CONCAT(computeDistVec,SIMD_ENGINE), PRECISION) (bitMaskVec, distm, _1_distm, distmChosen) ;
-                int ShiftIdx = begin_d + mbi +AVX_LENGTH;
+                int ShiftIdx = begin_d + mbi +NEON_LENGTH;
 
                 CONCAT(CONCAT(computeMXY,SIMD_ENGINE), PRECISION)(M_t, X_t, Y_t, M_t_y, M_t_2, X_t_2, Y_t_2, M_t_1, X_t_1, M_t_1_y, Y_t_1,
                         pMM, pGAPM, pMX, pXX, pMY, pYY, distmChosen);
@@ -340,9 +340,9 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
         }
         UNION_TYPE sumMX;
         sumMX.d = VEC_ADD(sumM, sumX);
-        result_avx2 = sumMX.f[remainingRows-1];
+        result_neon = sumMX.f[remainingRows-1];
     }
-    return result_avx2;
+    return result_neon;
 }
 
 #endif
