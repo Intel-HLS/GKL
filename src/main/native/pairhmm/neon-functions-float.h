@@ -10,8 +10,7 @@
 #undef SHIFT_CONST3
 #undef _128_TYPE
 #undef SIMD_TYPE
-#undef _256_INT_TYPE
-#undef AVX_LENGTH
+#undef NEON_LENGTH
 #undef HAP_TYPE
 #undef MASK_TYPE
 #undef MASK_ALL_ONES
@@ -58,7 +57,6 @@
 #define SHIFT_CONST3 0
 #define _128_TYPE float32x4_t
 #define SIMD_TYPE float32x4_t
-#define _128_INT_TYPE int32x4_t
 #define NEON_LENGTH 4
 #define HAP_TYPE UNION_TYPE
 #define MASK_TYPE uint32_t
@@ -86,8 +84,9 @@
 #define VEC_BLEND(__v1, __v2, __mask)           \
     _mm256_blend_ps(__v1, __v2, __mask)
 
-#define VEC_BLENDV(__distmChosen, __v1, __v2, __maskV)      \
-    __distmChosen = _mm256_blendv_ps(__v1, __v2, __maskV);
+#define VEC_BLENDV(__v1, __v2, __maskV)      \
+    vreinterpretq_f32_s32(vbslq_s32(vcgeq_u32(vreinterpretq_u32_f32(__maskV), vdupq_n_u32(0x80000000)),  \
+       vreinterpretq_s32_f32(__v2), vreinterpretq_s32_f32(__v1)))
 
 #define VEC_CAST_256_128(__v1)                  \
     _mm256_castps256_ps128 (__v1)
@@ -117,7 +116,7 @@
     _mm256_cvtepi32_ps(__v1, .i)
 
 #define VEC_SET1_VAL(__val)                     \
-    _mm256_set1_ps(__val)
+    vdupq_n_f32(__val)
 
 #define VEC_POPCVT_CHAR(__ch)                   \
     _mm256_cvtepi32_ps(_mm256_set1_epi32(__ch))
