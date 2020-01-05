@@ -128,7 +128,7 @@
     _mm256_cmp_ps(__v1, __v2, _CMP_EQ_OQ)
 
 #define VEC_SET_LSE(__val)                      \
-    _mm256_set_ps(zero, zero, zero, zero, zero, zero, zero, __val);
+    vsetq_lane_f32(__val, vdupq_n_f32(zero), 0)
 
 #define SHIFT_HAP(__v1, __val)                  \
     _vector_shift_lastavxs(__v1, __val.f);

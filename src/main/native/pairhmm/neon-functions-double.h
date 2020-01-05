@@ -128,7 +128,7 @@
     _mm256_cmp_pd(__v1, __v2, _CMP_EQ_OQ)
 
 #define VEC_SET_LSE(__val)                      \
-    _mm256_set_pd(zero, zero, zero, __val);
+    vsetq_lane_f64(__val, vdupq_n_f64(zero), 0)
 
 #define SHIFT_HAP(__v1, __val)                  \
     __v1 = _mm_insert_epi32(_mm_slli_si128(__v1, 4), __val.i, 0)
