@@ -56,7 +56,7 @@
 #define VEC_MAX(__v1, __v2) \
     vmaxq_s32(__v1, __v2)
 //  _mm256_max_epi32(__v1, __v2)
-    
+
 #define VEC_CMPGT(__v1, __v2) \
     vreinterpretq_s32_u32(vcgtq_s32(__v1, __v2))
 //  _mm256_cmpgt_epi32(__v1, __v2)
@@ -86,18 +86,22 @@
 //  _mm256_andnot_si256(__v1, __v2)
 
 #define VEC_BLEND(__v1, __v2, __mask) \
-    (__m256i)_mm256_blendv_ps((__m256)__v1, (__m256)__v2, (__m256)__mask)
+    vreinterpretq_f32_s32(vbslq_s32(vcgeq_u32(vreinterpretq_u32_f32(__mask), vdupq_n_u32(0x80000000)),  \
+       vreinterpretq_s32_f32(__v2), vreinterpretq_s32_f32(__v1)))
+//  (__m256i)_mm256_blendv_ps((__m256)__v1, (__m256)__v2, (__m256)__mask)
 
 #define VEC_PERMUTE2x128_EVEN(__v1, __v2) \
-    _mm256_permute2f128_si256(__v1, __v2, 0x20)    
+    vreinterpretq_s32_s64(vtrn1q_s64(vreinterpretq_s64_s32(__v1), vreinterpretq_s64_s32(__v2)))
+//  _mm256_permute2f128_si256(__v1, __v2, 0x20)
 
 #define VEC_PERMUTE2x128_ODD(__v1, __v2) \
-    _mm256_permute2f128_si256(__v1, __v2, 0x31)    
+    vreinterpretq_s32_s64(vtrn2q_s64(vreinterpretq_s64_s32(__v1), vreinterpretq_s64_s32(__v2)))
+//  _mm256_permute2f128_si256(__v1, __v2, 0x31)
 
 #define VEC_PACKS_32(__v1, __v2) \
     vreinterpretq_s32_s16(vcombine_s16(vqmovn_s32(__v1), vqmovn_s32(__v2)))
 //  _mm256_packs_epi32(__v1, __v2)
 
-#define INIT_CONSTANTS 
+#define INIT_CONSTANTS
 
 #endif
