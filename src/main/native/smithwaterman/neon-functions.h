@@ -23,7 +23,7 @@
 #define NEON_LENGTH 4
 
 #define VEC_INT_TYPE int32x4_t
-#define VEC_MASK_TYPE int32x4_t
+#define VEC_MASK_TYPE uint32x4_t
 
 #define VEC_LOADU(__addr) \
     vld1q_s32((const int32_t *) __addr)
@@ -62,7 +62,7 @@
 //  _mm256_cmpgt_epi32(__v1, __v2)
 
 #define VEC_CMPGT_MASK(__v1, __v2) \
-    vreinterpretq_s32_u32(vcgtq_s32(__v1, __v2))
+    vcgtq_s32(__v1, __v2)
 //  _mm256_cmpgt_epi32(__v1, __v2)
 
 #define VEC_CMPEQ(__v1, __v2) \
@@ -70,7 +70,7 @@
 //  _mm256_cmpeq_epi32(__v1, __v2)
 
 #define VEC_CMPEQ_MASK(__v1, __v2) \
-    vreinterpretq_s32_u32(vceqq_s32(__v1, __v2))
+    vceqq_s32(__v1, __v2)
 //  _mm256_cmpeq_epi32(__v1, __v2)
 
 #define VEC_AND(__v1, __v2) \
@@ -86,8 +86,7 @@
 //  _mm256_andnot_si256(__v1, __v2)
 
 #define VEC_BLEND(__v1, __v2, __mask) \
-    vreinterpretq_f32_s32(vbslq_s32(vcgeq_u32(vreinterpretq_u32_f32(__mask), vdupq_n_u32(0x80000000)),  \
-       vreinterpretq_s32_f32(__v2), vreinterpretq_s32_f32(__v1)))
+    vbslq_s32(__mask, __v2, __v1)
 //  (__m256i)_mm256_blendv_ps((__m256)__v1, (__m256)__v2, (__m256)__mask)
 
 #define VEC_PERMUTE2x128_EVEN(__v1, __v2) \

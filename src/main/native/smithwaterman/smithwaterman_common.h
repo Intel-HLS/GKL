@@ -15,6 +15,8 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #if !defined(__aarch64__)
 #include <immintrin.h>
 #endif

@@ -1,6 +1,3 @@
-#include<stdio.h>
-#include <stdlib.h>
-
 #if defined (__aarch64__)
 #define VECTOR_LENGTH NEON_LENGTH
 #else
@@ -104,8 +101,10 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
     int32_t prev, cur;
     for(antiDiag = 1; antiDiag <= (nrow + ncol); antiDiag++)
     {
-        int32_t ilo = min(antiDiag, nrow + 1);
-        int32_t jhi = min(antiDiag, ncol + 1);
+//      int32_t ilo = min(antiDiag, nrow + 1);
+        int32_t ilo = ((antiDiag)<(nrow+1)?(antiDiag):(nrow+1));
+//      int32_t jhi = min(antiDiag, ncol + 1);
+        int32_t jhi = ((antiDiag)<(ncol+1)?(antiDiag):(ncol+1));
         int32_t ihi = antiDiag - jhi;
         int32_t jlo = antiDiag - ilo;
 
