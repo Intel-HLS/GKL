@@ -251,7 +251,9 @@ int stream_size;
     state->whave = 0;
     state->wnext = 0;
 
+#if !defined(__aarch64__)
     x86_check_features();
+#endif
 
     return ret;
 }

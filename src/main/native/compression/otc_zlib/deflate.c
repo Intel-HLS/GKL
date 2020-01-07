@@ -992,7 +992,11 @@ int ZEXPORT deflate (strm, flush)
             bstate = deflate_huff(s, flush);
         else if (s->strategy == Z_RLE)
             bstate = deflate_rle(s, flush);
+#if defined(__aarch64__)
+        else if (s->level == 1 )
+#else
         else if (s->level == 1 && !x86_cpu_has_sse42)
+#endif
             bstate = deflate_fast(s, flush);
         else
             bstate = (*(configuration_table[s->level].func))(s, flush);
