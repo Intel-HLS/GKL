@@ -270,6 +270,7 @@ my_CFLAGS="\
 -Wshadow \
 -Wstrict-prototypes \
 -Wtype-limits \
+-fPIC
 "
 AC_SUBST([my_CFLAGS])
 

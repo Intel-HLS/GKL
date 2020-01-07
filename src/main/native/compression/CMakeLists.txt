@@ -11,7 +11,7 @@ include(ExternalProject)
 ExternalProject_Add(
    otc_zlibExternal
    URL ${CMAKE_CURRENT_SOURCE_DIR}/otc_zlib
-   PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/otc_zlib.patch
+   #  PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/otc_zlib.patch
    CONFIGURE_COMMAND <SOURCE_DIR>/configure --static --prefix=<INSTALL_DIR>
    BUILD_COMMAND make
    INSTALL_COMMAND make install
