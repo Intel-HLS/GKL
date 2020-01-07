@@ -91,7 +91,6 @@ objs =  \
 	bin\crc16_t10dif_01.obj \
 	bin\crc16_t10dif_by4.obj \
 	bin\crc16_t10dif_copy_by4.obj \
-	bin\crc32_gzip.obj \
 	bin\crc32_ieee_01.obj \
 	bin\crc32_ieee_by4.obj \
 	bin\crc32_iscsi_00.obj \
@@ -105,15 +104,13 @@ objs =  \
 	bin\crc64_jones_refl_by8.obj \
 	bin\crc64_multibinary.obj \
 	bin\crc_base.obj \
-	bin\crc32_gzip_base.obj \
+	bin\adler32_base.obj \
 	bin\crc_multibinary.obj \
 	bin\huff_codes.obj \
 	bin\hufftables_c.obj \
 	bin\igzip.obj \
 	bin\igzip_base.obj \
-	bin\igzip_body_01.obj \
-	bin\igzip_body_02.obj \
-	bin\igzip_body_04.obj \
+	bin\igzip_body.obj \
 	bin\igzip_decode_block_stateless_01.obj \
 	bin\igzip_decode_block_stateless_04.obj \
 	bin\igzip_finish.obj \
@@ -130,16 +127,21 @@ objs =  \
 	bin\igzip_update_histogram_01.obj \
 	bin\igzip_update_histogram_04.obj \
 	bin\rfc1951_lookup.obj \
-	bin\detect_repeated_char.obj \
 	bin\crc32_gzip_refl_by8.obj \
 	bin\adler32_sse.obj \
 	bin\adler32_avx2_4.obj \
 	bin\igzip_deflate_hash.obj \
+	bin\igzip_gen_icf_map_lh1_04.obj \
 	bin\igzip_gen_icf_map_lh1_06.obj \
+	bin\igzip_set_long_icf_fg_04.obj \
 	bin\igzip_set_long_icf_fg_06.obj \
-	bin\igzip_icf_body.obj
+	bin\igzip_icf_body.obj \
+	bin\mem_zero_detect_avx.obj \
+	bin\mem_zero_detect_base.obj \
+	bin\mem_multibinary.obj \
+	bin\mem_zero_detect_sse.obj
 
-INCLUDES  = -I./ -Ierasure_code/ -Iraid/ -Icrc/ -Iigzip/ -Iinclude/
+INCLUDES  = -I./ -Ierasure_code/ -Iraid/ -Icrc/ -Iigzip/ -Iinclude/ -Imem/
 LINKFLAGS = /nologo
 CFLAGS   = -O2 -D NDEBUG /nologo -D_USE_MATH_DEFINES -Qstd=c99 $(INCLUDES) $(D)
 AFLAGS   = -f win64 $(INCLUDES) $(D)
@@ -182,6 +184,10 @@ $?
 {igzip}.asm.obj:
 	$(AS) $(AFLAGS) -o $@ $?
 
+{mem}.c.obj:
+	$(CC) $(CFLAGS) /c -Fo$@ $?
+{mem}.asm.obj:
+	$(AS) $(AFLAGS) -o $@ $?
 
 # Examples
 ex = xor_example.exe crc_simple_test.exe crc64_example.exe igzip_example.exe igzip_sync_flush_example.exe
@@ -204,11 +210,11 @@ checks = \
 	pq_check_test.exe \
 	crc16_t10dif_test.exe \
 	crc16_t10dif_copy_test.exe \
-	crc32_ieee_test.exe \
-	crc32_iscsi_test.exe \
+	crc32_funcs_test.exe \
 	crc64_funcs_test.exe \
+	igzip_wrapper_hdr_test.exe \
 	igzip_rand_test.exe \
-	crc32_gzip_refl_test.exe
+	mem_zero_detect_test.exe
 
 checks: lib $(checks)
 $(checks): $(@B).obj
@@ -229,18 +235,8 @@ $(tests): $(@B).obj
 # Performance tests
 perfs = \
 	gf_vect_mul_perf.exe \
-	gf_vect_mul_sse_perf.exe \
-	gf_vect_mul_avx_perf.exe \
-	gf_vect_dot_prod_sse_perf.exe \
-	gf_vect_dot_prod_avx_perf.exe \
-	gf_2vect_dot_prod_sse_perf.exe \
-	gf_3vect_dot_prod_sse_perf.exe \
-	gf_4vect_dot_prod_sse_perf.exe \
-	gf_5vect_dot_prod_sse_perf.exe \
-	gf_6vect_dot_prod_sse_perf.exe \
 	gf_vect_dot_prod_perf.exe \
 	gf_vect_dot_prod_1tbl.exe \
-	gf_vect_mad_perf.exe \
 	erasure_code_perf.exe \
 	erasure_code_base_perf.exe \
 	erasure_code_sse_perf.exe \
@@ -252,7 +248,8 @@ perfs = \
 	crc32_iscsi_perf.exe \
 	igzip_perf.exe \
 	igzip_sync_flush_perf.exe \
-	crc32_gzip_refl_perf.exe
+	crc32_gzip_refl_perf.exe \
+	mem_zero_detect_perf.exe
 
 perfs: lib $(perfs)
 $(perfs): $(@B).obj
@@ -266,5 +263,4 @@ clean:
 	-if exist isa-l.dll del isa-l.dll
 
 zlib.lib:
-igzip_inflate_perf.exe:  zlib.lib
 igzip_inflate_test.exe:  zlib.lib

@@ -27,6 +27,8 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
 
+include raid/aarch64/Makefile.am
+
 lsrc        += 	raid/raid_base.c
 
 lsrc_base_aliases += raid/raid_base_aliases.c

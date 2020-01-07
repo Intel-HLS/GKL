@@ -27,6 +27,8 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
 
+include crc/aarch64/Makefile.am
+
 lsrc  += \
 	crc/crc_base.c \
 	crc/crc64_base.c
@@ -45,21 +47,29 @@ lsrc_x86_64 += \
 	crc/crc_multibinary.asm \
 	crc/crc64_multibinary.asm \
 	crc/crc64_ecma_refl_by8.asm \
+	crc/crc64_ecma_refl_by16_10.asm \
 	crc/crc64_ecma_norm_by8.asm \
+	crc/crc64_ecma_norm_by16_10.asm \
 	crc/crc64_iso_refl_by8.asm \
+	crc/crc64_iso_refl_by16_10.asm \
 	crc/crc64_iso_norm_by8.asm \
+	crc/crc64_iso_norm_by16_10.asm \
 	crc/crc64_jones_refl_by8.asm \
+	crc/crc64_jones_refl_by16_10.asm \
 	crc/crc64_jones_norm_by8.asm \
+	crc/crc64_jones_norm_by16_10.asm \
 	crc/crc32_gzip_refl_by8.asm
 
 src_include += -I $(srcdir)/crc
 extern_hdrs +=  include/crc.h include/crc64.h
 
-other_src   +=  include/reg_sizes.asm include/types.h include/test.h
+other_src   +=  include/reg_sizes.asm include/types.h include/test.h \
+		crc/crc_ref.h crc/crc64_ref.h
 
-check_tests +=  crc/crc16_t10dif_test crc/crc32_ieee_test crc/crc32_iscsi_test \
+check_tests +=  crc/crc16_t10dif_test \
 		crc/crc16_t10dif_copy_test \
-		crc/crc64_funcs_test crc/crc32_gzip_refl_test
+		crc/crc64_funcs_test \
+		crc/crc32_funcs_test
 
 perf_tests  +=  crc/crc16_t10dif_perf crc/crc16_t10dif_copy_perf \
 		crc/crc16_t10dif_op_perf \

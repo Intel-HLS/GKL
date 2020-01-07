@@ -30,6 +30,7 @@
 lsrc         += erasure_code/ec_base.c
 
 lsrc_base_aliases += erasure_code/ec_base_aliases.c
+lsrc_aarch64      += erasure_code/ec_base_aliases.c
 
 lsrc_x86_64  += \
 		erasure_code/ec_highlevel_func.c \
@@ -136,13 +137,20 @@ unit_tests   += \
 perf_tests   += erasure_code/gf_vect_mul_perf \
 		erasure_code/gf_vect_dot_prod_perf \
 		erasure_code/gf_vect_dot_prod_1tbl \
-		erasure_code/gf_vect_mad_perf \
 		erasure_code/erasure_code_perf \
 		erasure_code/erasure_code_base_perf \
 		erasure_code/erasure_code_update_perf
 
-other_tests  += \
-		erasure_code/gen_rs_matrix_limits \
+other_tests  += erasure_code/gen_rs_matrix_limits
+
+other_tests_x86_64 += \
+		erasure_code/gf_2vect_dot_prod_sse_test \
+		erasure_code/gf_3vect_dot_prod_sse_test \
+		erasure_code/gf_4vect_dot_prod_sse_test \
+		erasure_code/gf_5vect_dot_prod_sse_test \
+		erasure_code/gf_6vect_dot_prod_sse_test
+
+other_tests_x86_32 += \
 		erasure_code/gf_2vect_dot_prod_sse_test \
 		erasure_code/gf_3vect_dot_prod_sse_test \
 		erasure_code/gf_4vect_dot_prod_sse_test \
