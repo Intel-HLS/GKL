@@ -60,9 +60,9 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             return false;
         }
 
-        if (!gklUtils.isAvxSupported() || !gklUtils.isAvx2Supported()) {
-            return false;
-        }
+//      if (!gklUtils.isAvxSupported() || !gklUtils.isAvx2Supported() || !gklUtils.isNeonSupported()) {
+//          return false;
+//      }
 
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
             return false;

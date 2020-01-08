@@ -48,7 +48,8 @@ public class IntelPairHmm implements PairHMMNativeBinding {
             return false;
         }
 
-        if(!gklUtils.isAvxSupported()) {
+        if(!gklUtils.isAvxSupported() && !gklUtils.isNeonSupported()) {
+
             return false;
         }
 
