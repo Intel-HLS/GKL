@@ -49,6 +49,14 @@ JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvx512SupportedNat
 
 /*
  * Class:     com_intel_gkl_IntelGKLUtils
+ * Method:    isNeonSupportedNative
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isNeonSupportedNative
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     com_intel_gkl_IntelGKLUtils
  * Method:    getAvailableOmpThreadsNative
  * Signature: ()I
  */

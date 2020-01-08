@@ -70,11 +70,14 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_IntelGKLUtils_setFlushToZeroNative
  * Method:    isAvxSupportedNative
  * Signature: (Z)V
  */
-#if !defined (__aarch64__)
 JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvxSupportedNative
   (JNIEnv *env, jobject obj)
 {
+#if !defined(__aarch64__)
     return is_avx_supported();
+#else
+    return false;
+#endif
 }
 
 /*
@@ -85,7 +88,11 @@ JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvxSupportedNative
 JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvx2SupportedNative
   (JNIEnv *env, jobject obj)
 {
+#if !defined(__aarch64__)
     return is_avx2_supported();
+#else
+    return false;
+#endif
 }
 
 /*
@@ -96,9 +103,12 @@ JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvx2SupportedNativ
 JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvx512SupportedNative
   (JNIEnv *env, jobject obj)
 {
+#if !defined(__aarch64__)
     return is_avx512_supported();
-}
 #else
+    return false;
+#endif
+}
 /*
  * Class:     com_intel_gkl_IntelGKLUtils
  * Method:    isNeonSupportedNative
@@ -107,9 +117,13 @@ JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isAvx512SupportedNat
 JNIEXPORT jboolean JNICALL Java_com_intel_gkl_IntelGKLUtils_isNeonSupportedNative
   (JNIEnv *env, jobject obj)
 {
+#if defined(__aarch64__)
     return is_neon_supported();
-}
+#else
+    return false;
 #endif
+}
+
 /*
  * Class:     com_intel_gkl_IntelGKLUtils
  * Method:    getAvailableOmpThreadsNative
