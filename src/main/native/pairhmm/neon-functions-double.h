@@ -57,7 +57,7 @@
 #define SHIFT_CONST3 0
 #define _128_TYPE float64x2_t
 #define SIMD_TYPE float64x2_t
-#define NEON_LENGTH 4
+#define NEON_LENGTH 2
 #define HAP_TYPE UNION_TYPE
 #define MASK_TYPE uint64_t
 #define MASK_ALL_ONES 0xFFFFFFFF
