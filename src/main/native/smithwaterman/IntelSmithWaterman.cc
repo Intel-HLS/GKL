@@ -61,9 +61,8 @@ if(is_avx512_supported())
       {
         g_runSWOnePairBT = runSWOnePairBT_fp_avx2;
       }
-      return;
 #endif
-
+      return;
 }
 /*
  * Class:     com_intel_gkl_smithwaterman_IntelSmithWaterman

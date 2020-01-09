@@ -1,7 +1,7 @@
 #ifndef _AVX2_FUNCTIONS_H
 #define _AVX2_FUNCTIONS_H
 
-#undef AVX_LENGTH
+#undef VEC_LENGTH
 #undef VEC_INT_TYPE
 #undef VEC_LOADU
 #undef VEC_STORE
@@ -20,7 +20,7 @@
 #undef VEC_PERMUTE2x128
 #undef VEC_PACKS_32
 
-#define AVX_LENGTH 8
+#define VEC_LENGTH 8
 
 #define VEC_INT_TYPE __m256i
 #define VEC_MASK_TYPE __m256i

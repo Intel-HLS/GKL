@@ -1,9 +1,3 @@
-#if defined (__aarch64__)
-#define VECTOR_LENGTH NEON_LENGTH
-#else
-#define VECTOR_LENGTH AVX_LENGTH
-#endif
-
 #define MAIN_CODE(bt_vec) \
             { \
             VEC_INT_TYPE e10 = VEC_LOADU(&E[inde]); \
@@ -64,17 +58,17 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
     VEC_INT_TYPE ins_ext_vec = VEC_SET1_VAL32(INSERT_EXT);
     VEC_INT_TYPE del_ext_vec = VEC_SET1_VAL32(DELETE_EXT);
     INIT_CONSTANTS;
-    int32_t hwidth = MAX_SEQ_LEN + VECTOR_LENGTH;
-    int32_t ewidth = MAX_SEQ_LEN + VECTOR_LENGTH;
+    int32_t hwidth = MAX_SEQ_LEN + VEC_LENGTH;
+    int32_t ewidth = MAX_SEQ_LEN + VEC_LENGTH;
 
-    int32_t *E  = E_ + tid * 6 * (MAX_SEQ_LEN + VECTOR_LENGTH);
+    int32_t *E  = E_ + tid * 6 * (MAX_SEQ_LEN + VEC_LENGTH);
     int32_t *F  = E + 1 * ewidth;
     int32_t *H  = E + 2 * ewidth;
-    for(j = 0; j <= ncol; j+=VECTOR_LENGTH)
+    for(j = 0; j <= ncol; j+=VEC_LENGTH)
     {
         VEC_STORE(F + j, lowInitValue_vec);
     }
-    for(i = 0; i <= nrow; i+=VECTOR_LENGTH)
+    for(i = 0; i <= nrow; i+=VEC_LENGTH)
     {
         VEC_STORE(E + i, lowInitValue_vec);
     }
@@ -116,7 +110,7 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
         int64_t startTick, endTick;
         startTick = __rdtsc();
 #endif
-        for(j = (jlo + 1); j < (jhi - VECTOR_LENGTH);)
+        for(j = (jlo + 1); j < (jhi - VEC_LENGTH);)
         {
 #ifdef PERF_DEBUG
             mainLoopCount+=2;
@@ -137,7 +131,7 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
             int32_t hCurInd = cur + (diagInd >> 1);
             int32_t seq2Ind = j - 1;
             MAIN_CODE(bt_vec_0)
-            j = j + VECTOR_LENGTH;
+            j = j + VEC_LENGTH;
             }
             {
             i = antiDiag - j;
@@ -151,7 +145,7 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
             int32_t seq2Ind = j - 1;
             VEC_INT_TYPE bt_vec;
             MAIN_CODE(bt_vec_1)
-            j = j + VECTOR_LENGTH;
+            j = j + VEC_LENGTH;
             }
             VEC_INT_TYPE bt_vec_2 = VEC_PERMUTE2x128_EVEN(bt_vec_0, bt_vec_1);
             VEC_INT_TYPE bt_vec_3 = VEC_PERMUTE2x128_ODD(bt_vec_0, bt_vec_1);
@@ -427,12 +421,12 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
      int32_t   w_extend = extend;
 
 #if defined(__aarch64__)
-     int32_t   *E_  = (int32_t *)malloc((6 * (MAX_SEQ_LEN+ VECTOR_LENGTH)) * sizeof(int32_t));
-      int16_t  *backTrack_ = (int16_t *)malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * VECTOR_LENGTH) * sizeof(int16_t));
+     int32_t   *E_  = (int32_t *)malloc((6 * (MAX_SEQ_LEN+ VEC_LENGTH)) * sizeof(int32_t));
+      int16_t  *backTrack_ = (int16_t *)malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * VEC_LENGTH) * sizeof(int16_t));
       int16_t  *cigarBuf_  = (int16_t *)malloc(4 * MAX_SEQ_LEN * sizeof(int16_t));
 #else
-     int32_t   *E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN+ VECTOR_LENGTH)) * sizeof(int32_t), 64);
-      int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * VECTOR_LENGTH) * sizeof(int16_t), 64);
+     int32_t   *E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN+ VEC_LENGTH)) * sizeof(int32_t), 64);
+      int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * VEC_LENGTH) * sizeof(int16_t), 64);
       int16_t  *cigarBuf_  = (int16_t *)_mm_malloc(4 * MAX_SEQ_LEN * sizeof(int16_t), 64);
 #endif
 

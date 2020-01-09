@@ -1,7 +1,7 @@
 #ifndef _NEON_FUNCTIONS_H
 #define _NEON_FUNCTIONS_H
 
-#undef NEON_LENGTH
+#undef VEC_LENGTH
 #undef VEC_INT_TYPE
 #undef VEC_LOADU
 #undef VEC_STORE
@@ -20,7 +20,7 @@
 #undef VEC_PERMUTE2x128
 #undef VEC_PACKS_32
 
-#define NEON_LENGTH 4
+#define VEC_LENGTH 4
 
 #define VEC_INT_TYPE int32x4_t
 #define VEC_MASK_TYPE uint32x4_t
