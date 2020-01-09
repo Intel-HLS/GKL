@@ -421,9 +421,17 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
      int32_t   w_extend = extend;
 
 #if defined(__aarch64__)
+#if defined(__linux__)
+     int32_t *E_;
+     int16_t *backTrack_, *cigarBuf_;
+     posix_memalign((void **) &E_,         64, (6 * (MAX_SEQ_LEN+ VEC_LENGTH)) * sizeof(int32_t));
+     posix_memalign((void **) &backTrack_, 64, (2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * VEC_LENGTH) * sizeof(int16_t));
+     posix_memalign((void **) &cigarBuf_,  64, (4 * MAX_SEQ_LEN) * sizeof(int16_t));
+#else
      int32_t   *E_  = (int32_t *)malloc((6 * (MAX_SEQ_LEN+ VEC_LENGTH)) * sizeof(int32_t));
       int16_t  *backTrack_ = (int16_t *)malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * VEC_LENGTH) * sizeof(int16_t));
       int16_t  *cigarBuf_  = (int16_t *)malloc(4 * MAX_SEQ_LEN * sizeof(int16_t));
+#endif
 #else
      int32_t   *E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN+ VEC_LENGTH)) * sizeof(int32_t), 64);
       int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * VEC_LENGTH) * sizeof(int16_t), 64);
