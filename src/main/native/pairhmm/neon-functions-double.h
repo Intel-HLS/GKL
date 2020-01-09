@@ -60,7 +60,7 @@
 #define NEON_LENGTH 2
 #define HAP_TYPE UNION_TYPE
 #define MASK_TYPE uint64_t
-#define MASK_ALL_ONES 0xFFFFFFFF
+#define MASK_ALL_ONES 0xFFFFFFFFFFFFFFFFL
 #define MASK_VEC MaskVec_D128
 
 #define SET_VEC_ZERO(__vec)                     \
@@ -85,7 +85,7 @@
     _mm256_blend_pd(__v1, __v2, __mask)
 
 #define VEC_BLENDV(__v1, __v2, __maskV)      \
-    vreinterpretq_f64_s64(vbslq_s64(vcgeq_u64(vreinterpretq_u64_f64(__maskV), vdupq_n_u64(0x80000000)),  \
+    vreinterpretq_f64_s64(vbslq_s64(vcgeq_u64(vreinterpretq_u64_f64(__maskV), vdupq_n_u64(0x8000000000000000)),  \
        vreinterpretq_s64_f64(__v2), vreinterpretq_s64_f64(__v1)))
 
 #define VEC_CAST_256_128(__v1)                  \

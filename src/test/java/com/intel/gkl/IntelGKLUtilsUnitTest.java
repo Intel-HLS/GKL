@@ -86,7 +86,7 @@ public class IntelGKLUtilsUnitTest {
         boolean isNeon = utils.isNeonSupported();
 
         if(isAVX) log.info("AVX is supported");
-        else if(isNeon) log.info("Neon is not supported");
+        else if(isNeon) log.info("Neon is supported");
 
     }
 

@@ -10,6 +10,20 @@
 #define JACOBIAN_LOG_TABLE_INV_STEP (1.0 / JACOBIAN_LOG_TABLE_STEP)
 #define JACOBIAN_LOG_TABLE_SIZE ((int) (MAX_JACOBIAN_TOLERANCE / JACOBIAN_LOG_TABLE_STEP) + 1)
 
+#define SET_MATCH_TO_MATCH_PROB(output, insQual, delQual)                       \
+{                                                                               \
+  int minQual = delQual;                                                        \
+  int maxQual = insQual;                                                        \
+  if (insQual <= delQual)                                                       \
+  {                                                                             \
+    minQual = insQual;                                                          \
+    maxQual = delQual;                                                          \
+  }                                                                             \
+  (output) = (MAX_QUAL < maxQual) ?                                             \
+  ((NUMBER)1.0) - ctx.POW(((NUMBER)10), ctx.approximateLog10SumLog10(((NUMBER)-0.1)*minQual, ((NUMBER)-0.1)*maxQual))       \
+  : ctx.matchToMatchProb[((maxQual * (maxQual + 1)) >> 1) + minQual];           \
+}
+
 template<class NUMBER>
 class ContextBase
 {
