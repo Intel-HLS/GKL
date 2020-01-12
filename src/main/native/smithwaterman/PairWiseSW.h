@@ -143,13 +143,17 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
             int32_t hTopInd  = hLeftInd + 1;
             int32_t hCurInd = cur + (diagInd >> 1);
             int32_t seq2Ind = j - 1;
-            VEC_INT_TYPE bt_vec;
+//          VEC_INT_TYPE bt_vec;
             MAIN_CODE(bt_vec_1)
             j = j + VEC_LENGTH;
             }
+#if defined (__aarch64__)
+            VEC_INT_TYPE2 bt_vec  = VEC_PACKS_32(bt_vec_0, bt_vec_1);
+#else
             VEC_INT_TYPE bt_vec_2 = VEC_PERMUTE2x128_EVEN(bt_vec_0, bt_vec_1);
             VEC_INT_TYPE bt_vec_3 = VEC_PERMUTE2x128_ODD(bt_vec_0, bt_vec_1);
             VEC_INT_TYPE bt_vec   = VEC_PACKS_32(bt_vec_2, bt_vec_3);
+#endif
             VEC_STREAM(backTrack + antiDiag * MAX_SEQ_LEN + backTrackInd, bt_vec);
         }
 #ifdef IACA_ANALYSIS
@@ -172,9 +176,14 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
             VEC_INT_TYPE bt_vec_0;
             VEC_INT_TYPE bt_vec_1 = VEC_SET_ZERO();
             MAIN_CODE(bt_vec_0)
+#if defined(__aarch64__)
+            // permute + pack results in concat vector
+            VEC_INT_TYPE2 bt_vec  = VEC_PACKS_32(bt_vec_0, bt_vec_1);
+#else
             VEC_INT_TYPE bt_vec_2 = VEC_PERMUTE2x128_EVEN(bt_vec_0, bt_vec_1);
             VEC_INT_TYPE bt_vec_3 = VEC_PERMUTE2x128_ODD(bt_vec_0, bt_vec_1);
             VEC_INT_TYPE bt_vec   = VEC_PACKS_32(bt_vec_2, bt_vec_3);
+#endif
             int32_t backTrackInd = j - jlo - 1;
             VEC_STREAM(backTrack + antiDiag * MAX_SEQ_LEN + backTrackInd, bt_vec);
         }

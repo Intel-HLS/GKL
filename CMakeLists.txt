@@ -2,6 +2,18 @@ project(GKL)
 cmake_minimum_required(VERSION 2.8)
 
 # add jni include path
+find_program(LSB_RELEASE_EXEC lsb_release)
+execute_process(COMMAND ${LSB_RELEASE_EXEC} -is
+    OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if(${LSB_RELEASE_ID_SHORT} STREQUAL "Ubuntu")
+set(JAVA_INCLUDE_PATH "/usr/lib/jvm/java-8-openjdk-arm64/include")
+set(JAVA_INCLUDE_PATH2 "/usr/lib/jvm/java-8-openjdk-arm64/include/linux")
+set(JAVA_AWT_INCLUDE_PATH "/usr/lib/jvm/java-8-openjdk-arm64/include")
+endif()
+
 find_package(Java 1.8 REQUIRED)
 find_package(JNI)
 include_directories(${JNI_INCLUDE_DIRS})
