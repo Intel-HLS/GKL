@@ -60,9 +60,10 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             return false;
         }
 
-//      if (!gklUtils.isAvxSupported() || !gklUtils.isAvx2Supported() || !gklUtils.isNeonSupported()) {
-//          return false;
-//      }
+        if ( (!gklUtils.isAvxSupported() || !gklUtils.isAvx2Supported()) && !(gklUtils.isNeonSupported()) )
+        {
+          return false;
+        }
 
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
             return false;
@@ -74,6 +75,10 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
 
         if(gklUtils.isAvx512Supported()) {
             logger.info("Using CPU-supported AVX-512 instructions");
+        }
+
+        if(gklUtils.isNeonSupported()) {
+            logger.info("Using CPU-supported Neon instructions");
         }
 
         /*

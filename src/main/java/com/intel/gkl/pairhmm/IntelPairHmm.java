@@ -33,7 +33,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
 
     /**
      * Loads the native library, if it is supported on this platform. <p>
-     * Returns false if AVX is not supported. <br>
+     * Returns false if AVX (x86_64) / Neon (AARCH64) is not supported. <br>
      * Returns false if the native library cannot be loaded for any reason. <br>
      *
      * @param tempDir  directory where the native library is extracted or null to use the system temp directory
@@ -74,6 +74,10 @@ public class IntelPairHmm implements PairHMMNativeBinding {
 
         if (args.useDoublePrecision && useFpga) {
             logger.warn("FPGA PairHMM does not support double precision floating-point. Using AVX PairHMM");
+        }
+
+        if(gklUtils.isNeonSupported()) {
+            logger.info("Using CPU-supported Neon instructions");
         }
 
         if(!gklUtils.getFlushToZero()) {
