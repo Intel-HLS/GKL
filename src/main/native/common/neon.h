@@ -4,14 +4,14 @@
 
 #include <stdint.h>
 
-#define _AA64_FLUSH_ZERO_MASK 0x01000000
-#define _AA64_FLUSH_ZERO_ON   0x01000000
-#define _AA64_FLUSH_ZERO_OFF  0x00000000
+#define _AA64_FLUSH_ZERO_MASK (1<<24)
+#define _AA64_FLUSH_ZERO_ON   (1<<24)
+#define _AA64_FLUSH_ZERO_OFF  (0<<24)
 
 void _AA64_SET_FLUSH_ZERO_MODE (uint64_t _mode)
 {
 
-  _mode = (_mode>>24);
+  _mode = (_mode<<24);
 
   asm volatile ( "mrs x9, fpcr" );
   asm volatile ( "mov x10, %[value]" : : [value] "r" (_mode) );
@@ -26,7 +26,7 @@ uint64_t _AA64_GET_FLUSH_ZERO_MODE ( )
   uint64_t _mode;
 
   asm volatile ( "mrs %[value], fpcr" : [value] "=r" (_mode) : :);
-  _mode = (_mode) & (1<<24);
+  _mode = (_mode) & _AA64_FLUSH_ZERO_ON;
 
   return _mode;
 
