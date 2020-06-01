@@ -20,7 +20,6 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     private static final String NATIVE_LIBRARY_NAME = "gkl_pairhmm";
     private String nativeLibraryName = "gkl_pairhmm";
     private IntelGKLUtils gklUtils = new IntelGKLUtils();
-    boolean useFpga = false;
     boolean useOmp = false;
 
     void setNativeLibraryName(String nativeLibraryName) {
@@ -67,19 +66,15 @@ public class IntelPairHmm implements PairHMMNativeBinding {
             args.maxNumberOfThreads = 1;
         }
 
-        if(!useFpga && gklUtils.isAvx512Supported()) {
+        if(gklUtils.isAvx512Supported()) {
             logger.info("Using CPU-supported AVX-512 instructions");
-        }
-
-        if (args.useDoublePrecision && useFpga) {
-            logger.warn("FPGA PairHMM does not support double precision floating-point. Using AVX PairHMM");
         }
 
         if(!gklUtils.getFlushToZero()) {
             logger.info("Flush-to-zero (FTZ) is enabled when running PairHMM");
         }
 
-        initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads, useFpga);
+        initNative(ReadDataHolder.class, HaplotypeDataHolder.class, args.useDoublePrecision, args.maxNumberOfThreads);
 
         // log information about threads
         int reqThreads = args.maxNumberOfThreads;
@@ -127,8 +122,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     private native static void initNative(Class<?> readDataHolderClass,
                                           Class<?> haplotypeDataHolderClass,
                                           boolean doublePrecision,
-                                          int maxThreads,
-                                          boolean useFpga);
+                                          int maxThreads);
 
     private native void computeLikelihoodsNative(Object[] readDataArray,
                                                  Object[] haplotypeDataArray,
