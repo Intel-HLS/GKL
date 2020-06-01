@@ -1,3 +1,32 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  Copyright(c) 2011-2018 Intel Corporation All rights reserved.
+;
+;  Redistribution and use in source and binary forms, with or without
+;  modification, are permitted provided that the following conditions
+;  are met:
+;    * Redistributions of source code must retain the above copyright
+;      notice, this list of conditions and the following disclaimer.
+;    * Redistributions in binary form must reproduce the above copyright
+;      notice, this list of conditions and the following disclaimer in
+;      the documentation and/or other materials provided with the
+;      distribution.
+;    * Neither the name of Intel Corporation nor the names of its
+;      contributors may be used to endorse or promote products derived
+;      from this software without specific prior written permission.
+;
+;  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+;  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+;  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+;  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+;  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+;  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+;  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+;  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+;  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+;  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+;  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 %include "reg_sizes.asm"
 %include "lz0a_const.asm"
 %include "data_struct2.asm"
@@ -9,23 +38,28 @@
 %define arg1 rcx
 %define arg2 rdx
 %define arg3 r8
-%define dist_code rsi
+%define arg4 r9
 %define len rdi
+%define dist rsi
 %else
 %define arg1 rdi
 %define arg2 rsi
 %define arg3 rdx
-%define dist_code rcx
+%define arg4 rcx
 %define len r8
+%define dist r9
 %endif
 
 %define next_in arg1
-%define end_in arg2
-%define match_lookup arg3
+%define end_processed arg2
+%define end_in arg3
+%define match_lookup arg4
 %define match_in rax
-%define dist r9
 %define match_offset r10
 %define tmp1 r11
+%define end_processed_orig r12
+%define dist_code r13
+%define tmp2 r13
 
 %define zmatch_lookup zmm0
 %define zmatch_lookup2 zmm1
@@ -41,7 +75,8 @@
 %define datas zmm11
 %define ztmp1 zmm12
 %define ztmp2 zmm13
-%define zvect_size zmm17
+%define zvect_size zmm16
+%define zmax_len zmm17
 %define ztwofiftyfour zmm18
 %define ztwofiftysix zmm19
 %define ztwosixtytwo zmm20
@@ -58,7 +93,7 @@
 %define zlens_mask zmm31
 
 %ifidn __OUTPUT_FORMAT__, win64
-%define stack_size  8*16 + 2 * 8 + 8
+%define stack_size  8*16 + 4 * 8 + 8
 %define func(x) proc_frame x
 %macro FUNC_SAVE 0
 	alloc_stack	stack_size
@@ -72,6 +107,8 @@
 	vmovdqa	[rsp + 7*16], xmm13
 	save_reg	rsi, 8*16 + 0*8
 	save_reg	rdi, 8*16 + 1*8
+	save_reg	r12, 8*16 + 2*8
+	save_reg	r13, 8*16 + 3*8
 	end_prolog
 %endm
 
@@ -85,48 +122,67 @@
 	vmovdqa	xmm12, [rsp + 6*16]
 	vmovdqa	xmm13, [rsp + 7*16]
 
-	mov	[rsp + 8*16 + 0*8], rsi
-	mov	[rsp + 8*16 + 1*8], rdi
+	mov	rsi, [rsp + 8*16 + 0*8]
+	mov	rdi, [rsp + 8*16 + 1*8]
+	mov	r12, [rsp + 8*16 + 2*8]
+	mov	r13, [rsp + 8*16 + 3*8]
 	add	rsp, stack_size
 %endm
 %else
 %define func(x) x:
 %macro FUNC_SAVE 0
+	push	r12
+	push	r13
 %endm
 
 %macro FUNC_RESTORE 0
+	pop	r13
+	pop	r12
 %endm
 %endif
 %define VECT_SIZE 16
+
+[bits 64]
+default rel
+section .text
 
 global set_long_icf_fg_06
 func(set_long_icf_fg_06)
 	FUNC_SAVE
 
-	sub	end_in, LA + 15
-	vmovdqu32 zlong_lens, [long_len]
-	vmovdqu32 zlong_lens2, [long_len2]
-	vmovdqu32 zlens_mask, [len_mask]
+	lea	end_in, [next_in + arg3]
+	add	end_processed, next_in
+	mov	end_processed_orig, end_processed
+	lea	tmp1, [end_processed + LA_STATELESS]
+	cmp	end_in, tmp1
+	cmovg	end_in, tmp1
+	sub	end_processed, 15
+	vpbroadcastd zlong_lens, [long_len]
+	vpbroadcastd zlong_lens2, [long_len2]
+	vpbroadcastd zlens_mask, [len_mask]
 	vmovdqu16 zdists_start, [dist_start]
-	vmovdqu32 zdists_mask, [dists_mask]
+	vpbroadcastd zdists_mask, [dists_mask]
 	vmovdqu32 zincrement, [increment]
-	vmovdqu64 zdatas_perm2, [datas_perm2]
-	vmovdqu64 zdatas_perm3, [datas_perm3]
+	vbroadcasti64x2 zdatas_perm2, [datas_perm2]
+	vbroadcasti64x2 zdatas_perm3, [datas_perm3]
 	vmovdqu64 zqword_shuf, [qword_shuf]
-	vmovdqu64 zbswap, [bswap_shuf]
-	vmovdqu64 znlen_mask, [nlen_mask]
-	vmovdqu64 zvect_size, [vect_size]
-	vmovdqu64 ztwofiftyfour, [twofiftyfour]
-	vmovdqu64 ztwofiftysix, [twofiftysix]
-	vmovdqu64 ztwosixtytwo, [twosixtytwo]
+	vbroadcasti64x2 zbswap, [bswap_shuf]
+	vpbroadcastd znlen_mask, [nlen_mask]
+	vpbroadcastd zvect_size, [vect_size]
+	vpbroadcastd zmax_len, [max_len]
+	vpbroadcastd ztwofiftyfour, [twofiftyfour]
+	vpbroadcastd ztwofiftysix, [twofiftysix]
+	vpbroadcastd ztwosixtytwo, [twosixtytwo]
 	vmovdqu32 zmatch_lookup, [match_lookup]
 
-fill_loop: ; Tahiti is a magical place
+.fill_loop: ; Tahiti is a magical place
 	vmovdqu32 zmatch_lookup2, zmatch_lookup
 	vmovdqu32 zmatch_lookup, [match_lookup + ICF_CODE_BYTES * VECT_SIZE]
 
-	cmp	next_in, end_in
-	jae	end_fill
+	cmp	next_in, end_processed
+	jae	.end_fill
+
+.finish_entry:
 	vpandd	zlens, zmatch_lookup2, zlens_mask
 	vpcmpgtd k3, zlens, zlong_lens
 
@@ -135,7 +191,7 @@ fill_loop: ; Tahiti is a magical place
 	add	match_lookup, ICF_CODE_BYTES * VECT_SIZE
 
 	ktestw	k3, k3
-	jz	fill_loop
+	jz	.fill_loop
 
 	vpsrld	zdist_codes, zmatch_lookup2, DIST_OFFSET
 	vpmovdw	zdists %+ y, zdist_codes ; Relies on perm working mod 32
@@ -178,7 +234,7 @@ fill_loop: ; Tahiti is a magical place
 
 	vpcmpgtd k3, zlens1, zlong_lens2
 	ktestw	k3, k3
-	jz	fill_loop
+	jz	.fill_loop
 
 	vpsubd	zdists, zincrement, zdists
 
@@ -193,25 +249,21 @@ fill_loop: ; Tahiti is a magical place
 	mov	match_in, next_in
 	sub	match_in, dist
 
-	mov	len, 2
-%rep 3
-	vmovdqu8 ztmp1, [next_in + len]
-	vmovdqu8 ztmp2, [match_in + len]
-	vpcmpb	k3, ztmp1, [match_in + len], NEQ
-	ktestq	k3, k3
-	jnz	miscompare
+	mov	len, 16
+	mov	tmp2, end_in
+	sub	tmp2, next_in
 
-	add	len, 64
-%endrep
+	compare_z next_in, match_in, len, tmp2, tmp1, k3, ztmp1, ztmp2
 
-	vmovdqu8 ztmp1, [next_in + len]
-	vmovdqu8 ztmp2, [match_in + len]
-	vpcmpb	k3, ztmp1, ztmp2, 4
+	vpbroadcastd zlens1, len %+ d
+	vpsubd	zlens1, zlens1, zincrement
+	vpaddd	zlens1, zlens1, ztwofiftyfour
 
-miscompare:
-	kmovq	tmp1, k3
-	tzcnt	tmp1, tmp1
-	add	len, tmp1
+	mov	tmp2, end_processed
+	sub	tmp2, next_in
+	cmp	len, tmp2
+	cmovg	len, tmp2
+
 	add	next_in, len
 	lea	match_lookup, [match_lookup + ICF_CODE_BYTES * len]
 	vmovdqu32 zmatch_lookup, [match_lookup]
@@ -219,74 +271,58 @@ miscompare:
 	vpbroadcastd zmatch_lookup2, zmatch_lookup2 %+ x
 	vpandd	zmatch_lookup2, zmatch_lookup2, znlen_mask
 
-	vpbroadcastd zlens1, len %+ d
-	vpsubd	zlens1, zlens1, zincrement
-	vpaddd	zlens1, zlens1, ztwofiftyfour
 	neg	len
 
-update_match_lookup:
+.update_match_lookup:
 	vpandd	zlens2, zlens_mask, [match_lookup + ICF_CODE_BYTES * len]
 	vpcmpgtd k3, zlens1, zlens2
 	vpcmpgtd k4, zlens1, ztwofiftysix
 	kandw	k3, k3, k4
 
-	vpaddd	zlens2 {k3}{z}, zlens1, zmatch_lookup2
+	vpcmpgtd k4, zlens1, zmax_len
+	vmovdqu32 zlens, zlens1
+	vmovdqu32 zlens {k4}, zmax_len
+
+	vpaddd	zlens2 {k3}{z}, zlens, zmatch_lookup2
 
 	vmovdqu32 [match_lookup + ICF_CODE_BYTES * len] {k3}, zlens2
 
 	knotw	k3, k3
 	ktestw	k3, k3
-	jnz	fill_loop
+	jnz	.fill_loop
 
 	add	len, VECT_SIZE
 	vpsubd	zlens1, zlens1, zvect_size
 
-	jmp	update_match_lookup
-end_fill:
+	jmp	.update_match_lookup
+
+.end_fill:
+	mov	end_processed, end_processed_orig
+	cmp	next_in, end_processed
+	jge	.finish
+
+	mov	tmp1, end_processed
+	sub	tmp1, next_in
+	vpbroadcastd ztmp1, tmp1 %+ d
+	vpcmpd k3, ztmp1, zincrement, 6
+	vmovdqu32 zmatch_lookup2 {k3}{z}, zmatch_lookup2
+	jmp	.finish_entry
+
+.finish:
 
 	FUNC_RESTORE
 	ret
 
+endproc_frame
+
 section .data
 align 64
+;; 64 byte data
 dist_start:
 	dw 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0007, 0x0009, 0x000d
 	dw 0x0011, 0x0019, 0x0021, 0x0031, 0x0041, 0x0061, 0x0081, 0x00c1
 	dw 0x0101, 0x0181, 0x0201, 0x0301, 0x0401, 0x0601, 0x0801, 0x0c01
 	dw 0x1001, 0x1801, 0x2001, 0x3001, 0x4001, 0x6001, 0x0000, 0x0000
-len_mask:
-	dd LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK
-	dd LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK
-	dd LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK
-	dd LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK
-dists_mask:
-	dd LIT_DIST_MASK, LIT_DIST_MASK, LIT_DIST_MASK, LIT_DIST_MASK
-	dd LIT_DIST_MASK, LIT_DIST_MASK, LIT_DIST_MASK, LIT_DIST_MASK
-	dd LIT_DIST_MASK, LIT_DIST_MASK, LIT_DIST_MASK, LIT_DIST_MASK
-	dd LIT_DIST_MASK, LIT_DIST_MASK, LIT_DIST_MASK, LIT_DIST_MASK
-long_len:
-	dd 0x105, 0x105, 0x105, 0x105, 0x105, 0x105, 0x105, 0x105
-	dd 0x105, 0x105, 0x105, 0x105, 0x105, 0x105, 0x105, 0x105
-long_len2:
-	dd 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7
-	dd 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7, 0x7
-
-increment:
-	dd 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7
-	dd 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf
-datas_perm2:
-	dq 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1
-datas_perm3:
-	dq 0x1, 0x2, 0x1, 0x2, 0x1, 0x2, 0x1, 0x2
-bswap_shuf:
-	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
-	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
-	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
-	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
 qword_shuf:
 	db 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7
 	db 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8
@@ -297,23 +333,39 @@ qword_shuf:
 	db 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd
 	db 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe
 	db 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf
+
+;; 16 byte data
+increment:
+	dd 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7
+	dd 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf
+
+datas_perm2:
+	dq 0x0, 0x1
+datas_perm3:
+	dq 0x1, 0x2
+bswap_shuf:
+	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
+	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
+
+;; 4 byte data
+len_mask:
+	dd LIT_LEN_MASK
+dists_mask:
+	dd LIT_DIST_MASK
+long_len:
+	dd 0x105
+long_len2:
+	dd 0x7
+max_len:
+	dd 0xfe + 0x102
 vect_size:
-	dd VECT_SIZE, VECT_SIZE, VECT_SIZE, VECT_SIZE
-	dd VECT_SIZE, VECT_SIZE, VECT_SIZE, VECT_SIZE
-	dd VECT_SIZE, VECT_SIZE, VECT_SIZE, VECT_SIZE
-	dd VECT_SIZE, VECT_SIZE, VECT_SIZE, VECT_SIZE
+	dd VECT_SIZE
 twofiftyfour:
-	dd 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe
-	dd 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe
+	dd 0xfe
 twofiftysix:
-	dd 0x100, 0x100, 0x100, 0x100, 0x100, 0x100, 0x100, 0x100
-	dd 0x100, 0x100, 0x100, 0x100, 0x100, 0x100, 0x100, 0x100
+	dd 0x100
 twosixtytwo:
-	dd 0x106, 0x106, 0x106, 0x106, 0x106, 0x106, 0x106, 0x106
-	dd 0x106, 0x106, 0x106, 0x106, 0x106, 0x106, 0x106, 0x106
+	dd 0x106
 nlen_mask:
-	dd 0xfffffc00, 0xfffffc00, 0xfffffc00, 0xfffffc00
-	dd 0xfffffc00, 0xfffffc00, 0xfffffc00, 0xfffffc00
-	dd 0xfffffc00, 0xfffffc00, 0xfffffc00, 0xfffffc00
-	dd 0xfffffc00, 0xfffffc00, 0xfffffc00, 0xfffffc00
+	dd 0xfffffc00
 %endif

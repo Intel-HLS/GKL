@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <byteswap.h>
 #include "igzip_lib.h"
+#include "unaligned.h"
 
 #define LEVEL_BITS   2
 #define HEADER_BITS  3
@@ -104,8 +105,8 @@ int LLVMFuzzerTestOneInput(const uint8_t * data, size_t size)
 	ret = isal_deflate_stateless(&cstate);
 
 	isal_inflate_init(&istate);
-	istate.next_in = isal_cmp_buf + header_size[wrapper_type];
-	istate.avail_in = cstate.total_out - header_size[wrapper_type];;
+	istate.next_in = isal_cmp_buf;
+	istate.avail_in = cstate.total_out;
 	istate.next_out = isal_out_buf;
 	istate.avail_out = size;
 	istate.crc_flag = wrapper_type;
@@ -117,9 +118,9 @@ int LLVMFuzzerTestOneInput(const uint8_t * data, size_t size)
 	int trailer_idx = cstate.total_out - trailer_size[wrapper_type];
 
 	if (wrapper_type == IGZIP_GZIP || wrapper_type == IGZIP_GZIP_NO_HDR)
-		crc = *(uint32_t *) & isal_cmp_buf[trailer_idx];
+		crc = load_u32(&isal_cmp_buf[trailer_idx]);
 	else if (wrapper_type == IGZIP_ZLIB || wrapper_type == IGZIP_ZLIB_NO_HDR)
-		crc = bswap_32(*(uint32_t *) & isal_cmp_buf[trailer_idx]);
+		crc = bswap_32(load_u32(&isal_cmp_buf[trailer_idx]));
 
 	assert(istate.crc == crc);
 	free(isal_cmp_buf);

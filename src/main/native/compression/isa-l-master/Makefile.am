@@ -3,9 +3,15 @@ CLEANFILES =
 LDADD =
 AM_MAKEFLAGS = --no-print-directory
 noinst_HEADERS =
-pkginclude_HEADERS = include/test.h
+pkginclude_HEADERS = include/test.h include/types.h
 noinst_LTLIBRARIES =
+bin_PROGRAMS =
 INCLUDE = -I $(srcdir)/include/
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libisal.pc
+EXTRA_DIST += libisal.pc.in
+CLEANFILES += libisal.pc
 
 lsrc=
 src_include=
@@ -18,12 +24,19 @@ unit_tests_extra=
 perf_tests_extra=
 examples=
 other_tests=
+other_tests_x86_64=
+other_tests_x86_32=
+other_tests_aarch64=
+other_tests_ppc64le=
 lsrc_x86_64=
 lsrc_x86_32=
+lsrc_aarch64=
+lsrc_ppc64le=
 lsrc_base_aliases=
 lsrc32=
 unit_tests32=
 perf_tests32=
+progs=
 
 # Include units
 
@@ -32,10 +45,13 @@ include raid/Makefile.am
 include crc/Makefile.am
 include igzip/Makefile.am
 include tests/fuzz/Makefile.am
+include examples/ec/Makefile.am
+include programs/Makefile.am
+include mem/Makefile.am
 
 # LIB version info not necessarily the same as package version
 LIBISAL_CURRENT=2
-LIBISAL_REVISION=21
+LIBISAL_REVISION=29
 LIBISAL_AGE=0
 
 lib_LTLIBRARIES = libisal.la
@@ -44,10 +60,22 @@ libisal_la_SOURCES = ${lsrc}
 
 if CPU_X86_64
 libisal_la_SOURCES += ${lsrc_x86_64}
+other_tests += ${other_tests_x86_64}
 endif
 
 if CPU_X86_32
 libisal_la_SOURCES += ${lsrc_x86_32}
+other_tests += ${other_tests_x86_32}
+endif
+
+if CPU_AARCH64
+libisal_la_SOURCES += ${lsrc_aarch64}
+other_tests += ${other_tests_aarch64}
+endif
+
+if CPU_PPC64LE
+libisal_la_SOURCES += ${lsrc_ppc64le}
+other_tests += ${other_tests_ppc64le}
 endif
 
 if CPU_UNDEFINED
@@ -74,6 +102,7 @@ EXTRA_PROGRAMS += ${other_tests}
 EXTRA_PROGRAMS += ${examples}
 CLEANFILES += ${EXTRA_PROGRAMS}
 
+programs:${progs}
 perfs: ${perf_tests}
 tests: ${unit_tests}
 checks: ${check_tests}
@@ -87,19 +116,26 @@ test: $(addsuffix .run,$(unit_tests))
 	$<
 	@echo Completed run: $<
 
-# Support for yasm/nasm
+# Support for yasm/nasm/gas
 if USE_YASM
   as_filter = ${srcdir}/tools/yasm-filter.sh
 endif
 if USE_NASM
   as_filter = ${srcdir}/tools/nasm-filter.sh
 endif
+if CPU_AARCH64
+  as_filter = $(CC) -D__ASSEMBLY__
+endif
 
 CCAS = $(as_filter)
 EXTRA_DIST += tools/yasm-filter.sh tools/nasm-filter.sh
 
 AM_CFLAGS = ${my_CFLAGS} ${INCLUDE} $(src_include) ${D}
+if CPU_AARCH64
+AM_CCASFLAGS = ${AM_CFLAGS}
+else
 AM_CCASFLAGS = ${yasm_args} ${INCLUDE} ${src_include} ${DEFS} ${D}
+endif
 
 .asm.s:
 	@echo "  MKTMP   " $@;
@@ -111,6 +147,11 @@ CLEANFILES += isa-l.h
 isa-l.h:
 	@echo 'Building $@'
 	@echo ''			>> $@
+	@echo '/**'                     >> $@
+	@echo ' *  @file isa-l.h'       >> $@
+	@echo ' *  @brief Include for ISA-L library' >> $@
+	@echo ' */'                     >> $@
+	@echo ''                        >> $@
 	@echo '#ifndef _ISAL_H_'	>> $@
 	@echo '#define _ISAL_H_'	>> $@
 	@echo ''			>> $@

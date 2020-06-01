@@ -1,5 +1,5 @@
 /* deflate.h -- internal compression state
- * Copyright (C) 1995-2012 Jean-loup Gailly
+ * Copyright (C) 1995-2016 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -51,16 +51,16 @@
 #define Buf_size 16
 /* size of bit buffer in bi_buf */
 
-#define END_BLOCK 256
-/* end of block literal code */
-
-#define INIT_STATE    42
-#define EXTRA_STATE   69
-#define NAME_STATE    73
-#define COMMENT_STATE 91
-#define HCRC_STATE   103
-#define BUSY_STATE   113
-#define FINISH_STATE 666
+#define INIT_STATE    42    /* zlib header -> BUSY_STATE */
+#ifdef GZIP
+#  define GZIP_STATE  57    /* gzip header -> BUSY_STATE | EXTRA_STATE */
+#endif
+#define EXTRA_STATE   69    /* gzip extra block -> NAME_STATE */
+#define NAME_STATE    73    /* gzip file name -> COMMENT_STATE */
+#define COMMENT_STATE 91    /* gzip comment -> HCRC_STATE */
+#define HCRC_STATE   103    /* gzip header CRC -> BUSY_STATE */
+#define BUSY_STATE   113    /* deflate -> FINISH_STATE */
+#define FINISH_STATE 666    /* stream complete */
 /* Stream status */
 
 
@@ -103,16 +103,12 @@ typedef struct internal_state {
     Bytef *pending_buf;  /* output still pending */
     ulg   pending_buf_size; /* size of pending_buf */
     Bytef *pending_out;  /* next pending byte to output to the stream */
-    uInt   pending;      /* nb of bytes in the pending buffer */
+    ulg   pending;       /* nb of bytes in the pending buffer */
     int   wrap;          /* bit 0 true for zlib, bit 1 true for gzip */
     gz_headerp  gzhead;  /* gzip header information to write */
-    uInt   gzindex;      /* where in extra, name, or comment */
+    ulg   gzindex;       /* where in extra, name, or comment */
     Byte  method;        /* can only be DEFLATED */
     int   last_flush;    /* value of flush param for previous deflate call */
-
-#ifdef HAVE_PCLMULQDQ
-    unsigned zalign(16) crc0[4 * 5];
-#endif
 
                 /* used by deflate.c: */
 
@@ -279,13 +275,6 @@ typedef struct internal_state {
 
 } FAR deflate_state;
 
-typedef enum {
-    need_more,      /* block not completed, need more input or more output */
-    block_done,     /* block flush performed */
-    finish_started, /* finish started, need only more output at next deflate */
-    finish_done     /* finish done, accept no more input or output */
-} block_state;
-
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.
  */
@@ -306,19 +295,18 @@ typedef enum {
 /* Number of bytes after end of data in window to initialize in order to avoid
    memory checker errors from longest match routines */
 
-/* in trees.c */
+        /* in trees.c */
 void ZLIB_INTERNAL _tr_init OF((deflate_state *s));
 int ZLIB_INTERNAL _tr_tally OF((deflate_state *s, unsigned dist, unsigned lc));
 void ZLIB_INTERNAL _tr_flush_block OF((deflate_state *s, charf *buf,
-			ulg stored_len, int last));
+                        ulg stored_len, int last));
 void ZLIB_INTERNAL _tr_flush_bits OF((deflate_state *s));
 void ZLIB_INTERNAL _tr_align OF((deflate_state *s));
 void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
-			ulg stored_len, int last));
-void ZLIB_INTERNAL bi_windup OF((deflate_state *s));
+                        ulg stored_len, int last));
 
 #define d_code(dist) \
-	((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
+   ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
 /* Mapping from a distance to a distance code. dist is the distance - 1 and
  * must not have side effects. _dist_code[256] and _dist_code[257] are never
  * used.
@@ -328,20 +316,20 @@ void ZLIB_INTERNAL bi_windup OF((deflate_state *s));
 /* Inline versions of _tr_tally for speed: */
 
 #if defined(GEN_TREES_H) || !defined(STDC)
-extern uch ZLIB_INTERNAL _length_code[];
-extern uch ZLIB_INTERNAL _dist_code[];
+  extern uch ZLIB_INTERNAL _length_code[];
+  extern uch ZLIB_INTERNAL _dist_code[];
 #else
-extern const uch ZLIB_INTERNAL _length_code[];
-extern const uch ZLIB_INTERNAL _dist_code[];
+  extern const uch ZLIB_INTERNAL _length_code[];
+  extern const uch ZLIB_INTERNAL _dist_code[];
 #endif
 
 # define _tr_tally_lit(s, c, flush) \
-{ uch cc = (c); \
-	s->d_buf[s->last_lit] = 0; \
-	s->l_buf[s->last_lit++] = cc; \
-	s->dyn_ltree[cc].Freq++; \
-	flush = (s->last_lit == s->lit_bufsize-1); \
-}
+  { uch cc = (c); \
+    s->d_buf[s->last_lit] = 0; \
+    s->l_buf[s->last_lit++] = cc; \
+    s->dyn_ltree[cc].Freq++; \
+    flush = (s->last_lit == s->lit_bufsize-1); \
+   }
 # define _tr_tally_dist(s, distance, length, flush) \
   { uch len = (uch)(length); \
     ush dist = (ush)(distance); \
@@ -355,101 +343,7 @@ extern const uch ZLIB_INTERNAL _dist_code[];
 #else
 # define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
 # define _tr_tally_dist(s, distance, length, flush) \
-	flush = _tr_tally(s, distance, length)
+              flush = _tr_tally(s, distance, length)
 #endif
-
-/* ===========================================================================
- * Update a hash value with the given input byte
- * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
- *    input characters, so that a running hash key can be computed from the
- *    previous key instead of complete recalculation each time.
- */
-#ifdef USE_SSE4_2_CRC_HASH
-#define UPDATE_HASH(s,h,i) \
-    {\
-        if (s->level < 6) { \
-            h = (3483 * (s->window[i]) +\
-                 23081* (s->window[i+1]) +\
-                 6954 * (s->window[i+2]) +\
-                 20947* (s->window[i+3])) & s->hash_mask;\
-        } else {\
-            h = (25881* (s->window[i]) +\
-                 24674* (s->window[i+1]) +\
-                 25811* (s->window[i+2])) & s->hash_mask;\
-        }\
-    }\
-
-#else
-#define UPDATE_HASH(s,h,i) (h = (((h)<<s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
-#endif
-
-
-#ifndef ZLIB_DEBUG
-#  define send_code(s, c, tree) send_bits(s, tree[c].Code, tree[c].Len)
-   /* Send a code of the given tree. c and tree must not have side effects */
-
-#else /* !ZLIB_DEBUG */
-#  define send_code(s, c, tree) \
-     { if (z_verbose>2) fprintf(stderr,"\ncd %3d ",(c)); \
-       send_bits(s, tree[c].Code, tree[c].Len); }
-#endif
-
-/* ===========================================================================
- * Output a short LSB first on the stream.
- * IN assertion: there is enough room in pendingBuf.
- */
-#define put_short(s, w) { \
-    put_byte(s, (uch)((w) & 0xff)); \
-    put_byte(s, (uch)((ush)(w) >> 8)); \
-}
-
-/* ===========================================================================
- * Send a value on a given number of bits.
- * IN assertion: length <= 16 and value fits in length bits.
- */
-#ifdef ZLIB_DEBUG
-local void send_bits      OF((deflate_state *s, int value, int length));
-
-local void send_bits(s, value, length)
-    deflate_state *s;
-    int value;  /* value to send */
-    int length; /* number of bits */
-{
-    Tracevv((stderr," l %2d v %4x ", length, value));
-    Assert(length > 0 && length <= 15, "invalid length");
-    s->bits_sent += (ulg)length;
-
-    /* If not enough room in bi_buf, use (valid) bits from bi_buf and
-     * (16 - bi_valid) bits from value, leaving (width - (16-bi_valid))
-     * unused bits in value.
-     */
-    if (s->bi_valid > (int)Buf_size - length) {
-        s->bi_buf |= (ush)value << s->bi_valid;
-        put_short(s, s->bi_buf);
-        s->bi_buf = (ush)value >> (Buf_size - s->bi_valid);
-        s->bi_valid += length - Buf_size;
-    } else {
-        s->bi_buf |= (ush)value << s->bi_valid;
-        s->bi_valid += length;
-    }
-}
-#else /* !ZLIB_DEBUG */
-
-#define send_bits(s, value, length) \
-{ int len = length;\
-  if (s->bi_valid > (int)Buf_size - len) {\
-    int val = (int)value;\
-    s->bi_buf |= (ush)val << s->bi_valid;\
-    put_short(s, s->bi_buf);\
-    s->bi_buf = (ush)val >> (Buf_size - s->bi_valid);\
-    s->bi_valid += len - Buf_size;\
-  } else {\
-    s->bi_buf |= (ush)(value) << s->bi_valid;\
-    s->bi_valid += len;\
-  }\
-}
-#endif /* ZLIB_DEBUG */
-
-/* the arguments must not have side effects */
 
 #endif /* DEFLATE_H */

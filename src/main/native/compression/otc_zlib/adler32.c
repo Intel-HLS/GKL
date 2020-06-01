@@ -1,5 +1,5 @@
 /* adler32.c -- compute the Adler-32 checksum of a data stream
- * Copyright (C) 1995-2011 Mark Adler
+ * Copyright (C) 1995-2011, 2016 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -60,10 +60,10 @@ local uLong adler32_combine_ OF((uLong adler1, uLong adler2, z_off64_t len2));
 #endif
 
 /* ========================================================================= */
-uLong ZEXPORT adler32(adler, buf, len)
+uLong ZEXPORT adler32_z(adler, buf, len)
     uLong adler;
     const Bytef *buf;
-    uInt len;
+    z_size_t len;
 {
     unsigned long sum2;
     unsigned n;
@@ -102,19 +102,10 @@ uLong ZEXPORT adler32(adler, buf, len)
     /* do length NMAX blocks -- requires just one modulo operation */
     while (len >= NMAX) {
         len -= NMAX;
-#ifndef ADLER32_UNROLL_LESS
         n = NMAX / 16;          /* NMAX is divisible by 16 */
-#else
-        n = NMAX / 8;           /* NMAX is divisible by 8 */
-#endif
         do {
-#ifndef ADLER32_UNROLL_LESS
             DO16(buf);          /* 16 sums unrolled */
             buf += 16;
-#else
-            DO8(buf,0);         /* 8 sums unrolled */
-            buf += 8;
-#endif
         } while (--n);
         MOD(adler);
         MOD(sum2);
@@ -122,17 +113,10 @@ uLong ZEXPORT adler32(adler, buf, len)
 
     /* do remaining bytes (less than NMAX, still just one modulo) */
     if (len) {                  /* avoid modulos if none remaining */
-#ifndef ADLER32_UNROLL_LESS
         while (len >= 16) {
             len -= 16;
             DO16(buf);
             buf += 16;
-#else
-        while (len >= 8) {
-            len -= 8;
-            DO8(buf, 0);
-            buf += 8;
-#endif
         }
         while (len--) {
             adler += *buf++;
@@ -144,6 +128,15 @@ uLong ZEXPORT adler32(adler, buf, len)
 
     /* return recombined sums */
     return adler | (sum2 << 16);
+}
+
+/* ========================================================================= */
+uLong ZEXPORT adler32(adler, buf, len)
+    uLong adler;
+    const Bytef *buf;
+    uInt len;
+{
+    return adler32_z(adler, buf, len);
 }
 
 /* ========================================================================= */

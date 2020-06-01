@@ -1,7 +1,0 @@
-BUILDING optimized version of compression library for C/C++ using GKL
-
-1. In the libz directory run cmake .
-
-2. Run make
-
-3. libz.so.1.2.8.1-motley with integrated optimized isal for level 1 is generated. 

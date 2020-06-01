@@ -112,7 +112,7 @@ section .text
 
 
 align 16
-global gf_vect_mul_sse:function
+mk_global gf_vect_mul_sse, function
 func(gf_vect_mul_sse)
 	FUNC_SAVE
 	mov	pos, 0

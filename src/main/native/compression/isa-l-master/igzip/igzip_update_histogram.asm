@@ -1,3 +1,31 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  Copyright(c) 2011-2018 Intel Corporation All rights reserved.
+;
+;  Redistribution and use in source and binary forms, with or without
+;  modification, are permitted provided that the following conditions
+;  are met:
+;    * Redistributions of source code must retain the above copyright
+;      notice, this list of conditions and the following disclaimer.
+;    * Redistributions in binary form must reproduce the above copyright
+;      notice, this list of conditions and the following disclaimer in
+;      the documentation and/or other materials provided with the
+;      distribution.
+;    * Neither the name of Intel Corporation nor the names of its
+;      contributors may be used to endorse or promote products derived
+;      from this software without specific prior written permission.
+;
+;  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+;  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+;  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+;  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+;  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+;  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+;  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+;  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+;  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+;  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+;  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 %include "options.asm"
 
@@ -220,6 +248,10 @@ _hash_offset	equ	(_dist_offset + 8 * DIST_LEN)
 	cmp	%%dist, 1
 	cmovle	%%dist_coded, %%dist
 %endm
+
+[bits 64]
+default rel
+section .text
 
 ; void isal_update_histogram
 global isal_update_histogram_ %+ ARCH
@@ -516,16 +548,11 @@ compare_loop:
 	and	hash %+ d, LVL0_HASH_MASK
 	and	hash2 %+ d, LVL0_HASH_MASK
 	lea	tmp2, [tmp1 + dist - 1]
-%if (COMPARE_TYPE == 1)
-	compare250	tmp1, tmp2, len, tmp3
-%elif (COMPARE_TYPE == 2)
-	compare250_x	tmp1, tmp2, len, tmp3, xtmp0, xtmp1
-%elif (COMPARE_TYPE == 3)
-	compare250_y	tmp1, tmp2, len, tmp3, ytmp0, ytmp1
-%else
-	%error Unknown Compare type COMPARE_TYPE
-	 % error
-%endif
+
+	mov	len2, 250
+	mov	len, 8
+	compare250	tmp1, tmp2, len, len2, tmp3, ytmp0, ytmp1
+
 	lea	tmp3, [f_i + 1]
 	jmp	len_dist_huffman
 
@@ -533,16 +560,10 @@ compare_loop2:
 	add	tmp1, 1
 	lea	tmp2, [tmp1 + dist2 - 1]
 
-%if (COMPARE_TYPE == 1)
-	compare250	tmp1, tmp2, len2, tmp3
-%elif (COMPARE_TYPE == 2)
-	compare250_x	tmp1, tmp2, len2, tmp3, xtmp0, xtmp1
-%elif (COMPARE_TYPE == 3)
-	compare250_y	tmp1, tmp2, len2, tmp3, ytmp0, ytmp1
-%else
-%error Unknown Compare type COMPARE_TYPE
- % error
-%endif
+	mov	len, 250
+	mov	len2, 8
+	compare250	tmp1, tmp2, len2, len, tmp3, ytmp0, ytmp1
+
 	and	curr_data, 0xff
 	inc	qword [histogram + _lit_len_offset + 8 * curr_data]
 	lea	tmp3, [f_i + 1]

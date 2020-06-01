@@ -1,5 +1,5 @@
 # Makefile for zlib
-# Copyright (C) 1995-2013 Jean-loup Gailly, Mark Adler
+# Copyright (C) 1995-2017 Jean-loup Gailly, Mark Adler
 # For conditions of distribution and use, see copyright notice in zlib.h
 
 # To compile and test, type:
@@ -32,7 +32,7 @@ CPP=$(CC) -E
 
 STATICLIB=libz.a
 SHAREDLIB=libz.so
-SHAREDLIBV=libz.so.1.2.8.1
+SHAREDLIBV=libz.so.1.2.11
 SHAREDLIBM=libz.so.1
 LIBS=$(STATICLIB) $(SHAREDLIBV)
 
@@ -44,13 +44,6 @@ LDSHAREDLIBC=-lc
 TAR=tar
 SHELL=/bin/sh
 EXE=
-
-FILL_WINDOW_SSE_o= 
-FILL_WINDOW_SSE_lo=
-CRC_FOLDING_o=
-CRC_FOLDING_lo=
-DEFLATE_QUICK_o=
-DEFLATE_QUICK_lo=
 
 prefix = /usr/local
 exec_prefix = ${prefix}
@@ -64,11 +57,11 @@ SRCDIR=
 ZINC=
 ZINCOUT=-I.
 
-OBJZ = adler32.o ${CRC_FOLDING_o} ${DEFLATE_QUICK_o} crc32.o ${FILL_WINDOW_SSE_o} deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
+OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo ${CRC_FOLDING_lo} ${DEFLATE_QUICK_lo} crc32.lo ${FILL_WINDOW_SSE_lo} deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
+PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -122,30 +115,6 @@ test64: all64
 	  echo '		*** zlib 64-bit test FAILED ***'; false; \
 	fi; \
 	rm -f $$TMP64
-
-fill_window_sse.o: $(SRCDIR)fill_window_sse.c
-	$(CC) $(CFLAGS) $(ZINC) -msse2 -c -o $@ $<
-
-fill_window_sse.lo: $(SRCDIR)fill_window_sse.c
-	-@mkdir objs 2>/dev/null || test -d objs
-	$(CC) $(SFLAGS) $(ZINC) -msse2 -DPIC -c -o objs/$*.o $<
-	-@mv objs/$*.o $@
-
-crc_folding.o: $(SRCDIR)crc_folding.c
-	$(CC) $(CFLAGS) $(ZINC) -mpclmul -msse4 -c -o $@ $<
-
-crc_folding.lo: $(SRCDIR)crc_folding.c
-	-@mkdir objs 2>/dev/null || test -d objs
-	$(CC) $(SFLAGS) $(ZINC) -mpclmul -msse4 -DPIC -c -o objs/$*.o $<
-	-@mv objs/$*.o $@
-
-deflate_quick.o: $(SRCDIR)deflate_quick.c
-	$(CC) $(CFLAGS) $(ZINC) -msse4 -c -o $@ $<
-
-deflate_quick.lo: $(SRCDIR)deflate_quick.c
-	-@mkdir objs 2>/dev/null || test -d objs
-	$(CC) $(SFLAGS) $(ZINC) -msse4 -DPIC -c -o objs/$*.o $<
-	-@mv objs/$*.o $@
 
 infcover.o: $(SRCDIR)test/infcover.c $(SRCDIR)zlib.h zconf.h
 	$(CC) $(CFLAGS) $(ZINCOUT) -c -o $@ $(SRCDIR)test/infcover.c
@@ -232,9 +201,6 @@ gzread.o: $(SRCDIR)gzread.c
 gzwrite.o: $(SRCDIR)gzwrite.c
 	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)gzwrite.c
 
-x86.o: $(SRCDIR)x86.c
-	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)x86.c
-
 
 adler32.lo: $(SRCDIR)adler32.c
 	-@mkdir objs 2>/dev/null || test -d objs
@@ -311,11 +277,6 @@ gzwrite.lo: $(SRCDIR)gzwrite.c
 	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/gzwrite.o $(SRCDIR)gzwrite.c
 	-@mv objs/gzwrite.o $@
 
-x86.lo: $(SRCDIR)x86.c
-	-@mkdir objs 2>/dev/null || test -d objs
-	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/x86.o $(SRCDIR)x86.c
-	-@mv objs/x86.o $@
-
 
 placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
 	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
@@ -348,10 +309,12 @@ install-libs: $(LIBS)
 	-@if [ ! -d $(DESTDIR)$(sharedlibdir) ]; then mkdir -p $(DESTDIR)$(sharedlibdir); fi
 	-@if [ ! -d $(DESTDIR)$(man3dir)      ]; then mkdir -p $(DESTDIR)$(man3dir); fi
 	-@if [ ! -d $(DESTDIR)$(pkgconfigdir) ]; then mkdir -p $(DESTDIR)$(pkgconfigdir); fi
+	rm -f $(DESTDIR)$(libdir)/$(STATICLIB)
 	cp $(STATICLIB) $(DESTDIR)$(libdir)
 	chmod 644 $(DESTDIR)$(libdir)/$(STATICLIB)
 	-@($(RANLIB) $(DESTDIR)$(libdir)/libz.a || true) >/dev/null 2>&1
 	-@if test -n "$(SHAREDLIBV)"; then \
+	  rm -f $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBV); \
 	  cp $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir); \
 	  echo "cp $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)"; \
 	  chmod 755 $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBV); \
@@ -361,8 +324,10 @@ install-libs: $(LIBS)
 	  ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM); \
 	  ($(LDCONFIG) || true)  >/dev/null 2>&1; \
 	fi
+	rm -f $(DESTDIR)$(man3dir)/zlib.3
 	cp $(SRCDIR)zlib.3 $(DESTDIR)$(man3dir)
 	chmod 644 $(DESTDIR)$(man3dir)/zlib.3
+	rm -f $(DESTDIR)$(pkgconfigdir)/zlib.pc
 	cp zlib.pc $(DESTDIR)$(pkgconfigdir)
 	chmod 644 $(DESTDIR)$(pkgconfigdir)/zlib.pc
 # The ranlib in install is needed on NeXTSTEP which checks file times
@@ -370,6 +335,7 @@ install-libs: $(LIBS)
 
 install: install-libs
 	-@if [ ! -d $(DESTDIR)$(includedir)   ]; then mkdir -p $(DESTDIR)$(includedir); fi
+	rm -f $(DESTDIR)$(includedir)/zlib.h $(DESTDIR)$(includedir)/zconf.h
 	cp $(SRCDIR)zlib.h zconf.h $(DESTDIR)$(includedir)
 	chmod 644 $(DESTDIR)$(includedir)/zlib.h $(DESTDIR)$(includedir)/zconf.h
 
@@ -427,7 +393,7 @@ adler32.o zutil.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h
 gzclose.o gzlib.o gzread.o gzwrite.o: $(SRCDIR)zlib.h zconf.h $(SRCDIR)gzguts.h
 compress.o example.o minigzip.o uncompr.o: $(SRCDIR)zlib.h zconf.h
 crc32.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)crc32.h
-deflate.o: $(SRCDIR)deflate.h $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(DEFLATE_QUICK_o)
+deflate.o: $(SRCDIR)deflate.h $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h
 infback.o inflate.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h $(SRCDIR)inflate.h $(SRCDIR)inffast.h $(SRCDIR)inffixed.h
 inffast.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h $(SRCDIR)inflate.h $(SRCDIR)inffast.h
 inftrees.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h
@@ -437,7 +403,7 @@ adler32.lo zutil.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h
 gzclose.lo gzlib.lo gzread.lo gzwrite.lo: $(SRCDIR)zlib.h zconf.h $(SRCDIR)gzguts.h
 compress.lo example.lo minigzip.lo uncompr.lo: $(SRCDIR)zlib.h zconf.h
 crc32.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)crc32.h
-deflate.lo: $(SRCDIR)deflate.h $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(DEFLATE_QUICK_lo)
+deflate.lo: $(SRCDIR)deflate.h $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h
 infback.lo inflate.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h $(SRCDIR)inflate.h $(SRCDIR)inffast.h $(SRCDIR)inffixed.h
 inffast.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h $(SRCDIR)inflate.h $(SRCDIR)inffast.h
 inftrees.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h

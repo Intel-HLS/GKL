@@ -191,7 +191,7 @@ default rel
 section .text
 
 align 16
-global gf_4vect_dot_prod_avx512:function
+mk_global gf_4vect_dot_prod_avx512, function
 func(gf_4vect_dot_prod_avx512)
 	FUNC_SAVE
 	sub	len, 64
