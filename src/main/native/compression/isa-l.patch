@@ -1,12 +1,10 @@
-*** configure.ac	2016-12-20 10:12:00.869092914 -0500
---- configure.ac.patched	2016-12-20 10:12:21.189092898 -0500
-***************
-*** 148,153 ****
---- 148,154 ----
-  -Wshadow \
-  -Wstrict-prototypes \
-  -Wtype-limits \
-+ -fPIC \
-  "
-  AC_SUBST([my_CFLAGS])
-  
+--- configure.ac	2020-07-15 08:18:47.216343048 +0200
++++ configure.ac.patched	2020-07-15 08:22:40.738746838 +0200
+@@ -274,6 +274,7 @@
+ -Wshadow \
+ -Wstrict-prototypes \
+ -Wtype-limits \
++-fPIC \
+ "
+ AC_SUBST([my_CFLAGS])
+ 
