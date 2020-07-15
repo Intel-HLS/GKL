@@ -38,6 +38,8 @@ extern "C" {
 #include "igzip_lib.h"
 }
 
+typedef unsigned char UINT8;  // Was part of types.h in older version of isa-l
+
 #define DEF_MEM_LEVEL 8
 //#define DEBUG
 //#define profile
