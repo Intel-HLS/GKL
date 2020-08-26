@@ -56,6 +56,11 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
     jbyte* alternate = (jbyte*)env->GetPrimitiveArrayCritical(alt, 0);
     jbyte* cigarArray = (jbyte*)env->GetPrimitiveArrayCritical(cigar, 0);
 
+    if (reference == NULL | alternate == NULL | cigarArray == NULL) {
+         DBG("GetPrimitiveArrayCritical failed from JAVA unable to contiune"); 
+         return -1;
+    }
+
     jint count = 0;
     jint offset = 0;
 
