@@ -164,9 +164,14 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuff
 
       jbyte* input = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
 
-      struct isal_huff_histogram *histogram;
+      struct isal_huff_histogram *histogram = (struct isal_huff_histogram *) malloc(sizeof(*histogram)); 
       struct isal_hufftables *hufftables_custom;
 
+      if (histogram == NULL) {
+           DBG ("Malloc failed out of memory");
+           return; 
+      } 
+      
       memset(histogram, 0, sizeof(isal_huff_histogram));
       isal_update_histogram((unsigned char*)input, 64*1024, histogram);
       isal_create_hufftables(hufftables_custom, histogram);
@@ -174,7 +179,10 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuff
 
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
       env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
+      
+      free(histogram);
       }
+
 }
 
 /**
