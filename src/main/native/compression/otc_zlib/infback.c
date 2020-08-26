@@ -1,5 +1,5 @@
 /* infback.c -- inflate using a call-back interface
- * Copyright (C) 1995-2011 Mark Adler
+ * Copyright (C) 1995-2016 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -479,6 +479,16 @@ void FAR *out_desc;
             state->mode = LEN;
 
         case LEN:
+            /* use inflate_fast() if we have enough input and output */
+            if (have >= 6 && left >= 258) {
+                RESTORE();
+                if (state->whave < state->wsize)
+                    state->whave = state->wsize - left;
+                inflate_fast(strm, state->wsize);
+                LOAD();
+                break;
+            }
+
             /* get a literal, length, or end-of-block code */
             for (;;) {
                 here = state->lencode[BITS(state->lenbits)];

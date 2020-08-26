@@ -100,7 +100,7 @@ default rel
 section .text
 
 align 16
-global xor_gen_avx:function
+mk_global  xor_gen_avx, function
 func(xor_gen_avx)
 
 	FUNC_SAVE

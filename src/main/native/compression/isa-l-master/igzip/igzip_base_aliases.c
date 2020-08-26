@@ -34,10 +34,8 @@
 
 void isal_deflate_body_base(struct isal_zstream *stream);
 void isal_deflate_finish_base(struct isal_zstream *stream);
-void isal_deflate_icf_body_base(struct isal_zstream *stream);
-void isal_deflate_icf_body_hash8k_base(struct isal_zstream *stream);
 void isal_deflate_icf_body_hash_hist_base(struct isal_zstream *stream);
-void isal_deflate_icf_finish_hash8k_base(struct isal_zstream *stream);
+void icf_body_hash1_fillgreedy_lazy(struct isal_zstream *stream);
 void isal_deflate_icf_finish_hash_hist_base(struct isal_zstream *stream);
 void isal_deflate_icf_finish_hash_map_base(struct isal_zstream *stream);
 void isal_update_histogram_base(uint8_t * start_stream, int length,
@@ -45,9 +43,8 @@ void isal_update_histogram_base(uint8_t * start_stream, int length,
 struct deflate_icf *encode_deflate_icf_base(struct deflate_icf *next_in,
 					    struct deflate_icf *end_in, struct BitBuf2 *bb,
 					    struct hufftables_icf *hufftables);
-uint32_t crc32_gzip_base(uint32_t init_crc, const unsigned char *buf, uint64_t len);
 uint32_t adler32_base(uint32_t init, const unsigned char *buf, uint64_t len);
-int decode_huffman_code_block_stateless_base(struct inflate_state *s);
+int decode_huffman_code_block_stateless_base(struct inflate_state *s, uint8_t * start_out);
 
 extern void isal_deflate_hash_base(uint16_t *, uint32_t, uint32_t, uint8_t *, uint32_t);
 
@@ -66,14 +63,9 @@ void isal_deflate_finish(struct isal_zstream *stream)
 	isal_deflate_finish_base(stream);
 }
 
-void isal_deflate_icf_body(struct isal_zstream *stream)
-{
-	isal_deflate_icf_body_base(stream);
-}
-
 void isal_deflate_icf_body_lvl1(struct isal_zstream *stream)
 {
-	isal_deflate_icf_body_hash8k_base(stream);
+	isal_deflate_icf_body_hash_hist_base(stream);
 }
 
 void isal_deflate_icf_body_lvl2(struct isal_zstream *stream)
@@ -81,9 +73,14 @@ void isal_deflate_icf_body_lvl2(struct isal_zstream *stream)
 	isal_deflate_icf_body_hash_hist_base(stream);
 }
 
+void isal_deflate_icf_body_lvl3(struct isal_zstream *stream)
+{
+	icf_body_hash1_fillgreedy_lazy(stream);
+}
+
 void isal_deflate_icf_finish_lvl1(struct isal_zstream *stream)
 {
-	isal_deflate_icf_finish_hash8k_base(stream);
+	isal_deflate_icf_finish_hash_hist_base(stream);
 }
 
 void isal_deflate_icf_finish_lvl2(struct isal_zstream *stream)
@@ -109,19 +106,14 @@ struct deflate_icf *encode_deflate_icf(struct deflate_icf *next_in,
 	return encode_deflate_icf_base(next_in, end_in, bb, hufftables);
 }
 
-uint32_t crc32_gzip(uint32_t init_crc, const unsigned char *buf, uint64_t len)
-{
-	return crc32_gzip_base(init_crc, buf, len);
-}
-
 uint32_t isal_adler32(uint32_t init, const unsigned char *buf, uint64_t len)
 {
 	return adler32_base(init, buf, len);
 }
 
-int decode_huffman_code_block_stateless(struct inflate_state *s)
+int decode_huffman_code_block_stateless(struct inflate_state *s, uint8_t * start_out)
 {
-	return decode_huffman_code_block_stateless_base(s);
+	return decode_huffman_code_block_stateless_base(s, start_out);
 }
 
 void isal_deflate_hash_lvl0(uint16_t * hash_table, uint32_t hash_mask,

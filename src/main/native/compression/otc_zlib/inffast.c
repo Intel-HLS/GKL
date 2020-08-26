@@ -1,5 +1,5 @@
 /* inffast.c -- fast decoding
- * Copyright (C) 1995-2008, 2010, 2013 Mark Adler
+ * Copyright (C) 1995-2017 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -8,7 +8,9 @@
 #include "inflate.h"
 #include "inffast.h"
 
-#ifndef ASMINF
+#ifdef ASMINF
+#  pragma message("Assembler code may have bugs -- use at your own risk")
+#else
 
 /*
    Decode literal, length, and distance codes and write out the resulting
@@ -53,10 +55,15 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
     z_const unsigned char FAR *in;      /* local strm->next_in */
     z_const unsigned char FAR *last;    /* have enough input while in < last */
     unsigned char FAR *out;     /* local strm->next_out */
+    unsigned char FAR *beg;     /* inflate()'s initial strm->next_out */
     unsigned char FAR *end;     /* while out < end, enough space available */
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* maximum distance from zlib header */
 #endif
+    unsigned wsize;             /* window size or zero if not using window */
+    unsigned whave;             /* valid bytes in the window */
+    unsigned wnext;             /* window write index */
+    unsigned char FAR *window;  /* allocated sliding window, if wsize != 0 */
     unsigned long hold;         /* local strm->hold */
     unsigned bits;              /* local strm->bits */
     code const FAR *lcode;      /* local strm->lencode */
@@ -74,11 +81,16 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
     state = (struct inflate_state FAR *)strm->state;
     in = strm->next_in;
     last = in + (strm->avail_in - 5);
-    out = state->window + state->wsize + state->wnext;
-    end = state->window + (state->wsize * 4) - MAX_MATCH;
+    out = strm->next_out;
+    beg = out - (start - strm->avail_out);
+    end = out + (strm->avail_out - 257);
 #ifdef INFLATE_STRICT
     dmax = state->dmax;
 #endif
+    wsize = state->wsize;
+    whave = state->whave;
+    wnext = state->wnext;
+    window = state->window;
     hold = state->hold;
     bits = state->bits;
     lcode = state->lencode;
@@ -95,15 +107,6 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
             hold += (unsigned long)(*in++) << bits;
             bits += 8;
         }
-        
-        if (out >= end) {
-            state->wnext = out - (state->window + state->wsize);
-            window_output_flush(strm);
-            out = state->window + state->wsize + state->wnext;
-            if (strm->avail_out == 0)
-                break;
-        }
-
         here = lcode[hold & lmask];
       dolen:
         op = (unsigned)(here.bits);
@@ -163,22 +166,76 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                 hold >>= op;
                 bits -= op;
                 Tracevv((stderr, "inflate:         distance %u\n", dist));
-
-                if (out - dist < ((state->window + state->wsize) - state->whave)) {
-                    if (state->sane) {
-                        strm->msg =
-                            (char *)"invalid distance too far back";
-                        state->mode = BAD;
-                        break;
+                op = (unsigned)(out - beg);     /* max distance in output */
+                if (dist > op) {                /* see if copy from window */
+                    op = dist - op;             /* distance back in window */
+                    if (op > whave) {
+                        if (state->sane) {
+                            strm->msg =
+                                (char *)"invalid distance too far back";
+                            state->mode = BAD;
+                            break;
+                        }
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+                        if (len <= op - whave) {
+                            do {
+                                *out++ = 0;
+                            } while (--len);
+                            continue;
+                        }
+                        len -= op - whave;
+                        do {
+                            *out++ = 0;
+                        } while (--op > whave);
+                        if (op == 0) {
+                            from = out - dist;
+                            do {
+                                *out++ = *from++;
+                            } while (--len);
+                            continue;
+                        }
+#endif
                     }
-                }
-
-                from = out - dist;
-                if (len > dist) {
-                    zmemcpy(out, from, dist);
-                    out +=dist;
-                    from += dist;
-                    len -= dist;
+                    from = window;
+                    if (wnext == 0) {           /* very common case */
+                        from += wsize - op;
+                        if (op < len) {         /* some from window */
+                            len -= op;
+                            do {
+                                *out++ = *from++;
+                            } while (--op);
+                            from = out - dist;  /* rest from output */
+                        }
+                    }
+                    else if (wnext < op) {      /* wrap around window */
+                        from += wsize + wnext - op;
+                        op -= wnext;
+                        if (op < len) {         /* some from end of window */
+                            len -= op;
+                            do {
+                                *out++ = *from++;
+                            } while (--op);
+                            from = window;
+                            if (wnext < len) {  /* some from start of window */
+                                op = wnext;
+                                len -= op;
+                                do {
+                                    *out++ = *from++;
+                                } while (--op);
+                                from = out - dist;      /* rest from output */
+                            }
+                        }
+                    }
+                    else {                      /* contiguous in window */
+                        from += wnext - op;
+                        if (op < len) {         /* some from window */
+                            len -= op;
+                            do {
+                                *out++ = *from++;
+                            } while (--op);
+                            from = out - dist;  /* rest from output */
+                        }
+                    }
                     while (len > 2) {
                         *out++ = *from++;
                         *out++ = *from++;
@@ -188,11 +245,22 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                     if (len) {
                         *out++ = *from++;
                         if (len > 1)
-                            *out++ = *from;
+                            *out++ = *from++;
                     }
-                } else {
-                    zmemcpy(out, from, len);
-                    out += len;
+                }
+                else {
+                    from = out - dist;          /* copy direct from output */
+                    do {                        /* minimum length is three */
+                        *out++ = *from++;
+                        *out++ = *from++;
+                        *out++ = *from++;
+                        len -= 3;
+                    } while (len > 2);
+                    if (len) {
+                        *out++ = *from++;
+                        if (len > 1)
+                            *out++ = *from++;
+                    }
                 }
             }
             else if ((op & 64) == 0) {          /* 2nd level distance code */
@@ -219,7 +287,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
             state->mode = BAD;
             break;
         }
-    } while (in < last);
+    } while (in < last && out < end);
 
     /* return unused bytes (on entry, bits < 8, so in won't go too far back) */
     len = bits >> 3;
@@ -229,10 +297,10 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
 
     /* update state and return */
     strm->next_in = in;
+    strm->next_out = out;
     strm->avail_in = (unsigned)(in < last ? 5 + (last - in) : 5 - (in - last));
-
-    state->wnext = out - (state->window + state->wsize);
-
+    strm->avail_out = (unsigned)(out < end ?
+                                 257 + (end - out) : 257 - (out - end));
     state->hold = hold;
     state->bits = bits;
     return;

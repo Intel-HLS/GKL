@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (Ljava/lang/Class;Ljava/lang/Class;ZIZ)V
  */
 JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
-(JNIEnv *, jclass, jclass, jclass, jboolean, jint, jboolean);
+(JNIEnv *, jclass, jclass, jclass, jboolean, jint);
 
 /*
  * Class:     com_intel_gkl_pairhmm_IntelPairHmm

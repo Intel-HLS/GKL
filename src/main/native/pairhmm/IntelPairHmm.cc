@@ -13,12 +13,10 @@
   #include "avx512_impl.h"
 #endif
 #include "Context.h"
-#include "shacc_pairhmm.h"
 #include "JavaData.h"
 
 bool g_use_double;
 int g_max_threads;
-bool g_use_fpga;
 
 Context<float> g_ctxf;
 Context<double> g_ctxd;
@@ -33,7 +31,7 @@ double (*g_compute_full_prob_double)(testcase *tc);
  */
 JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
 (JNIEnv* env, jclass cls, jclass readDataHolder, jclass haplotypeDataHolder,
- jboolean use_double, jint max_threads, jboolean use_fpga)
+ jboolean use_double, jint max_threads)
 {
   DBG("Enter");
 
@@ -61,7 +59,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
   }
 #endif
 
-  g_use_fpga = use_fpga;
 
   // enable FTZ
   if (_MM_GET_FLUSH_ZERO_MODE() != _MM_FLUSH_ZERO_ON) {
@@ -110,12 +107,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
   
   //==================================================================
   // calcutate pairHMM
-  shacc_pairhmm::Batch batch;
-  bool batch_valid = false;
-  if (g_use_fpga && !g_use_double) {
-    batch = javaData.getBatch();
-    batch_valid = shacc_pairhmm::calculate(batch);
-  }
 
 #ifdef _OPENMP
   #pragma omp parallel for schedule(dynamic, 1) num_threads(g_max_threads)
@@ -123,8 +114,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
   for (int i = 0; i < testcases.size(); i++) {
     double result_final = 0;
 
-    float result_float = g_use_double ? 0.0f : 
-      batch_valid ? batch.results[i] : g_compute_full_prob_float(&testcases[i]);
+    float result_float = g_use_double ? 0.0f : g_compute_full_prob_float(&testcases[i]);
 
     if (result_float < MIN_ACCEPTED) {
       double result_double = g_compute_full_prob_double(&testcases[i]);

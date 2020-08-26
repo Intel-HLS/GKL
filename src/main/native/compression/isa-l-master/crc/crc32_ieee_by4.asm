@@ -74,7 +74,7 @@ section .text
 %endif
 
 align 16
-global	crc32_ieee_by4:function
+mk_global 	crc32_ieee_by4, function
 crc32_ieee_by4:
 
 	not arg1_low32

@@ -1,5 +1,5 @@
 /* crc32.c -- compute the CRC-32 of a data stream
- * Copyright (C) 1995-2006, 2010, 2011, 2012 Mark Adler
+ * Copyright (C) 1995-2006, 2010, 2011, 2012, 2016 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  *
  * Thanks to Rodney Brown <rbrown64@csc.com.au> for his contribution of faster
@@ -36,9 +36,9 @@
 #endif
 #ifdef BYFOUR
    local unsigned long crc32_little OF((unsigned long,
-                        const unsigned char FAR *, unsigned));
+                        const unsigned char FAR *, z_size_t));
    local unsigned long crc32_big OF((unsigned long,
-                        const unsigned char FAR *, unsigned));
+                        const unsigned char FAR *, z_size_t));
 #  define TBLS 8
 #else
 #  define TBLS 1
@@ -197,13 +197,12 @@ const z_crc_t FAR * ZEXPORT get_crc_table()
 /* ========================================================================= */
 #define DO1 crc = crc_table[0][((int)crc ^ (*buf++)) & 0xff] ^ (crc >> 8)
 #define DO8 DO1; DO1; DO1; DO1; DO1; DO1; DO1; DO1
-#define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-unsigned long ZEXPORT crc32(crc, buf, len)
+unsigned long ZEXPORT crc32_z(crc, buf, len)
     unsigned long crc;
     const unsigned char FAR *buf;
-    uInt len;
+    z_size_t len;
 {
     if (buf == Z_NULL) return 0UL;
 
@@ -224,23 +223,23 @@ unsigned long ZEXPORT crc32(crc, buf, len)
     }
 #endif /* BYFOUR */
     crc = crc ^ 0xffffffffUL;
-
-#ifdef CRC32_UNROLL_LESS
-    while (len >= 4) {
-        DO4;
-        len -= 4;
-    }
-#else
     while (len >= 8) {
         DO8;
         len -= 8;
     }
-#endif
-
     if (len) do {
         DO1;
     } while (--len);
     return crc ^ 0xffffffffUL;
+}
+
+/* ========================================================================= */
+unsigned long ZEXPORT crc32(crc, buf, len)
+    unsigned long crc;
+    const unsigned char FAR *buf;
+    uInt len;
+{
+    return crc32_z(crc, buf, len);
 }
 
 #ifdef BYFOUR
@@ -267,7 +266,7 @@ unsigned long ZEXPORT crc32(crc, buf, len)
 local unsigned long crc32_little(crc, buf, len)
     unsigned long crc;
     const unsigned char FAR *buf;
-    unsigned len;
+    z_size_t len;
 {
     register z_crc_t c;
     register const z_crc_t FAR *buf4;
@@ -280,14 +279,10 @@ local unsigned long crc32_little(crc, buf, len)
     }
 
     buf4 = (const z_crc_t FAR *)(const void FAR *)buf;
-
-#ifndef CRC32_UNROLL_LESS
     while (len >= 32) {
         DOLIT32;
         len -= 32;
     }
-#endif
-
     while (len >= 4) {
         DOLIT4;
         len -= 4;
@@ -311,7 +306,7 @@ local unsigned long crc32_little(crc, buf, len)
 local unsigned long crc32_big(crc, buf, len)
     unsigned long crc;
     const unsigned char FAR *buf;
-    unsigned len;
+    z_size_t len;
 {
     register z_crc_t c;
     register const z_crc_t FAR *buf4;
@@ -445,37 +440,3 @@ uLong ZEXPORT crc32_combine64(crc1, crc2, len2)
 {
     return crc32_combine_(crc1, crc2, len2);
 }
-
-#include "deflate.h"
-#include "crc_folding.h"
-
-ZLIB_INTERNAL void crc_reset(deflate_state *const s)
-{
-#ifdef HAVE_PCLMULQDQ
-    if (x86_cpu_has_pclmulqdq) {
-        crc_fold_init(s->crc0);
-    }
-#endif
-    s->strm->adler = crc32(0L, Z_NULL, 0);
-}
-
-ZLIB_INTERNAL void crc_finalize(deflate_state *const s)
-{
-#ifdef HAVE_PCLMULQDQ
-    if (x86_cpu_has_pclmulqdq)
-        s->strm->adler = crc_fold_512to32(s->crc0);
-#endif
-}
-
-ZLIB_INTERNAL void copy_with_crc(z_streamp strm, Bytef *dst, long size)
-{
-#ifdef HAVE_PCLMULQDQ
-    if (x86_cpu_has_pclmulqdq) {
-        crc_fold_copy(strm->state->crc0, dst, strm->next_in, size);
-        return;
-    }
-#endif
-    zmemcpy(dst, strm->next_in, size);
-    strm->adler = crc32(strm->adler, dst, size);
-}
-

@@ -201,10 +201,10 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
     jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
     jbyte* next_out = (jbyte*)env->GetPrimitiveArrayCritical(outputBuffer, 0);
 
-    lz_stream->next_in = (UINT8*)(next_in);
+    lz_stream->next_in = (uint8_t*) (next_in);
     lz_stream->avail_in = inputBufferLength;
     lz_stream->end_of_stream = endOfStream;
-    lz_stream->next_out = (UINT8*) (next_out);
+    lz_stream->next_out = (uint8_t*) (next_out);
     lz_stream->avail_out = outputBufferLength ;
 
     int bytes_in = inputBufferLength;

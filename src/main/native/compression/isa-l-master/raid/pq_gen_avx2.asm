@@ -126,7 +126,7 @@ default rel
 section .text
 
 align 16
-global pq_gen_avx2:function
+mk_global  pq_gen_avx2, function
 func(pq_gen_avx2)
 	FUNC_SAVE
 	sub	vec, 3			;Keep as offset to last source

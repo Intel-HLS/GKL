@@ -1,6 +1,40 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  Copyright(c) 2011-2018 Intel Corporation All rights reserved.
+;
+;  Redistribution and use in source and binary forms, with or without
+;  modification, are permitted provided that the following conditions
+;  are met:
+;    * Redistributions of source code must retain the above copyright
+;      notice, this list of conditions and the following disclaimer.
+;    * Redistributions in binary form must reproduce the above copyright
+;      notice, this list of conditions and the following disclaimer in
+;      the documentation and/or other materials provided with the
+;      distribution.
+;    * Neither the name of Intel Corporation nor the names of its
+;      contributors may be used to endorse or promote products derived
+;      from this software without specific prior written permission.
+;
+;  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+;  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+;  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+;  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+;  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+;  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+;  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+;  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+;  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+;  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+;  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 %include "reg_sizes.asm"
 %include "lz0a_const.asm"
 %include "data_struct2.asm"
+%include "huffman.asm"
+
+
+%define USE_HSWNI
+%define ARCH 06
 
 %ifdef HAVE_AS_KNOWS_AVX512
 %ifidn __OUTPUT_FORMAT__, win64
@@ -24,10 +58,11 @@
 
 %define f_i rax
 %define file_start rbp
-%define next_byte r9
-%define encode_size r10
+%define tmp r9
+%define tmp2 r10
 %define prev_len r11
 %define prev_dist r12
+%define f_i_orig r13
 
 %define hash_table level_buf + _hash_map_hash_table
 
@@ -65,7 +100,7 @@
 %define zbswap zmm31
 
 %ifidn __OUTPUT_FORMAT__, win64
-%define stack_size  10*16 + 4 * 8 + 8
+%define stack_size  10*16 + 6 * 8 + 8
 %define func(x) proc_frame x
 
 %macro FUNC_SAVE 0
@@ -84,6 +119,7 @@
 	save_reg	rdi, 10*16 + 1*8
 	save_reg	rbp, 10*16 + 2*8
 	save_reg	r12, 10*16 + 3*8
+	save_reg	r13, 10*16 + 4*8
 	end_prolog
 %endm
 
@@ -99,10 +135,11 @@
 	vmovdqa	xmm14, [rsp + 8*16]
 	vmovdqa	xmm15, [rsp + 9*16]
 
-	mov	[rsp + 10*16 + 0*8], rsi
-	mov	[rsp + 10*16 + 1*8], rdi
-	mov	[rsp + 10*16 + 2*8], rbp
-	mov	[rsp + 10*16 + 3*8], r12
+	mov	rsi, [rsp + 10*16 + 0*8]
+	mov	rdi, [rsp + 10*16 + 1*8]
+	mov	rbp, [rsp + 10*16 + 2*8]
+	mov	r12, [rsp + 10*16 + 3*8]
+	mov	r13, [rsp + 10*16 + 4*8]
 	add	rsp, stack_size
 %endm
 %else
@@ -110,9 +147,11 @@
 %macro FUNC_SAVE 0
 	push	rbp
 	push	r12
+	push	r13
 %endm
 
 %macro FUNC_RESTORE 0
+	pop	r13
 	pop	r12
 	pop	rbp
 %endm
@@ -121,12 +160,17 @@
 %define VECT_SIZE 16
 %define HASH_BYTES 2
 
+[bits 64]
+default rel
+section .text
+
 global gen_icf_map_lh1_06
 func(gen_icf_map_lh1_06)
 	FUNC_SAVE
 
 	mov	file_start, [stream + _next_in]
 	mov	f_i %+ d, dword [stream + _total_in]
+	mov	f_i_orig, f_i
 
 	sub	file_start, f_i
 	add	f_i_end, f_i
@@ -134,30 +178,28 @@ func(gen_icf_map_lh1_06)
 	jge	end_main
 
 ;; Prep for main loop
+	vpbroadcastd zdist_mask, dword [stream + _internal_state_dist_mask]
+	vpbroadcastd zhash_mask, dword [stream + _internal_state_hash_mask]
+	mov	tmp, stream
 	mov	level_buf, [stream + _level_buf]
 	sub	f_i_end, LA
 	vmovdqu64 zdatas_perm, [datas_perm]
-	vmovdqu64 zdatas_shuf, [datas_shuf]
-	vmovdqu64 zhash_prod, [hash_prod]
-	vmovdqu64 zhash_mask, [hash_mask]
+	vbroadcasti32x8 zdatas_shuf, [datas_shuf]
+	vpbroadcastd zhash_prod, [hash_prod]
 	vmovdqu64 zincrement, [increment]
 	vmovdqu64 zqword_shuf, [qword_shuf]
-	vmovdqu64 zdatas_perm2, [datas_perm2]
-	vmovdqu64 zdatas_perm3, [datas_perm3]
-	vmovdqu64 zones, [ones]
-	vmovdqu64 zbswap, [bswap_shuf]
-	vmovdqu64 zthirty, [thirty]
+	vbroadcasti64x2 zdatas_perm2, [datas_perm2]
+	vbroadcasti64x2 zdatas_perm3, [datas_perm3]
+	vpbroadcastd zones, [ones]
+	vbroadcasti32x4 zbswap, [bswap_shuf]
+	vpbroadcastd zthirty, [thirty]
 	vmovdqu64 zrot_left, [drot_left]
-	vmovdqu64 zdist_mask, [dist_mask]
-	vmovdqu64 zshortest_matches, [shortest_matches]
-	vmovdqu64 ztwofiftyfour, [twofiftyfour]
-	vmovdqu64 znull_dist_syms, [null_dist_syms]
+	vpbroadcastd zshortest_matches, [shortest_matches]
+	vpbroadcastd ztwofiftyfour, [twofiftyfour]
+	vpbroadcastd znull_dist_syms, [null_dist_syms]
 	kxorq	k0, k0, k0
 	kmovq	k1, [k_mask_1]
 	kmovq	k2, [k_mask_2]
-
-	xor	prev_len, prev_len
-	xor	prev_dist, prev_dist
 
 ;; Process first byte
 	vmovd	zhashes %+ x, dword [f_i + file_start]
@@ -165,6 +207,54 @@ func(gen_icf_map_lh1_06)
 	vpmaddwd zhashes, zhashes, zhash_prod
 	vpandd	zhashes, zhashes, zhash_mask
 	vmovd	hash %+ d, zhashes %+ x
+
+	cmp	byte [tmp + _internal_state_has_hist], IGZIP_NO_HIST
+	jne	.has_hist
+	;; No history, the byte is a literal
+	xor	prev_len, prev_len
+	xor	prev_dist, prev_dist
+	mov	byte [tmp + _internal_state_has_hist], IGZIP_HIST
+	jmp .byte_processed
+
+.has_hist:
+	;; History exists, need to set prev_len and prev_dist accordingly
+	lea	next_in, [f_i + file_start]
+
+	;; Determine match lookback distance
+	xor	tmp, tmp
+	mov	tmp %+ w, f_i %+ w
+	dec	tmp
+	sub	tmp %+ w, word [hash_table + HASH_BYTES * hash]
+
+	vmovd	tmp2 %+ d, zdist_mask %+ x
+	and	tmp %+ d, tmp2 %+ d
+	neg	tmp
+
+	;; Check first 8 bytes of match
+	mov	prev_len, [next_in]
+	xor	prev_len, [next_in + tmp - 1]
+	neg	tmp
+
+	;; Set prev_dist
+%ifidn arg1, rcx
+	mov	tmp2, rcx
+%endif
+	;; The third register is unused on Haswell and later,
+	;; This line will not work on previous architectures
+	get_dist_icf_code tmp, prev_dist, tmp
+
+%ifidn arg1, rcx
+	mov	rcx, tmp2
+%endif
+
+	;; Set prev_len
+	xor	tmp2, tmp2
+	tzcnt	prev_len, prev_len
+	shr	prev_len, 3
+	cmp	prev_len, MIN_DEF_MATCH
+	cmovl	prev_len, tmp2
+
+.byte_processed:
 	mov	word [hash_table + HASH_BYTES * hash], f_i %+ w
 
 	add	f_i, 1
@@ -207,9 +297,9 @@ func(gen_icf_map_lh1_06)
 
 	sub	f_i_end, VECT_SIZE
 	cmp	f_i, f_i_end
-	jg	loop1_end
+	jg	.loop1_end
 
-loop1:
+.loop1:
 	lea	next_in, [f_i + file_start]
 
 ;; Calculate look back dists
@@ -320,9 +410,9 @@ loop1:
 	add	matches_next, ICF_CODE_BYTES * VECT_SIZE
 
 	cmp	f_i, f_i_end
-	jle	loop1
+	jle	.loop1
 
-loop1_end:
+.loop1_end:
 	lea	next_in, [f_i + file_start]
 
 ;; Calculate look back dists
@@ -338,6 +428,19 @@ loop1_end:
 	kxnorq	k7, k7, k7
 	vpgatherdq zlens1 {k6}, [next_in + zdists %+ y]
 	vpgatherdq zlens2 {k7}, [next_in + zdists2 %+ y]
+
+;; Restore last update hash value
+	vextracti32x4 zdists2 %+ x, zdists, 3
+	vpextrd tmp %+ d, zdists2 %+ x, 3
+	add	tmp %+ d, f_i %+ d
+
+	vmovd	zhashes %+ x, dword [f_i + file_start + VECT_SIZE - 1]
+	vpmaddwd zhashes %+ x, zhashes %+ x, zhash_prod %+ x
+	vpmaddwd zhashes %+ x, zhashes %+ x, zhash_prod %+ x
+	vpandd	zhashes %+ x, zhashes %+ x, zhash_mask %+ x
+	vmovd	hash %+ d, zhashes %+ x
+
+	mov	word [hash_table + HASH_BYTES * hash], tmp %+ w
 
 ;; Calculate dist_icf_code
 	vpaddd	zdists, zdists, zones
@@ -400,49 +503,27 @@ loop1_end:
 
 ;;Store zdists
 	vmovdqu64 [matches_next], zdists
+	add	f_i, VECT_SIZE
 
 end_main:
+	sub	f_i, f_i_orig
+	sub	f_i, 1
+%ifnidn f_i, rax
+	mov	rax, f_i
+%endif
 	FUNC_RESTORE
 	ret
 
+endproc_frame
+
 section .data
 align 64
+;; 64 byte data
 datas_perm:
 	dq 0x0, 0x1, 0x0, 0x1, 0x1, 0x2, 0x1, 0x2
-datas_perm2:
-	dq 0x0, 0x1, 0x0, 0x1, 0x0, 0x1, 0x0, 0x1
-datas_perm3:
-	dq 0x1, 0x2, 0x1, 0x2, 0x1, 0x2, 0x1, 0x2
 drot_left:
 	dd 0xf, 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6
 	dd 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe
-datas_shuf:
-	db 0x0, 0x1, 0x2, 0x3
-	db 0x1, 0x2, 0x3, 0x4
-	db 0x2, 0x3, 0x4, 0x5
-	db 0x3, 0x4, 0x5, 0x6
-	db 0x4, 0x5, 0x6, 0x7
-	db 0x5, 0x6, 0x7, 0x8
-	db 0x6, 0x7, 0x8, 0x9
-	db 0x7, 0x8, 0x9, 0xa
-	db 0x0, 0x1, 0x2, 0x3
-	db 0x1, 0x2, 0x3, 0x4
-	db 0x2, 0x3, 0x4, 0x5
-	db 0x3, 0x4, 0x5, 0x6
-	db 0x4, 0x5, 0x6, 0x7
-	db 0x5, 0x6, 0x7, 0x8
-	db 0x6, 0x7, 0x8, 0x9
-	db 0x7, 0x8, 0x9, 0xa
-bswap_shuf:
-	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
-	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
-	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
-	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
-	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
-
 qword_shuf:
 	db 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7
 	db 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8
@@ -453,51 +534,47 @@ qword_shuf:
 	db 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd
 	db 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe
 	db 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf
-
-%define PROD1 0xE84B
-%define PROD2 0x97B1
-
-hash_prod:
-	dw PROD1, PROD2, PROD1, PROD2, PROD1, PROD2, PROD1, PROD2
-	dw PROD1, PROD2, PROD1, PROD2, PROD1, PROD2, PROD1, PROD2
-	dw PROD1, PROD2, PROD1, PROD2, PROD1, PROD2, PROD1, PROD2
-	dw PROD1, PROD2, PROD1, PROD2, PROD1, PROD2, PROD1, PROD2
-null_dist_syms:
-	dd LIT, LIT, LIT, LIT, LIT, LIT, LIT, LIT
-	dd LIT, LIT, LIT, LIT, LIT, LIT, LIT, LIT
+datas_shuf:
+	db 0x0, 0x1, 0x2, 0x3
+	db 0x1, 0x2, 0x3, 0x4
+	db 0x2, 0x3, 0x4, 0x5
+	db 0x3, 0x4, 0x5, 0x6
+	db 0x4, 0x5, 0x6, 0x7
+	db 0x5, 0x6, 0x7, 0x8
+	db 0x6, 0x7, 0x8, 0x9
+	db 0x7, 0x8, 0x9, 0xa
 increment:
 	dd 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7
 	dd 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf
-ones:
-	dd 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1
-	dd 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1
-thirty:
-	dd 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e
-	dd 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e
-twofiftyfour:
-	dd 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe
-	dd 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe
-dist_mask:
-	dd D-1, D-1, D-1, D-1, D-1, D-1, D-1, D-1
-	dd D-1, D-1, D-1, D-1, D-1, D-1, D-1, D-1
-hash_mask:
-	dd HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK
-	dd HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK
-	dd HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK
-	dd HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK, HASH_MAP_HASH_MASK
-lit_len_mask:
-	dd LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK
-	dd LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK
-	dd LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK
-	dd LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK, LIT_LEN_MASK
-shortest_matches:
-	dd MIN_DEF_MATCH, MIN_DEF_MATCH, MIN_DEF_MATCH, MIN_DEF_MATCH
-	dd MIN_DEF_MATCH, MIN_DEF_MATCH, MIN_DEF_MATCH, MIN_DEF_MATCH
-	dd MIN_DEF_MATCH, MIN_DEF_MATCH, MIN_DEF_MATCH, MIN_DEF_MATCH
-	dd MIN_DEF_MATCH, MIN_DEF_MATCH, MIN_DEF_MATCH, MIN_DEF_MATCH
 
+;; 16 byte data
+datas_perm2:
+	dq 0x0, 0x1
+datas_perm3:
+	dq 0x1, 0x2
+bswap_shuf:
+	db 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00
+	db 0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08
+;; 8 byte data
 k_mask_1:
 	dq 0xaaaaaaaaaaaaaaaa
 k_mask_2:
 	dq 0x7fff
+;; 4 byte data
+null_dist_syms:
+	dd LIT
+%define PROD1 0xE84B
+%define PROD2 0x97B1
+hash_prod:
+	dw PROD1, PROD2
+ones:
+	dd 0x1
+thirty:
+	dd 0x1e
+twofiftyfour:
+	dd 0xfe
+lit_len_mask:
+	dd LIT_LEN_MASK
+shortest_matches:
+	dd MIN_DEF_MATCH
 %endif

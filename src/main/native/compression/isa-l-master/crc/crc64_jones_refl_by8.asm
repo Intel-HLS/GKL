@@ -65,7 +65,7 @@ section .text
 
 
 align 16
-global crc64_jones_refl_by8:function
+mk_global crc64_jones_refl_by8, function
 crc64_jones_refl_by8:
         ; uint64_t c = crc ^ 0xffffffff,ffffffffL;
 	not arg1
