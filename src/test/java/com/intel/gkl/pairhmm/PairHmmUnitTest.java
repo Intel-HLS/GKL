@@ -242,7 +242,7 @@ public class PairHmmUnitTest {
                 readDataArray[batchSize].deletionGOP = normalize(s.next().getBytes());
                 readDataArray[batchSize].overallGCP = normalize(s.next().getBytes());
                 expectedResult[batchSize] = s.nextDouble();
-                log.info(String.format("expected[%d] = %e %n", batchSize, expectedResult[batchSize]));
+                log.info(String.format("expected[%d] = %e ", batchSize, expectedResult[batchSize]));
                 batchSize++;
 
                 if (batchSize == maxBatchSize) {
