@@ -10,6 +10,8 @@ import org.broadinstitute.gatk.nativebindings.pairhmm.ReadDataHolder;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,6 +20,7 @@ import java.util.Scanner;
 
 public class PairHmmUnitTest {
     static final String pairHMMTestData = IntelGKLUtils.pathToTestResource("pairhmm-testdata.txt");
+    private static final Logger log = LogManager.getLogger(PairHmmUnitTest.class);
 
     @Test(enabled = true)
     public void simpleTest() {
@@ -190,8 +193,9 @@ public class PairHmmUnitTest {
                 e.printStackTrace();
                 Assert.fail("Unexpected exception");
             }
-
-            s.close();
+            finally{
+                if(s!=null) s.close();
+            }
             pairHmm.done();
         }
     }
@@ -238,7 +242,7 @@ public class PairHmmUnitTest {
                 readDataArray[batchSize].deletionGOP = normalize(s.next().getBytes());
                 readDataArray[batchSize].overallGCP = normalize(s.next().getBytes());
                 expectedResult[batchSize] = s.nextDouble();
-                System.out.printf("expected[%d] = %e\n", batchSize, expectedResult[batchSize]);
+                log.info(String.format("expected[%d] = %e %n", batchSize, expectedResult[batchSize]));
                 batchSize++;
 
                 if (batchSize == maxBatchSize) {
@@ -247,7 +251,7 @@ public class PairHmmUnitTest {
 
                     // check result
                     for (int i = 0; i < batchSize; i++) {
-                        System.out.printf("result[%d] = %e, expected = %e", i, likelihoodArray[i], expectedResult[i]);
+                        log.info(String.format("result[%d] = %e, expected = %e", i, likelihoodArray[i], expectedResult[i]));
                         Assert.assertEquals(likelihoodArray[i], expectedResult[i], 1e-5, "Likelihood not in expected range.");
                     }
                     batchSize = 0;
@@ -258,9 +262,10 @@ public class PairHmmUnitTest {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail("Unexpected exception");
+        } finally{
+            if( s!=null ) s.close();
         }
 
-        s.close();
         pairHmm.done();
     }
 
