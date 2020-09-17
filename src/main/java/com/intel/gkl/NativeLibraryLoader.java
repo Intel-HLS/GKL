@@ -36,7 +36,7 @@ public final class NativeLibraryLoader {
     }
     // Check libraryName is as expected
     private static boolean checkLibraryName(String libName){
-       //
+       // Check boundaries for input
        if(libName == null || libName.length() == 0 || libName.length() > MAX_PATH) {
             logger.warn(" Unexpected library name");
             return false;

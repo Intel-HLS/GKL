@@ -36,13 +36,13 @@ import htsjdk.samtools.util.zip.DeflaterFactory;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.zip.Inflater;
 import java.util.zip.Deflater;
 
 public class DeflaterUnitTest {
 
-    final Random rng = new Random();
+    final SecureRandom rng = new SecureRandom();
     private final static Logger log = LogManager.getLogger(DeflaterUnitTest.class);
 
     public void randomDNA(byte[] array) {
@@ -89,7 +89,7 @@ public class DeflaterUnitTest {
                     compressedBytes = deflater.deflate(compressed, 0, compressed.length);
                 }
 
-                log.info(String.format("%d bytes compressed to %d bytes : %2.2f%% compression %n",
+                log.info(String.format("%d bytes compressed to %d bytes : %2.2f%% compression",
                         LEN, compressedBytes, (100.0 - 100.0 * compressedBytes / LEN)));
 
                 long totalTime = 0;
@@ -101,7 +101,7 @@ public class DeflaterUnitTest {
                     final long start = System.currentTimeMillis();
                     inflater.inflate(result, 0, LEN);
                     totalTime = System.currentTimeMillis() - start;
-                    log.info(String.format("%d %n", totalTime));
+                    log.info(String.format("%d ", totalTime));
 
 
                 } catch (Exception e) {
