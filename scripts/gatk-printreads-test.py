@@ -3,10 +3,12 @@ import logging
 import os
 import subprocess
 import sys
+import argparse
+import shlex
 
 logger = None
 
-def initLogger(filename):
+def init_logger(filename):
     global logger
     if logger == None:
         logger = logging.getLogger()
@@ -25,51 +27,77 @@ def initLogger(filename):
     sh.setFormatter(formatter)
     logger.addHandler(sh)
 
-def run(cmd, env='', logfile='output.log'):
+
+def run(cmd, logfile='output.log'):
     "run shell command"
-    cmd = '{} /usr/bin/time -avo {} {} &>> {}'.format(env, logfile, cmd, logfile)
     logger.info('Directory: ' + os.getcwd())
     logger.info('Running: ' + cmd)
-    subprocess.call(cmd, shell=True)
+    cmd = ' /usr/bin/time -avo {} {} '.format(logfile, cmd)
+    subprocess.call(shlex.split(cmd), shell=False)
+
 
 def newdir(name):
     "create unique directory and chdir to it"
-    dir = name
+    dir_name = name
     try:
-        os.mkdir(dir)
+        os.mkdir(dir_name)
     except:
-        id = 1
+        level_id = 1
         while True:
             try:
-                dir = '{}.{}'.format(name, id)
-                os.mkdir(dir)
+                dir_name = '{}.{}'.format(name, level_id)
+                os.mkdir(dir_name)
                 break
             except:
-                id += 1
-    os.chdir(dir)
+                level_id += 1
+    os.chdir(dir_name)
+
 
 def main(args):
-    input = os.path.abspath(args[0])
-    gatk = os.path.abspath(args[1])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gatk', default=argparse.SUPPRESS, help="input path to gatk tool")
+    parser.add_argument('--input', default=argparse.SUPPRESS, help="input path to BAM file")
+
+    args = parser.parse_args()
+    if 'help' in args:
+        print('Usage: python gatk-printreads-test.py --gatk <path to gatk> --input <path to bam file>')
+    if 'gatk' in args:
+        gatk_path = args.gatk
+    else:
+        gatk_path = "/tmp/gatk/gatk"
+    print('Setting gatk_path to {}'.format(gatk_path))
+
+    if 'input' in args:
+        input_path = args.input
+    else:
+        input_path = "../src/test/resources/HiSeq.1mb.1RG.2k_lines.bam"
+    print('Setting input bam to {}'.format(input_path))
+
+    gatk = os.path.abspath(gatk_path)
+    input_file = os.path.abspath(input_path)
     levels = [1, 5, 9]
 
     newdir('test')
-    initLogger('run.log')
+    init_logger('run.log')
 
     for level in levels:
         # create test dir
         newdir('level-{}'.format(level))
         output = 'output.bam'
-        
+
         # run PrintReads
-        cmd = '{} PrintReads --addOutputSAMProgramRecord=false --input {} --output output.bam'.format(gatk, input, output)
-        env = 'JAVA_OPTS=-Dsamjdk.compression_level={}'.format(level)
-        run(cmd, env)
-        
+        env = '--java-options "-Dsamjdk.compression_level={}"'.format(level)
+        cmd = '{} {} PrintReads --input {} --output output.bam'.format(gatk, env, input_file, output)
+        run(cmd)
+
         # run CompareSAMs
-        cmd = '{} CompareSAMs {} {}'.format(gatk, input, output)
+        cmd = '{} {} CompareSAMs {} {}'.format(gatk, env, input_file, output)
         run(cmd)
         os.chdir('..')
 
+
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    if len(sys.argv) < 5:
+        main(sys.argv[1:])
+    else:
+        print('Usage: python gatk-printreads-test.py --help>')
