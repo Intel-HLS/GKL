@@ -34,20 +34,22 @@ import org.testng.annotations.Test;
 import com.intel.gkl.compression.IntelInflater;
 import htsjdk.samtools.util.zip.DeflaterFactory;
 
-
-
-import java.util.Random;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import java.security.SecureRandom;
 import java.util.zip.Inflater;
 import java.util.zip.Deflater;
 
 public class DeflaterUnitTest {
 
+    final SecureRandom rng = new SecureRandom();
+    private final static Logger log = LogManager.getLogger(DeflaterUnitTest.class);
+
     public void randomDNA(byte[] array) {
         final byte[] DNA_CHARS = {'A', 'C', 'G', 'T'};
-        final Random rng = new Random();
 
         for (int i = 0; i < array.length; i++) {
-            array[i] = DNA_CHARS[rng.nextInt(4)];
+            array[i] = DNA_CHARS[this.rng.nextInt(DNA_CHARS.length)];
         }
     }
 
@@ -78,9 +80,6 @@ public class DeflaterUnitTest {
             Assert.assertTrue(isSupported);
             final IntelInflater inflater = new IntelInflater(true);
 
-            //Inflater inflater = new Inflater(true);
-
-
                 randomDNA(input);
                 deflater.setInput(input, 0, input.length);
                 deflater.finish();
@@ -90,8 +89,8 @@ public class DeflaterUnitTest {
                     compressedBytes = deflater.deflate(compressed, 0, compressed.length);
                 }
 
-                System.out.printf("%d bytes compressed to %d bytes : %2.2f%% compression\n",
-                        LEN, compressedBytes, 100.0 - 100.0 * compressedBytes / LEN);
+                log.info(String.format("%d bytes compressed to %d bytes : %2.2f%% compression",
+                        LEN, compressedBytes, (100.0 - 100.0 * compressedBytes / LEN)));
 
                 long totalTime = 0;
 
@@ -102,7 +101,7 @@ public class DeflaterUnitTest {
                     final long start = System.currentTimeMillis();
                     inflater.inflate(result, 0, LEN);
                     totalTime = System.currentTimeMillis() - start;
-                    System.out.printf("%d\n", totalTime);
+                    log.info(String.format("%d ", totalTime));
 
 
                 } catch (Exception e) {

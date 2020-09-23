@@ -39,9 +39,15 @@ import java.io.IOException;
  * Provides utilities used by the GKL library.
  */
 public final class IntelGKLUtils implements NativeLibrary {
-    private final static Logger logger = LogManager.getLogger(IntelGKLUtils.class);
-    private static final String NATIVE_LIBRARY_NAME = "gkl_utils";
-    private static boolean initialized = false;
+    private final static Logger logger;
+    private static final String NATIVE_LIBRARY_NAME;
+    private static boolean initialized;
+
+    static {
+        logger = LogManager.getLogger(IntelGKLUtils.class);
+        NATIVE_LIBRARY_NAME = "gkl_utils";
+        initialized = false;
+    }
 
     /**
      * Loads the native library, if it is supported on this platform. <p>

@@ -57,7 +57,7 @@ public class InflaterUnitTest {
                 final long start = System.currentTimeMillis();
                 inflater.inflate(finalbuffer, 0, inputbuffer.length);
                 totalTime = System.currentTimeMillis() - start;
-                System.out.printf("Level: %d, time: %d\n", i, totalTime);
+                log.info(String.format("Level: %d, time: %d", i, totalTime));
 
 
             } catch (java.util.zip.DataFormatException e) {
