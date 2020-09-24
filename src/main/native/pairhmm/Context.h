@@ -49,8 +49,9 @@ class ContextBase
     //Called only once per library load - don't bother optimizing with single fp
     static void initializeMatchToMatchProb()
     {
-      double LN10 = log(10);
-      double INV_LN10 = 1.0/LN10;
+      const double LN10 = 2.302585;      //log(10)
+      const double INV_LN10 = 0.434294;  //1.0/LN10
+     
       for (int i = 0, offset = 0; i <= MAX_QUAL; offset += ++i)
         for (int j = 0; j <= i; j++) {
           double log10Sum = approximateLog10SumLog10(-0.1*i, -0.1*j);
