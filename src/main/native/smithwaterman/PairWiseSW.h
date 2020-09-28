@@ -383,34 +383,35 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
         }
 
     }
-
+    int maxSize =  sizeof(p->cigar);
     int curSize = 0;
     for(i = newId; i >= 0; i--)
     {
-        int bytesWritten = sprintf(p->cigar + curSize, "%d", cigarArray[2 * i + 1]);
-        curSize += bytesWritten;
+        char state;
 
         switch(cigarArray[2 * i])
         {
             case MATCH:
-                sprintf(p->cigar + curSize, "M");
+                state = 'M';
                 break;
             case INSERT:
-                sprintf(p->cigar + curSize, "I");
+                state = 'I';
                 break;
             case DELETE:
-                sprintf(p->cigar + curSize, "D");
+                state = 'D';
                 break;
             case SOFTCLIP:
-                sprintf(p->cigar + curSize, "S");
+                state = 'S';
                 break;
             default:
-                sprintf(p->cigar + curSize, "R");
+                state = 'R';
                 break;
         }
-        curSize++;
+	// 4 is u16 + Char + Null; look into how to handle the error state  
+        if (curSize < (maxSize - 4)) 
+		curSize += snprintf(p->cigar + curSize, 4, "%d%c", cigarArray[2 * i + 1], state);
     }
-    p->cigarCount = strlen(p->cigar);
+    p->cigarCount = strnlen(p->cigar, maxSize);
 }
 
 
