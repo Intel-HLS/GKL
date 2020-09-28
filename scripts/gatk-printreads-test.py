@@ -56,7 +56,7 @@ def newdir(name):
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--gatk', default=argparse.SUPPRESS, help="input path to gatk tool")
-    parser.add_argument('--input', default=argparse.SUPPRESS, help="input path to BAM file")
+    parser.add_argument('--input', default=argparse.SUPPRESS,  help="input path to BAM file")
 
     args = parser.parse_args()
     if 'help' in args:
@@ -64,17 +64,23 @@ def main(args):
     if 'gatk' in args:
         gatk_path = args.gatk
     else:
-        gatk_path = "/tmp/gatk/gatk"
-    print('Setting gatk_path to {}'.format(gatk_path))
+        gatk_path = os.getcwd()+"/gatk"
 
     if 'input' in args:
         input_path = args.input
     else:
-        input_path = "../src/test/resources/HiSeq.1mb.1RG.2k_lines.bam"
-    print('Setting input bam to {}'.format(input_path))
+        input_path = os.getcwd()+"/input.bam"
 
     gatk = os.path.abspath(gatk_path)
+    if not os.path.isfile(gatk):
+        exit("Please specify a valid gatk file using the --gatk parameter.")
+    print('Setting gatk path as {}'.format(gatk_path))
+
     input_file = os.path.abspath(input_path)
+    if not os.path.isfile(input_file):
+        exit("Please specify a valid BAM file using the --input parameter.")
+    print('Setting input bam as {}'.format(input_path))
+
     levels = [1, 5, 9]
 
     newdir('test')
@@ -97,7 +103,7 @@ def main(args):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 5:
+    if len(sys.argv) < 6:
         main(sys.argv[1:])
     else:
-        print('Usage: python gatk-printreads-test.py --help>')
+        print('Usage: python gatk-printreads-test.py --gatk </path/to/gatk> --input <path/to/input.bam>')
