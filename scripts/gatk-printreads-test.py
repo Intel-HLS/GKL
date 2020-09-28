@@ -56,7 +56,7 @@ def newdir(name):
 def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--gatk', default=argparse.SUPPRESS, help="input path to gatk tool")
-    parser.add_argument('--input', default=argparse.SUPPRESS,  help="input path to BAM file")
+    parser.add_argument('--input', default=argparse.SUPPRESS, help="input path to BAM file")
 
     args = parser.parse_args()
     if 'help' in args:
