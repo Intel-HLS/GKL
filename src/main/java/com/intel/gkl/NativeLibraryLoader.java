@@ -91,7 +91,7 @@ public final class NativeLibraryLoader {
         final String resourcePath = "native/" +  systemLibraryName;
         final URL inputUrl = NativeLibraryLoader.class.getResource(resourcePath);
         if (inputUrl == null) {
-            logger.warn("Unable to find native library: " + resourcePath);
+            logger.warn(String.format("Unable to find native library: %s" , resourcePath));
             return false;
         }
         logger.info(String.format("Loading %s from %s", systemLibraryName, inputUrl.toString()));
