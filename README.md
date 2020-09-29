@@ -17,7 +17,7 @@ Kernels included:
   * Performance optimized Level 3 through 9 compression from Intel's [Open Source Technology Center](https://01.org/) [zlib](https://github.com/jtkukunas/zlib) library.
 
 # Building GKL
-GKL release binaries are built on CentOS 6 to enable running on most Linux distributions (see [holy-build-box](https://github.com/phusion/holy-build-box#problem-introduction) for a good discription of portability issues).
+GKL release binaries are built on CentOS 7, to enable running on most Linux distributions (see [holy-build-box](https://github.com/phusion/holy-build-box#problem-introduction) for a good discription of portability issues).
 
 ## Requirements
 * Java JDK 8
@@ -34,17 +34,18 @@ GKL release binaries are built on CentOS 6 to enable running on most Linux distr
 Run these commands to setup the build environment on CentOS:
 ```
 sudo yum install -y java-1.8.0-openjdk-devel git cmake patch libtool automake yasm zlib-devel centos-release-scl
-sudo yum install -y devtoolset-4-gcc-c++
-source scl_source enable devtoolset-4
+sudo yum install -y devtoolset-7-gcc-c++
+source scl_source enable devtoolset-7
 ```
 
 ## Build and Test
-After build requirements are met, clone, build, and test:
+After build requirements are met, clone, and build :
 ```
 git clone https://github.com/Intel-HLS/GKL.git
 cd GKL
-./gradlew test
+./gradlew build
 ```
+For more details check `build.sh`
 
 # License
 All code is licensed under the [MIT License](https://opensource.org/licenses/MIT), except:
