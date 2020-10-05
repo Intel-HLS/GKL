@@ -78,7 +78,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
     private int strategy;
     private boolean nowrap;
 
-    
+
      /**
      * Creates a new compressor using the specified compression level.
      * If 'nowrap' is true then the ZLIB header and checksum fields will
@@ -139,7 +139,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
             throw new NullPointerException("Input is null");
         }
         if(len <= 0) {
-            throw new NullPointerException("Input buffer length is zero.");
+            throw new NullPointerException("Input buffer length is less or equal zero.");
         }
 
         inputBuffer = b;
@@ -169,6 +169,12 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      */
     @Override
     public int deflate(byte[] b, int off, int len ) {
+        if(b == null) {
+            throw new NullPointerException("Input is null");
+        }
+        if(len <= 0) {
+            throw new NullPointerException("Input buffer length is less or equal zero.");
+        }
 
         return deflateNative(b, len);
     }

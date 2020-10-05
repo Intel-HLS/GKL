@@ -95,6 +95,13 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
     @Override
     public SWNativeAlignerResult align(byte[] refArray, byte[] altArray, SWParameters parameters, SWOverhangStrategy overhangStrategy)
     {
+        if(refArray == null)
+            throw new NullPointerException("Reference data array is null.");
+        if(altArray == null)
+            throw new NullPointerException("Alternate data array is null.");
+        if(parameters == null)
+            throw new NullPointerException("Parameter structure is null.");
+
         int intStrategy =  getStrategy(overhangStrategy);
         byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];
 
@@ -103,7 +110,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
         return new SWNativeAlignerResult(new String(cigar).trim(), offset);
     }
 
-    public int getStrategy(SWOverhangStrategy strategy)
+    public int getStrategy(SWOverhangStrategy strategy) //TODO: Check with GKL Team
     {
         int intStrategy = 0;
 
