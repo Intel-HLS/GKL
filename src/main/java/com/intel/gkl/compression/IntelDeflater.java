@@ -141,7 +141,10 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
         if(len <= 0) {
             throw new NullPointerException("Input buffer length is less or equal zero.");
         }
-
+        if(off < 0 || off > len )
+        {
+            throw new IndexOutOfBoundsException("Offset cannot be less then 0 and greater then length.");
+        }
         inputBuffer = b;
         inputBufferLength = len;
     }
@@ -189,7 +192,6 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
     public boolean finished() {
         return finished;
     }
-
     /**
      * Closes the compressor and discards any unprocessed input.
      * This method should be called when the compressor is no longer
