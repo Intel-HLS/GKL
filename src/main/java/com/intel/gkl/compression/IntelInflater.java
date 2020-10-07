@@ -28,7 +28,6 @@
 
 package com.intel.gkl.compression;
 
-import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
@@ -53,7 +52,6 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      */
     @Override
     public synchronized boolean load(File tempDir) {
-
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
             return false;
         }
@@ -114,13 +112,16 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      * @see IntelDeflater#needsInput
      */
     @Override
-    public void setInput(byte[] b, int off, int len) throws NullPointerException {
+    public void setInput(byte[] b, int off, int len) throws NullPointerException, IllegalArgumentException {
         if(lz_stream == 0) reset();
         if(b == null) {
             throw new NullPointerException("Input is null");
         }
-        if(len <= 0) {
-            throw new NullPointerException("Input buffer length is zero.");
+        if(off < 0 || off > b.length - len) {
+            throw new IllegalArgumentException("offset value is less than zero or exceeds permissible range");
+        }
+        if(len < 0) {
+            throw new IllegalArgumentException("length value is less than zero");
         }
         inputBuffer = b;
         inputBufferOffset = off;
@@ -141,7 +142,16 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      *         output buffer
      */
     @Override
-    public int inflate (byte[] b, int off, int len ) {
+    public int inflate (byte[] b, int off, int len ) throws NullPointerException, IllegalArgumentException {
+        if(b == null) {
+            throw new NullPointerException("Input is null");
+        }
+        if(off < 0 || off > b.length - len) {
+            throw new IllegalArgumentException("offset value is less than zero or exceeds permissible range");
+        }
+        if(len < 0) {
+            throw new IllegalArgumentException("length value is less than zero");
+        }
         return inflateNative(b, off, len);
     }
 
@@ -152,7 +162,10 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      * been reached
      */
     @Override
-    public int inflate (byte[] b ) {
+    public int inflate (byte[] b ) throws NullPointerException {
+        if(b == null) {
+            throw new NullPointerException("Input is null");
+        }
         return inflateNative( b, 0, b.length);
     }
 
