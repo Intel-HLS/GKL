@@ -183,9 +183,6 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
         if(b == null) {
             throw new NullPointerException("Input is null");
         }
-        if(off < 0 || off > b.length - len) {
-            throw new NullPointerException("Input offset is not valid.");
-        }
         if(len <= 0) {
             throw new NullPointerException("Input buffer length is zero.");
         }
