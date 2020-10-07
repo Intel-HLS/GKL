@@ -28,8 +28,9 @@
 
 package com.intel.gkl.compression;
 
-import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
@@ -39,8 +40,13 @@ import java.util.zip.Deflater;
  * Provides a native Deflater implementation accelerated for the Intel Architecture.
  */
 public final class IntelDeflater extends Deflater implements NativeLibrary {
+    private final static Logger logger;
     private static final String NATIVE_LIBRARY_NAME = "gkl_compression";
     private static boolean initialized = false;
+
+    static {
+        logger = LogManager.getLogger(IntelDeflater.class);
+    }
 
     /**
      * Loads the native library, if it is supported on this platform. <p>
@@ -55,12 +61,14 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
     public synchronized boolean load(File tempDir) {
 
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
+            logger.warn(String.format("Unable to load %s", NATIVE_LIBRARY_NAME));
             return false;
         }
         if (!initialized) {
             initNative();
             initialized = true;
         }
+        logger.info(String.format("Loading %s library successfully", NATIVE_LIBRARY_NAME));
         return true;
     }
 
@@ -138,6 +146,9 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
         if(b == null) {
             throw new NullPointerException("Input is null");
         }
+        if(off < 0 || off > b.length - len) {
+            throw new NullPointerException("Input offset is not valid.");
+        }
         if(len <= 0) {
             throw new NullPointerException("Input buffer length is zero.");
         }
@@ -168,8 +179,16 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      *         output buffer
      */
     @Override
-    public int deflate(byte[] b, int off, int len ) {
-
+    public int deflate(byte[] b, int off, int len ) throws NullPointerException {
+        if(b == null) {
+            throw new NullPointerException("Input is null");
+        }
+        if(off < 0 || off > b.length - len) {
+            throw new NullPointerException("Input offset is not valid.");
+        }
+        if(len <= 0) {
+            throw new NullPointerException("Input buffer length is zero.");
+        }
         return deflateNative(b, len);
     }
 

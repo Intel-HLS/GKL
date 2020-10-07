@@ -108,6 +108,9 @@ public class IntelPairHmm implements PairHMMNativeBinding {
                                    HaplotypeDataHolder[] haplotypeDataArray,
                                    double[] likelihoodArray)
     {
+        if(readDataArray == null || haplotypeDataArray == null || likelihoodArray == null) {
+            throw new NullPointerException("Input is null");
+        }
         computeLikelihoodsNative(readDataArray, haplotypeDataArray, likelihoodArray);
     }
 
