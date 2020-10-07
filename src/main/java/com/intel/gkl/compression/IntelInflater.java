@@ -45,7 +45,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
     private static boolean initialized = false;
 
     static {
-        logger = LogManager.getLogger(IntelDeflater.class);
+        logger = LogManager.getLogger(IntelInflater.class);
     }
 
     /**
