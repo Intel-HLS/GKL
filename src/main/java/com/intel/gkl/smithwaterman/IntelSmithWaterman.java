@@ -101,6 +101,8 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             throw new NullPointerException("Alternate data array is null.");
         if(parameters == null)
             throw new NullPointerException("Parameter structure is null.");
+        if(overhangStrategy == null)
+            throw new NullPointerException("OverhangStrategy is null.");
 
         int intStrategy =  getStrategy(overhangStrategy);
         byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];
@@ -110,7 +112,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
         return new SWNativeAlignerResult(new String(cigar).trim(), offset);
     }
 
-    public int getStrategy(SWOverhangStrategy strategy) //TODO: Check with GKL Team
+    public int getStrategy(SWOverhangStrategy strategy)
     {
         int intStrategy = 0;
 
