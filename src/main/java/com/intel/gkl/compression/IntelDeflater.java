@@ -38,9 +38,13 @@ import java.util.zip.Deflater;
  * Provides a native Deflater implementation accelerated for the Intel Architecture.
  */
 public final class IntelDeflater extends Deflater implements NativeLibrary {
-    private static final String NATIVE_LIBRARY_NAME = "gkl_compression";
-    private static boolean initialized = false;
+    private static final String NATIVE_LIBRARY_NAME;
+    private static boolean initialized;
 
+    static {
+        NATIVE_LIBRARY_NAME = "gkl_compression";
+        initialized = false;
+    }
 
     /**
      * Loads the native library, if it is supported on this platform. <p>
@@ -168,7 +172,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      *         output buffer
      */
     @Override
-    public int deflate(byte[] b, int off, int len ) throws NullPointerException {
+    public int deflate(byte[] b, int off, int len ) {
         return deflateNative(b, len);
     }
 
