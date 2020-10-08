@@ -133,7 +133,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      * @see IntelDeflater
      */
     @Override
-    public void setInput(byte[] b, int off, int len) throws NullPointerException {
+    public void setInput(byte[] b, int off, int len) throws NullPointerException, IndexOutOfBoundsException {
         if(lz_stream == 0) reset();
         if(b == null) {
             throw new NullPointerException("Input is null");
