@@ -192,6 +192,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
     public boolean finished() {
         return finished;
     }
+
     /**
      * Closes the compressor and discards any unprocessed input.
      * This method should be called when the compressor is no longer
