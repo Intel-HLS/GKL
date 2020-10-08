@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Provides utilities used by the GKL library.
@@ -56,6 +57,8 @@ public final class IntelGKLUtils implements NativeLibrary {
      * @return  true if the native library is supported and loaded, false otherwise
      */
     @Override
+
+    
     public synchronized boolean load(File tempDir) {
 
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {

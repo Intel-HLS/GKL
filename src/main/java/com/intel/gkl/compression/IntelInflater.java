@@ -52,7 +52,9 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      */
     @Override
     public synchronized boolean load(File tempDir) {
-
+        if(tempDir == null) {
+            return false;
+        }
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
             return false;
         }

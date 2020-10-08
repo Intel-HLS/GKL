@@ -28,6 +28,7 @@
 
 package com.intel.gkl.compression;
 
+import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
@@ -38,13 +39,8 @@ import java.util.zip.Deflater;
  * Provides a native Deflater implementation accelerated for the Intel Architecture.
  */
 public final class IntelDeflater extends Deflater implements NativeLibrary {
-    private static final String NATIVE_LIBRARY_NAME;
-    private static boolean initialized;
-
-    static {
-        NATIVE_LIBRARY_NAME = "gkl_compression";
-        initialized = false;
-    }
+    private static final String NATIVE_LIBRARY_NAME = "gkl_compression";
+    private static boolean initialized = false;
 
     /**
      * Loads the native library, if it is supported on this platform. <p>
