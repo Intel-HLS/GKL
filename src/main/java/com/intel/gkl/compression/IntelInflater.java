@@ -113,7 +113,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      * @see IntelDeflater#needsInput
      */
     @Override
-    public void setInput(byte[] b, int off, int len) throws NullPointerException {
+    public void setInput(byte[] b, int off, int len) throws NullPointerException, IllegalArgumentException {
         if(lz_stream == 0) reset();
         if(b == null) {
             throw new NullPointerException("Input is null");
@@ -143,7 +143,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      *         output buffer
      */
     @Override
-    public int inflate (byte[] b, int off, int len ) throws NullPointerException {
+    public int inflate (byte[] b, int off, int len ) throws NullPointerException, IllegalArgumentException {
         if(b == null) {
             throw new NullPointerException("Input is null");
         }
