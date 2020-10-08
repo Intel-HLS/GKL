@@ -106,7 +106,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     @Override
     public void computeLikelihoods(ReadDataHolder[] readDataArray,
                                    HaplotypeDataHolder[] haplotypeDataArray,
-                                   double[] likelihoodArray)
+                                   double[] likelihoodArray) throws NullPointerException
     {
         if(readDataArray == null || haplotypeDataArray == null || likelihoodArray == null) {
             throw new NullPointerException("Input is null");

@@ -59,13 +59,11 @@ public final class IntelGKLUtils implements NativeLibrary {
     public synchronized boolean load(File tempDir) {
 
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
-            logger.warn(String.format("Unable to load %s", NATIVE_LIBRARY_NAME));
             return false;
         }
         if (!initialized) {
             initialized = true;
         }
-        logger.info(String.format("Loading %s library successfully", NATIVE_LIBRARY_NAME));
         return true;
     }
 
