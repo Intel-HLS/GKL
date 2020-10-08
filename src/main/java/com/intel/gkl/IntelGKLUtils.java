@@ -58,7 +58,7 @@ public final class IntelGKLUtils implements NativeLibrary {
      */
     @Override
 
-    
+
     public synchronized boolean load(File tempDir) {
 
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {

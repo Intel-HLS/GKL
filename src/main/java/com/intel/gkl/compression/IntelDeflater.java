@@ -169,6 +169,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      */
     @Override
     public int deflate(byte[] b, int off, int len ) {
+
         return deflateNative(b, len);
     }
 
