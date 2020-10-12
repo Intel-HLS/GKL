@@ -93,7 +93,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
      */
 
     @Override
-    public SWNativeAlignerResult align(byte[] refArray, byte[] altArray, SWParameters parameters, SWOverhangStrategy overhangStrategy)
+    public SWNativeAlignerResult align(byte[] refArray, byte[] altArray, SWParameters parameters, SWOverhangStrategy overhangStrategy) throws NullPointerException, IllegalArgumentException
     {
         if(refArray == null)
             throw new NullPointerException("Reference data array is null.");
@@ -106,6 +106,9 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
 
         int intStrategy =  getStrategy(overhangStrategy);
         byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];
+
+        if(cigar.length <= 0 || intStrategy < 9 || intStrategy > 12)
+            throw new IllegalArgumentException("Strategy is invalid.");
 
         int offset = alignNative(refArray, altArray, cigar, parameters.getMatchValue(), parameters.getMismatchPenalty(), parameters.getGapOpenPenalty(), parameters.getGapExtendPenalty(), intStrategy);
 
