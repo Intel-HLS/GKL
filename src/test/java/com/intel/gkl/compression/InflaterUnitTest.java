@@ -20,12 +20,99 @@ public class InflaterUnitTest {
     private final static Logger log = LogManager.getLogger(InflaterUnitTest.class);
     private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
 
+    final File inputFile = new File(INPUT_FILE);
+    long inputBytes = inputFile.length();
+
+    final IntelInflaterFactory intelInflaterFactoryInputTest = new IntelInflaterFactory();
+    final Inflater inflaterInputTest = intelInflaterFactoryInputTest.makeInflater(true);
+
+    @Test (expectedExceptions = {NullPointerException.class})
+    public void testInvalidInputsBufferForSetInput() {
+        final byte[] inputbuffer = new byte[(int)inputBytes];
+
+        inflaterInputTest.reset();
+        inflaterInputTest.setInput(null, 0, inputbuffer.length);
+        inflaterInputTest.end();
+    }
+
+    @Test (expectedExceptions = {IllegalArgumentException.class})
+    public void testInvalidInputsOffsetForSetInput() {
+        final byte[] inputbuffer = new byte[(int)inputBytes];
+
+        inflaterInputTest.reset();
+        inflaterInputTest.setInput(inputbuffer, -1, inputbuffer.length);
+        inflaterInputTest.end();
+    }
+
+    @Test (expectedExceptions = {IllegalArgumentException.class})
+    public void testInvalidInputsLengthForSetInput() {
+        final byte[] inputbuffer = new byte[(int)inputBytes];
+
+        inflaterInputTest.reset();
+        inflaterInputTest.setInput(inputbuffer, 0, -1);
+        inflaterInputTest.end();
+    }
+
+    @Test (expectedExceptions = {NullPointerException.class})
+    public void testInvalidInputsBufferForInflate1() {
+        final byte[] inputbuffer = new byte[(int)inputBytes];
+
+        try {
+            inflaterInputTest.reset();
+            inflaterInputTest.setInput(inputbuffer, 0, inputbuffer.length);
+            inflaterInputTest.inflate(null, 0, inputbuffer.length);
+            inflaterInputTest.end();
+        } catch (java.util.zip.DataFormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test (expectedExceptions = {IllegalArgumentException.class})
+    public void testInvalidInputsOffsetForInflate1() {
+        final byte[] inputbuffer = new byte[(int)inputBytes];
+        final byte[] outputbuffer = new byte[(int)inputBytes];
+
+        try {
+            inflaterInputTest.reset();
+            inflaterInputTest.setInput(inputbuffer, 0, inputbuffer.length);
+            inflaterInputTest.inflate(outputbuffer, -1, inputbuffer.length);
+            inflaterInputTest.end();
+        } catch (java.util.zip.DataFormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test (expectedExceptions = {IllegalArgumentException.class})
+    public void testInvalidInputsLengthForInflate1() {
+        final byte[] inputbuffer = new byte[(int)inputBytes];
+        final byte[] outputbuffer = new byte[(int)inputBytes];
+
+        try {
+            inflaterInputTest.reset();
+            inflaterInputTest.setInput(inputbuffer, 0, inputbuffer.length);
+            inflaterInputTest.inflate(outputbuffer, 0, -1);
+            inflaterInputTest.end();
+        } catch (java.util.zip.DataFormatException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test (expectedExceptions = {NullPointerException.class})
+    public void testInvalidInputsBufferForInflate2() {
+        final byte[] inputbuffer = new byte[(int)inputBytes];
+
+        try {
+            inflaterInputTest.reset();
+            inflaterInputTest.setInput(inputbuffer, 0, inputbuffer.length);
+            inflaterInputTest.inflate(null);
+            inflaterInputTest.end();
+        } catch (java.util.zip.DataFormatException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Test(enabled = true)
     public void inflaterUnitTest() throws IOException {
-
-        final File inputFile = new File(INPUT_FILE);
-
-        long inputBytes = inputFile.length();
         int compressedBytes = 0;
         final byte[] inputbuffer = new byte[(int)inputBytes];
         final byte[] outputbuffer = new byte[(int)inputBytes];
