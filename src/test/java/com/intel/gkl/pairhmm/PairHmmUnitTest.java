@@ -22,6 +22,60 @@ public class PairHmmUnitTest {
     static final String pairHMMTestData = IntelGKLUtils.pathToTestResource("pairhmm-testdata.txt");
     private static final Logger log = LogManager.getLogger(PairHmmUnitTest.class);
 
+    @Test (expectedExceptions = {NullPointerException.class})
+    public void testInvalidInputsReadArrayForComputeLikelihoods() {
+        final IntelPairHmm pairHmm = new IntelPairHmm();
+
+        final PairHMMNativeArguments args = new PairHMMNativeArguments();
+        args.maxNumberOfThreads = 1;
+        args.useDoublePrecision = false;
+
+        pairHmm.initialize(args);
+
+        ReadDataHolder[] readDataArray = new ReadDataHolder[1];
+        HaplotypeDataHolder[] haplotypeDataArray = new HaplotypeDataHolder[1];
+        double[] likelihoodArray = new double[1];
+
+        // call pairHMM
+        pairHmm.computeLikelihoods(null, haplotypeDataArray, likelihoodArray);
+    }
+
+    @Test (expectedExceptions = {NullPointerException.class})
+    public void testInvalidInputsHaplotypeArrayForComputeLikelihoods() {
+        final IntelPairHmm pairHmm = new IntelPairHmm();
+
+        final PairHMMNativeArguments args = new PairHMMNativeArguments();
+        args.maxNumberOfThreads = 1;
+        args.useDoublePrecision = false;
+
+        pairHmm.initialize(args);
+
+        ReadDataHolder[] readDataArray = new ReadDataHolder[1];
+        HaplotypeDataHolder[] haplotypeDataArray = new HaplotypeDataHolder[1];
+        double[] likelihoodArray = new double[1];
+
+        // call pairHMM
+        pairHmm.computeLikelihoods(readDataArray, null, likelihoodArray);
+    }
+
+    @Test (expectedExceptions = {NullPointerException.class})
+    public void testInvalidInputsLikelihoodArrayForComputeLikelihoods() {
+        final IntelPairHmm pairHmm = new IntelPairHmm();
+
+        final PairHMMNativeArguments args = new PairHMMNativeArguments();
+        args.maxNumberOfThreads = 1;
+        args.useDoublePrecision = false;
+
+        pairHmm.initialize(args);
+
+        ReadDataHolder[] readDataArray = new ReadDataHolder[1];
+        HaplotypeDataHolder[] haplotypeDataArray = new HaplotypeDataHolder[1];
+        double[] likelihoodArray = new double[1];
+
+        // call pairHMM
+        pairHmm.computeLikelihoods(readDataArray, haplotypeDataArray, null);
+    }
+
     @Test(enabled = true)
     public void simpleTest() {
 
