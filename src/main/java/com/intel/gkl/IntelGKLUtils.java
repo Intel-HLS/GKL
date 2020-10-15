@@ -77,17 +77,16 @@ public final class IntelGKLUtils implements NativeLibrary {
     public static String pathToTestResource(String filename) throws NullPointerException, IllegalArgumentException{
 
         if(filename == null)
-            throw new NullPointerException("Invalid filename");
+            throw new NullPointerException("Input is null");
 
         Pattern pattern = Pattern.compile("[-_.A-Za-z0-9]+");
         if(!pattern.matcher(filename).matches())
         {
-            throw new IllegalArgumentException("Invalid filename check failed");
+            throw new IllegalArgumentException("Invalid filename");
         }
 
         return TEST_RESOURCES_ABSPATH + filename;
     }
-
 
     public boolean getFlushToZero() {
         return getFlushToZeroNative();

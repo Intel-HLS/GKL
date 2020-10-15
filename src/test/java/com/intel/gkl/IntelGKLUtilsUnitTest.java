@@ -80,21 +80,18 @@ public class IntelGKLUtilsUnitTest {
     }
 
     @Test(expectedExceptions = {IllegalArgumentException.class})
-    public void nofileNameTest() {
+    public void emptyfileNameTest() {
 
         IntelGKLUtils utils = new IntelGKLUtils();
         String filename = IntelGKLUtils.pathToTestResource("");
-
     }
-
 
     @Test(expectedExceptions = {IllegalArgumentException.class})
     public void invalidfileNameTest() {
 
         IntelGKLUtils utils = new IntelGKLUtils();
-        String filename2 = IntelGKLUtils.pathToTestResource("fi|e$");
+        String filename = IntelGKLUtils.pathToTestResource("fi|e$");
     }
-
 
     @Test(enabled = true)
     public void platformFeaturesTest() {
