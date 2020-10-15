@@ -72,6 +72,30 @@ public class IntelGKLUtilsUnitTest {
         assert(childThread.ftzValue == false);
     }
 
+    @Test(expectedExceptions = {NullPointerException.class})
+    public void nullfileNameTest() {
+
+        IntelGKLUtils utils = new IntelGKLUtils();
+        String filename = IntelGKLUtils.pathToTestResource(null);
+    }
+
+    @Test(expectedExceptions = {IllegalArgumentException.class})
+    public void nofileNameTest() {
+
+        IntelGKLUtils utils = new IntelGKLUtils();
+        String filename = IntelGKLUtils.pathToTestResource("");
+
+    }
+
+
+    @Test(expectedExceptions = {IllegalArgumentException.class})
+    public void invalidfileNameTest() {
+
+        IntelGKLUtils utils = new IntelGKLUtils();
+        String filename2 = IntelGKLUtils.pathToTestResource("fi|e$");
+    }
+
+
     @Test(enabled = true)
     public void platformFeaturesTest() {
 
