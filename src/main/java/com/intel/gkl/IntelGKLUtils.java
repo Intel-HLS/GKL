@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.regex.Pattern;
 
 /**
  * Provides utilities used by the GKL library.
@@ -73,10 +73,19 @@ public final class IntelGKLUtils implements NativeLibrary {
     private static final String TEST_RESOURCES_PATH = System.getProperty("user.dir") + "/src/test/resources/";
     private static final String TEST_RESOURCES_ABSPATH = new File(TEST_RESOURCES_PATH).getAbsolutePath() + "/";
 
-    public static String pathToTestResource(String filename) {
+    public static String pathToTestResource(String filename) throws NullPointerException, IllegalArgumentException{
+
+        if(filename == null)
+            throw new NullPointerException("Input is null");
+
+        Pattern pattern = Pattern.compile("[-_.A-Za-z0-9]+");
+        if(!pattern.matcher(filename).matches())
+        {
+            throw new IllegalArgumentException("Invalid filename");
+        }
+
         return TEST_RESOURCES_ABSPATH + filename;
     }
-
 
     public boolean getFlushToZero() {
         return getFlushToZeroNative();

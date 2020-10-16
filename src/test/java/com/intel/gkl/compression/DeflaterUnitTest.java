@@ -62,6 +62,68 @@ public class DeflaterUnitTest {
     }
 
     @Test(enabled = true)
+    public void inputDataTest() {
+        final int LEN = 4*1024*1024;
+        final byte[] input = new byte[LEN];
+        final byte[] compressed = new byte[2*LEN];
+
+        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
+
+        Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
+
+        final boolean isSupported = new IntelInflater().load(null);
+        Assert.assertTrue(isSupported);
+        final IntelInflater inflater = new IntelInflater(true);
+
+        randomDNA(input);
+
+        log.info("Negative testing for offset.");
+        try {
+            deflater.setInput(input, -1, input.length);
+            Assert.fail("IllegalArgumentException expected");
+        }
+        catch(IllegalArgumentException e) {}
+
+        try {
+            deflater.setInput(input, input.length, input.length);
+            Assert.fail("IllegalArgumentException expected");
+        }
+        catch(IllegalArgumentException e) {}
+
+        try {
+            deflater.setInput(input, input.length + 1, input.length);
+            Assert.fail("IllegalArgumentException expected");
+        }
+        catch(IllegalArgumentException e) {}
+
+        deflater.setInput(input, 0, input.length);
+        deflater.finish();
+
+        log.info("Deflate parameters negative testing.");
+        try {
+            deflater.deflate(null, 0, compressed.length);
+            Assert.fail("NullPointerException expected.");
+        }
+        catch(NullPointerException e) {}
+
+        try {
+            deflater.deflate(compressed, 5, compressed.length);
+            Assert.fail("IllegalArgumentException expected.");
+        }
+        catch(IllegalArgumentException e) {}
+
+        try {
+            deflater.deflate(compressed, 0, -1);
+            Assert.fail("NullPointerException expected.");
+        }
+        catch(NullPointerException e) {}
+
+        inflater.end();
+        deflater.end();
+    }
+
+    @Test(enabled = true)
     public void randomDNATest() {
         final int LEN = 4*1024*1024;
         final byte[] input = new byte[LEN];
