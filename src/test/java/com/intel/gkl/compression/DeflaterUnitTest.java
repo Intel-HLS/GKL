@@ -81,13 +81,53 @@ public class DeflaterUnitTest {
             final IntelInflater inflater = new IntelInflater(true);
 
                 randomDNA(input);
+
+                log.debug("Negative testing for offset.");
+                try {
+                    deflater.setInput(input, -1, input.length);
+                    Assert.fail("IllegalArgumentException expected");
+                }
+                catch(IllegalArgumentException e) {}
+
+                try {
+                    deflater.setInput(input, input.length, input.length);
+                    Assert.fail("IllegalArgumentException expected");
+                }
+                catch(IllegalArgumentException e) {}
+
+                try {
+                    deflater.setInput(input, input.length + 1, input.length);
+                    Assert.fail("IllegalArgumentException expected");
+                }
+                catch(IllegalArgumentException e) {}
+
                 deflater.setInput(input, 0, input.length);
                 deflater.finish();
 
                 int compressedBytes = 0;
+
                 while (!deflater.finished()) {
                     compressedBytes = deflater.deflate(compressed, 0, compressed.length);
                 }
+
+                log.debug("Deflate parameters negative testing.");
+                try {
+                    deflater.deflate(null, 0, compressed.length);
+                    Assert.fail("NullPointerException expected.");
+                }
+                catch(NullPointerException e) {}
+
+                try {
+                    deflater.deflate(compressed, 5, compressed.length);
+                    Assert.fail("IllegalArgumentException expected.");
+                }
+                catch(IllegalArgumentException e) {}
+
+                try {
+                    deflater.deflate(compressed, 0, -1);
+                    Assert.fail("NullPointerException expected.");
+                }
+                catch(NullPointerException e) {}
 
                 log.info(String.format("%d bytes compressed to %d bytes : %2.2f%% compression",
                         LEN, compressedBytes, (100.0 - 100.0 * compressedBytes / LEN)));

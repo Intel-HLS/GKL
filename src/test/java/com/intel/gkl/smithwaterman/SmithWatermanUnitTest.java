@@ -49,7 +49,6 @@ public class SmithWatermanUnitTest {
             //SWParameters SWparameters = new SWParameters(3, -1, -4, -3);
             SWOverhangStrategy SWstrategy = SWOverhangStrategy.SOFTCLIP;
 
-
             while(in.readLine() !=null) {
 
                refString = in.readLine();
@@ -58,12 +57,33 @@ public class SmithWatermanUnitTest {
                 altString = in.readLine();
                alt = altString.getBytes();
 
-
                 //Get the results for one pair
                 SWNativeAlignerResult result = smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
 
-            }
+                try {
+                    smithWaterman.align(null, altString.getBytes(), SWparameters, SWstrategy);
+                    Assert.fail("NullPointerException expected.");
+                }
+                catch(NullPointerException e) {}
 
+                try {
+                    smithWaterman.align(refString.getBytes(), null, SWparameters, SWstrategy);
+                    Assert.fail("NullPointerException expected.");
+                }
+                catch(NullPointerException e) {}
+
+                try {
+                    smithWaterman.align(refString.getBytes(), altString.getBytes(), null, SWstrategy);
+                    Assert.fail("NullPointerException expected.");
+                }
+                catch(NullPointerException e) {}
+
+                try {
+                    smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, null);
+                    Assert.fail("NullPointerException expected.");
+                }
+                catch(NullPointerException e) {}
+            }
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
