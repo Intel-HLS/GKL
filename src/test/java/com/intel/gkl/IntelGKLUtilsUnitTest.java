@@ -73,7 +73,7 @@ public class IntelGKLUtilsUnitTest {
     }
 
     @Test(enabled = true)
-    public void testInvalidInputsForPathToTestResourceTest() {
+    public void testInvalidInputsForPathToTestResource() {
 
         IntelGKLUtils utils = new IntelGKLUtils();
 
@@ -90,7 +90,7 @@ public class IntelGKLUtilsUnitTest {
         catch(IllegalArgumentException e) {}
 
         try {
-            IntelGKLUtils.pathToTestResource("fi|e$");
+            IntelGKLUtils.pathToTestResource("fi|e$.in");
             Assert.fail("IllegalArgumentException expected.");
         }
         catch(IllegalArgumentException e) {}

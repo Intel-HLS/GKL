@@ -34,7 +34,6 @@ import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
 import java.util.regex.Pattern;
-import java.lang.Object;
 
 /**
  * Provides utilities used by the GKL library.

@@ -26,89 +26,66 @@ public class InflaterUnitTest {
     final IntelInflaterFactory intelInflaterFactoryInputTest = new IntelInflaterFactory();
     final Inflater inflaterInputTest = intelInflaterFactoryInputTest.makeInflater(true);
 
-    @Test (expectedExceptions = {NullPointerException.class})
-    public void testInvalidInputsBufferForSetInput() {
-        final byte[] inputbuffer = new byte[(int)inputBytes];
-
+    @Test (enabled = true)
+    public void testInvalidInputsForSetInput() {
         inflaterInputTest.reset();
-        inflaterInputTest.setInput(null, 0, inputbuffer.length);
-        inflaterInputTest.end();
-    }
-
-    @Test (expectedExceptions = {IllegalArgumentException.class})
-    public void testInvalidInputsOffsetForSetInput() {
-        final byte[] inputbuffer = new byte[(int)inputBytes];
-
-        inflaterInputTest.reset();
-        inflaterInputTest.setInput(inputbuffer, -1, inputbuffer.length);
-        inflaterInputTest.end();
-    }
-
-    @Test (expectedExceptions = {IllegalArgumentException.class})
-    public void testInvalidInputsLengthForSetInput() {
-        final byte[] inputbuffer = new byte[(int)inputBytes];
-
-        inflaterInputTest.reset();
-        inflaterInputTest.setInput(inputbuffer, 0, -1);
-        inflaterInputTest.end();
-    }
-
-    @Test (expectedExceptions = {NullPointerException.class})
-    public void testInvalidInputsBufferForInflate1() {
         final byte[] inputbuffer = new byte[(int)inputBytes];
 
         try {
-            inflaterInputTest.reset();
-            inflaterInputTest.setInput(inputbuffer, 0, inputbuffer.length);
-            inflaterInputTest.inflate(null, 0, inputbuffer.length);
-            inflaterInputTest.end();
-        } catch (java.util.zip.DataFormatException e) {
-            e.printStackTrace();
-        }
+            inflaterInputTest.setInput(null, 0, inputbuffer.length);
+            Assert.fail("NullPointerException expected.");
+        }catch (NullPointerException ne){}
+
+        try {
+            inflaterInputTest.setInput(inputbuffer, -1, inputbuffer.length);
+            Assert.fail("IllegalArgumentException expected.");
+        }catch (IllegalArgumentException ie){}
+
+        try {
+            inflaterInputTest.setInput(inputbuffer, 0, -1);
+            Assert.fail("IllegalArgumentException expected.");
+        }catch (IllegalArgumentException ie){}
+
+
+        inflaterInputTest.end();
     }
 
-    @Test (expectedExceptions = {IllegalArgumentException.class})
-    public void testInvalidInputsOffsetForInflate1() {
+    @Test (enabled = true)
+    public void testInvalidInputsForInflate() {
         final byte[] inputbuffer = new byte[(int)inputBytes];
         final byte[] outputbuffer = new byte[(int)inputBytes];
-
-        try {
+        
+        try{
+            
             inflaterInputTest.reset();
             inflaterInputTest.setInput(inputbuffer, 0, inputbuffer.length);
-            inflaterInputTest.inflate(outputbuffer, -1, inputbuffer.length);
+    
+            try {
+                inflaterInputTest.inflate(null);
+                Assert.fail("NullPointerException expected.");
+            } catch (NullPointerException ne) {}
+    
+            try {
+                inflaterInputTest.inflate(null, 0, inputbuffer.length);
+                Assert.fail("NullPointerException expected.");
+            } catch (NullPointerException ne) {}
+    
+            try {
+                inflaterInputTest.inflate(outputbuffer, -1, inputbuffer.length);
+                Assert.fail("IllegalArgumentException expected.");
+            } catch (IllegalArgumentException ie) {}
+    
+            try {
+                inflaterInputTest.inflate(outputbuffer, 0, -1);
+                Assert.fail("IllegalArgumentException expected.");
+            } catch (IllegalArgumentException ie) {}
+    
             inflaterInputTest.end();
+
         } catch (java.util.zip.DataFormatException e) {
             e.printStackTrace();
         }
-    }
 
-    @Test (expectedExceptions = {IllegalArgumentException.class})
-    public void testInvalidInputsLengthForInflate1() {
-        final byte[] inputbuffer = new byte[(int)inputBytes];
-        final byte[] outputbuffer = new byte[(int)inputBytes];
-
-        try {
-            inflaterInputTest.reset();
-            inflaterInputTest.setInput(inputbuffer, 0, inputbuffer.length);
-            inflaterInputTest.inflate(outputbuffer, 0, -1);
-            inflaterInputTest.end();
-        } catch (java.util.zip.DataFormatException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test (expectedExceptions = {NullPointerException.class})
-    public void testInvalidInputsBufferForInflate2() {
-        final byte[] inputbuffer = new byte[(int)inputBytes];
-
-        try {
-            inflaterInputTest.reset();
-            inflaterInputTest.setInput(inputbuffer, 0, inputbuffer.length);
-            inflaterInputTest.inflate(null);
-            inflaterInputTest.end();
-        } catch (java.util.zip.DataFormatException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test(enabled = true)
@@ -148,7 +125,7 @@ public class InflaterUnitTest {
 
 
             } catch (java.util.zip.DataFormatException e) {
-                e.printStackTrace();
+                
             }
             Assert.assertEquals(inputbuffer, finalbuffer);
             inflater.end();
