@@ -72,25 +72,29 @@ public class IntelGKLUtilsUnitTest {
         assert(childThread.ftzValue == false);
     }
 
-    @Test(expectedExceptions = {NullPointerException.class})
-    public void nullfileNameTest() {
+    @Test(enabled = true)
+    public void testInvalidInputsForPathToTestResourceTest() {
 
         IntelGKLUtils utils = new IntelGKLUtils();
-        String filename = IntelGKLUtils.pathToTestResource(null);
-    }
 
-    @Test(expectedExceptions = {IllegalArgumentException.class})
-    public void emptyfileNameTest() {
+        try {
+            IntelGKLUtils.pathToTestResource(null);
+            Assert.fail("NullPointerException expected.");
+        }
+        catch(NullPointerException e) {}
 
-        IntelGKLUtils utils = new IntelGKLUtils();
-        String filename = IntelGKLUtils.pathToTestResource("");
-    }
+        try {
+            IntelGKLUtils.pathToTestResource("");
+            Assert.fail("IllegalArgumentException expected.");
+        }
+        catch(IllegalArgumentException e) {}
 
-    @Test(expectedExceptions = {IllegalArgumentException.class})
-    public void invalidfileNameTest() {
+        try {
+            IntelGKLUtils.pathToTestResource("fi|e$");
+            Assert.fail("IllegalArgumentException expected.");
+        }
+        catch(IllegalArgumentException e) {}
 
-        IntelGKLUtils utils = new IntelGKLUtils();
-        String filename = IntelGKLUtils.pathToTestResource("fi|e$");
     }
 
     @Test(enabled = true)
