@@ -125,7 +125,7 @@ public class InflaterUnitTest {
 
 
             } catch (java.util.zip.DataFormatException e) {
-                
+                e.printStackTrace();
             }
             Assert.assertEquals(inputbuffer, finalbuffer);
             inflater.end();
