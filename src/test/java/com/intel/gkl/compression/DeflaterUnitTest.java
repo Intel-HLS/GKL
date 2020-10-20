@@ -130,6 +130,7 @@ public class DeflaterUnitTest {
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
 
+
         for(int level=0; level <10; level++) {
             for (int i = 0; i < 1; i++) {
             final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
@@ -142,12 +143,10 @@ public class DeflaterUnitTest {
             final IntelInflater inflater = new IntelInflater(true);
 
                 randomDNA(input);
-
                 deflater.setInput(input, 0, input.length);
                 deflater.finish();
 
                 int compressedBytes = 0;
-
                 while (!deflater.finished()) {
                     compressedBytes = deflater.deflate(compressed, 0, compressed.length);
                 }
@@ -157,12 +156,16 @@ public class DeflaterUnitTest {
 
                 long totalTime = 0;
 
+
                 try {
+
                     inflater.setInput(compressed, 0, compressedBytes);
                     final long start = System.currentTimeMillis();
                     inflater.inflate(result, 0, LEN);
                     totalTime = System.currentTimeMillis() - start;
                     log.info(String.format("%d ", totalTime));
+
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
