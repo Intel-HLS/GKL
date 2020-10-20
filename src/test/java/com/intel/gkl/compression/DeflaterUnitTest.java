@@ -62,12 +62,73 @@ public class DeflaterUnitTest {
     }
 
     @Test(enabled = true)
+    public void inputDataTest() {
+        final int LEN = 4*1024*1024;
+        final byte[] input = new byte[LEN];
+        final byte[] compressed = new byte[2*LEN];
+
+        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
+
+        Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
+
+        final boolean isSupported = new IntelInflater().load(null);
+        Assert.assertTrue(isSupported);
+        final IntelInflater inflater = new IntelInflater(true);
+
+        randomDNA(input);
+
+        log.info("Negative testing for offset.");
+        try {
+            deflater.setInput(input, -1, input.length);
+            Assert.fail("IllegalArgumentException expected");
+        }
+        catch(IllegalArgumentException e) {}
+
+        try {
+            deflater.setInput(input, input.length, input.length);
+            Assert.fail("IllegalArgumentException expected");
+        }
+        catch(IllegalArgumentException e) {}
+
+        try {
+            deflater.setInput(input, input.length + 1, input.length);
+            Assert.fail("IllegalArgumentException expected");
+        }
+        catch(IllegalArgumentException e) {}
+
+        deflater.setInput(input, 0, input.length);
+        deflater.finish();
+
+        log.info("Deflate parameters negative testing.");
+        try {
+            deflater.deflate(null, 0, compressed.length);
+            Assert.fail("NullPointerException expected.");
+        }
+        catch(NullPointerException e) {}
+
+        try {
+            deflater.deflate(compressed, 5, compressed.length);
+            Assert.fail("IllegalArgumentException expected.");
+        }
+        catch(IllegalArgumentException e) {}
+
+        try {
+            deflater.deflate(compressed, 0, -1);
+            Assert.fail("NullPointerException expected.");
+        }
+        catch(NullPointerException e) {}
+
+        inflater.end();
+        deflater.end();
+    }
+
+    @Test(enabled = true)
     public void randomDNATest() {
         final int LEN = 4*1024*1024;
         final byte[] input = new byte[LEN];
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
-
 
         for(int level=0; level <10; level++) {
             for (int i = 0; i < 1; i++) {
@@ -82,25 +143,6 @@ public class DeflaterUnitTest {
 
                 randomDNA(input);
 
-                log.debug("Negative testing for offset.");
-                try {
-                    deflater.setInput(input, -1, input.length);
-                    Assert.fail("IllegalArgumentException expected");
-                }
-                catch(IllegalArgumentException e) {}
-
-                try {
-                    deflater.setInput(input, input.length, input.length);
-                    Assert.fail("IllegalArgumentException expected");
-                }
-                catch(IllegalArgumentException e) {}
-
-                try {
-                    deflater.setInput(input, input.length + 1, input.length);
-                    Assert.fail("IllegalArgumentException expected");
-                }
-                catch(IllegalArgumentException e) {}
-
                 deflater.setInput(input, 0, input.length);
                 deflater.finish();
 
@@ -110,40 +152,17 @@ public class DeflaterUnitTest {
                     compressedBytes = deflater.deflate(compressed, 0, compressed.length);
                 }
 
-                log.debug("Deflate parameters negative testing.");
-                try {
-                    deflater.deflate(null, 0, compressed.length);
-                    Assert.fail("NullPointerException expected.");
-                }
-                catch(NullPointerException e) {}
-
-                try {
-                    deflater.deflate(compressed, 5, compressed.length);
-                    Assert.fail("IllegalArgumentException expected.");
-                }
-                catch(IllegalArgumentException e) {}
-
-                try {
-                    deflater.deflate(compressed, 0, -1);
-                    Assert.fail("NullPointerException expected.");
-                }
-                catch(NullPointerException e) {}
-
                 log.info(String.format("%d bytes compressed to %d bytes : %2.2f%% compression",
                         LEN, compressedBytes, (100.0 - 100.0 * compressedBytes / LEN)));
 
                 long totalTime = 0;
 
-
                 try {
-
                     inflater.setInput(compressed, 0, compressedBytes);
                     final long start = System.currentTimeMillis();
                     inflater.inflate(result, 0, LEN);
                     totalTime = System.currentTimeMillis() - start;
                     log.info(String.format("%d ", totalTime));
-
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

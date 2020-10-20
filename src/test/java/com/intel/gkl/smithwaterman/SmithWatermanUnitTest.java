@@ -21,6 +21,56 @@ public class SmithWatermanUnitTest {
     int MAX_SEQ_LEN = 1024;
 
     @Test(enabled = true)
+    public void inputDataTest() {
+        final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
+
+        final boolean isLoaded = smithWaterman.load(null);
+
+        if(!isLoaded) {
+            String err = "Could not load IntelSmithWaterman; skipping test...";
+            logger.warn(err);
+            throw new SkipException(err);
+        }
+
+        try {
+
+            final File inputFile = new File(smithwatermanData);
+            final FileReader input = new FileReader(inputFile);
+            final BufferedReader in = new BufferedReader(input);
+
+            String refString, altString;
+            SWParameters SWparameters = new SWParameters(200, -150, -260, -11);
+            //SWParameters SWparameters = new SWParameters(3, -1, -4, -3);
+            SWOverhangStrategy SWstrategy = SWOverhangStrategy.SOFTCLIP;
+
+            refString = in.readLine();
+            altString = in.readLine();
+
+            try {
+                smithWaterman.align(null, altString.getBytes(), SWparameters, SWstrategy);
+                Assert.fail("NullPointerException expected.");
+            } catch(NullPointerException e) {}
+
+            try {
+                smithWaterman.align(refString.getBytes(), null, SWparameters, SWstrategy);
+                Assert.fail("NullPointerException expected.");
+            } catch(NullPointerException e) {}
+
+            try {
+                smithWaterman.align(refString.getBytes(), altString.getBytes(), null, SWstrategy);
+                Assert.fail("NullPointerException expected.");
+            } catch(NullPointerException e) {}
+
+            try {
+                smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, null);
+                Assert.fail("NullPointerException expected.");
+            } catch(NullPointerException e) {}
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test(enabled = true)
     public void simpleTest() {
 
         final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
@@ -51,38 +101,14 @@ public class SmithWatermanUnitTest {
 
             while(in.readLine() !=null) {
 
-               refString = in.readLine();
+                refString = in.readLine();
                 ref = refString.getBytes();
 
                 altString = in.readLine();
-               alt = altString.getBytes();
+                alt = altString.getBytes();
 
                 //Get the results for one pair
                 SWNativeAlignerResult result = smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
-
-                try {
-                    smithWaterman.align(null, altString.getBytes(), SWparameters, SWstrategy);
-                    Assert.fail("NullPointerException expected.");
-                }
-                catch(NullPointerException e) {}
-
-                try {
-                    smithWaterman.align(refString.getBytes(), null, SWparameters, SWstrategy);
-                    Assert.fail("NullPointerException expected.");
-                }
-                catch(NullPointerException e) {}
-
-                try {
-                    smithWaterman.align(refString.getBytes(), altString.getBytes(), null, SWstrategy);
-                    Assert.fail("NullPointerException expected.");
-                }
-                catch(NullPointerException e) {}
-
-                try {
-                    smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, null);
-                    Assert.fail("NullPointerException expected.");
-                }
-                catch(NullPointerException e) {}
             }
         } catch (java.io.IOException e) {
             e.printStackTrace();
