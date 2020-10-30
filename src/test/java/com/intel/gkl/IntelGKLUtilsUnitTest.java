@@ -73,6 +73,31 @@ public class IntelGKLUtilsUnitTest {
     }
 
     @Test(enabled = true)
+    public void testInvalidInputsForPathToTestResource() {
+
+        IntelGKLUtils utils = new IntelGKLUtils();
+
+        try {
+            IntelGKLUtils.pathToTestResource(null);
+            Assert.fail("NullPointerException expected.");
+        }
+        catch(NullPointerException e) {}
+
+        try {
+            IntelGKLUtils.pathToTestResource("");
+            Assert.fail("IllegalArgumentException expected.");
+        }
+        catch(IllegalArgumentException e) {}
+
+        try {
+            IntelGKLUtils.pathToTestResource("fi|e$.in");
+            Assert.fail("IllegalArgumentException expected.");
+        }
+        catch(IllegalArgumentException e) {}
+
+    }
+
+    @Test(enabled = true)
     public void platformFeaturesTest() {
 
         log.info("Check Platform Features");
