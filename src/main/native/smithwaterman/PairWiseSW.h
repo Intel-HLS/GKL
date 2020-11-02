@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<limits.h>
 
 #define MAIN_CODE(bt_vec) \
             { \
@@ -383,7 +384,7 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
         }
 
     }
-    int maxSize =  sizeof(p->cigar);
+    
     int curSize = 0;
     for(i = newId; i >= 0; i--)
     {
@@ -407,11 +408,14 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
                 state = 'R';
                 break;
         }
-	// 4 is u16 + Char + Null; look into how to handle the error state  
-        if (curSize < (maxSize - 4)) 
-		curSize += snprintf(p->cigar + curSize, 4, "%d%c", cigarArray[2 * i + 1], state);
+	// expectedLength for converting int to str w/ extra padding for '\0'
+	int expectedLength = snprintf( NULL, 0, "%d%c", cigarArray[2 * i + 1], state) + 1;
+	if (curSize >= 0 && expectedLength > 1)
+           {
+                   curSize += snprintf(p->cigar + curSize, expectedLength, "%d%c", cigarArray[2 * i + 1], state);
+           }
     }
-    p->cigarCount = strnlen(p->cigar, maxSize);
+    p->cigarCount = strnlen(p->cigar, curSize);
 }
 
 
