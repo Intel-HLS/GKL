@@ -40,7 +40,7 @@ public class IntelGKLUtilsUnitTest {
             assert(isLoaded);
 
             ftzValue = utils.getFlushToZero();
-            log.info("Child thread FTZ = " + ftzValue);
+            log.info(String.format("Child thread FTZ = %b"), ftzValue);
         }
     }
 
