@@ -34,3 +34,7 @@ bin/
 # Gradle:
 .idea/gradle.xml
 .idea/libraries
+
+# Test folder
+scripts/gatk
+scripts/test
