@@ -50,7 +50,7 @@ DeflaterIntegrationTest {
         deflaterFactories.add(intelDeflaterFactory);
         deflaterFactories.add(javaDeflaterFactory);
 
-        log.info("input filesize = " + inputFile.length());
+        log.info(String.format("input filesize = %d", inputFile.length()));
         log.info("deflater level, time (sec), filesize");
 
         for (DeflaterFactory deflaterFactory : deflaterFactories) {
@@ -82,7 +82,7 @@ DeflaterIntegrationTest {
                 final SamReader expectedFile = readerFactory.open(inputFile);
                 final SamReader generatedFile = readerFactory.open(outputFile);
 
-                log.info("Checking generated output. Total records = " + totalRecords);
+                log.info(String.format("Checking generated output. Total records = %d", totalRecords));
 
                 Iterator<SAMRecord> generatedIterator = generatedFile.iterator();
                 for (final SAMRecord expected : expectedFile) {
@@ -113,7 +113,7 @@ DeflaterIntegrationTest {
         List<DeflaterFactory> deflaterFactories = new ArrayList<DeflaterFactory>();
         deflaterFactories.add(intelDeflaterFactory);
 
-        log.info("input filesize = " + inputFile.length());
+        log.info(String.format("input filesize = %d", inputFile.length()));
         log.info("deflater level, time (sec), filesize");
 
         int loopCount = 0;
