@@ -1,5 +1,4 @@
 #include<stdio.h>
-#include<limits.h>
 
 #define MAIN_CODE(bt_vec) \
             { \
@@ -436,6 +435,7 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     if(len >  MAX_SEQ_LEN) {
              return -1;
         }
+	
     if (E_ == NULL  || backTrack_  == NULL || cigarBuf_ == NULL) {
          _mm_free(E_);
          _mm_free(backTrack_);
