@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<limits.h>
 
 #define MAIN_CODE(bt_vec) \
             { \
@@ -383,6 +384,7 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
         }
 
     }
+
     int maxSize = max(p->len1, p->len2);
     int curSize = 0;
     for(i = newId; i >= 0; i--)
