@@ -1,5 +1,4 @@
 #include<stdio.h>
-#include<limits.h>
 
 #define MAIN_CODE(bt_vec) \
             { \
@@ -384,7 +383,7 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
         }
 
     }
-    
+    int maxSize = max(p->len1, p->len2);
     int curSize = 0;
     for(i = newId; i >= 0; i--)
     {
@@ -409,10 +408,10 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
                 break;
         }
 	// expectedLength for converting int to str w/ extra padding for '\0'
-	int expectedLength = snprintf( NULL, 0, "%d%c", cigarArray[2 * i + 1], state) + 1;
-	if (curSize >= 0 && expectedLength > 1)
+	int expectedLength = snprintf( NULL, 0, "%d%c", cigarArray[2 * i + 1], state);
+	if (curSize >= 0 && expectedLength > 1 && (curSize < maxSize - expectedLength ))
            {
-                   curSize += snprintf(p->cigar + curSize, expectedLength, "%d%c", cigarArray[2 * i + 1], state);
+                   curSize += snprintf(p->cigar + curSize, expectedLength + 1, "%d%c", cigarArray[2 * i + 1], state);
            }
     }
     p->cigarCount = strnlen(p->cigar, curSize);
@@ -422,8 +421,6 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
 int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount)
 {
 
-
-
     int32_t  w_match = match;
     int32_t  w_mismatch = mismatch;
     int32_t  w_open = open;
@@ -432,8 +429,12 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     int32_t  *E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN+ AVX_LENGTH)) * sizeof(int32_t), 64);
     int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * AVX_LENGTH) * sizeof(int16_t), 64);
     int16_t  *cigarBuf_  = (int16_t *)_mm_malloc(4 * MAX_SEQ_LEN * sizeof(int16_t), 64);
-   
-    if (E_ == NULL  | backTrack_  == NULL | cigarBuf_ == NULL) {
+
+    int len = max(len1, len2);
+    if(len >  MAX_SEQ_LEN) {
+             return -1;
+        }
+    if (E_ == NULL  || backTrack_  == NULL || cigarBuf_ == NULL) {
          _mm_free(E_);
          _mm_free(backTrack_);
          _mm_free(cigarBuf_);
@@ -448,13 +449,14 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     p.overhangStrategy = overhangStrategy;
     p.btrack = backTrack_;
     p.cigar = cigarArray;
+
     smithWatermanBackTrack(&p, match, mismatch,  open, extend, E_, 0);
     getCIGAR(&p, cigarBuf_, 0);
-
     (*cigarCount) = p.cigarCount;
 
     _mm_free(E_);
     _mm_free(backTrack_);
     _mm_free(cigarBuf_);
+
     return p.alignmentOffset;
     }
