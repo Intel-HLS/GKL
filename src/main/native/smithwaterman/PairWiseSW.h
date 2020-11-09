@@ -429,11 +429,15 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     int32_t  *E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN+ AVX_LENGTH)) * sizeof(int32_t), 64);
     int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * AVX_LENGTH) * sizeof(int16_t), 64);
     int16_t  *cigarBuf_  = (int16_t *)_mm_malloc(4 * MAX_SEQ_LEN * sizeof(int16_t), 64);
+<<<<<<< HEAD
 
     int len = max(len1, len2);
     if(len >  MAX_SEQ_LEN) {
              return -1;
         }
+=======
+   
+>>>>>>> 4e4c2af7c09e90d79361c895a22dcd839d329972
     if (E_ == NULL  || backTrack_  == NULL || cigarBuf_ == NULL) {
          _mm_free(E_);
          _mm_free(backTrack_);
