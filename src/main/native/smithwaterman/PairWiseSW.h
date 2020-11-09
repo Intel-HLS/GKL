@@ -1,5 +1,4 @@
 #include<stdio.h>
-#include<limits.h>
 
 #define MAIN_CODE(bt_vec) \
             { \
@@ -422,8 +421,6 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
 int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount)
 {
 
-
-
     int32_t  w_match = match;
     int32_t  w_mismatch = mismatch;
     int32_t  w_open = open;
@@ -448,13 +445,14 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     p.overhangStrategy = overhangStrategy;
     p.btrack = backTrack_;
     p.cigar = cigarArray;
+
     smithWatermanBackTrack(&p, match, mismatch,  open, extend, E_, 0);
     getCIGAR(&p, cigarBuf_, 0);
-
     (*cigarCount) = p.cigarCount;
 
     _mm_free(E_);
     _mm_free(backTrack_);
     _mm_free(cigarBuf_);
+
     return p.alignmentOffset;
     }
