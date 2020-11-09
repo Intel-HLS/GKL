@@ -384,7 +384,7 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
         }
 
     }
-    
+    int maxSize = max(p->len1, p->len2);
     int curSize = 0;
     for(i = newId; i >= 0; i--)
     {
@@ -409,10 +409,10 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
                 break;
         }
 	// expectedLength for converting int to str w/ extra padding for '\0'
-	int expectedLength = snprintf( NULL, 0, "%d%c", cigarArray[2 * i + 1], state) + 1;
-	if (curSize >= 0 && expectedLength > 1)
+	int expectedLength = snprintf( NULL, 0, "%d%c", cigarArray[2 * i + 1], state);
+	if (curSize >= 0 && expectedLength > 1 && (curSize < maxSize - expectedLength ))
            {
-                   curSize += snprintf(p->cigar + curSize, expectedLength, "%d%c", cigarArray[2 * i + 1], state);
+                   curSize += snprintf(p->cigar + curSize, expectedLength + 1, "%d%c", cigarArray[2 * i + 1], state);
            }
     }
     p->cigarCount = strnlen(p->cigar, curSize);
@@ -433,7 +433,7 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * AVX_LENGTH) * sizeof(int16_t), 64);
     int16_t  *cigarBuf_  = (int16_t *)_mm_malloc(4 * MAX_SEQ_LEN * sizeof(int16_t), 64);
    
-    if (E_ == NULL  | backTrack_  == NULL | cigarBuf_ == NULL) {
+    if (E_ == NULL  || backTrack_  == NULL || cigarBuf_ == NULL) {
          _mm_free(E_);
          _mm_free(backTrack_);
          _mm_free(cigarBuf_);
