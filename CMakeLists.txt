@@ -19,6 +19,7 @@ if(APPLE)
 elseif(UNIX)
   set(CMAKE_SHARED_LINKER_FLAGS "-static-libstdc++ -static-libgcc")
 endif()
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,now")
 
 # add CMakeLists.txt in subdirectories
 set(NATIVE_DIR ${PROJECT_SOURCE_DIR}/src/main/native)
