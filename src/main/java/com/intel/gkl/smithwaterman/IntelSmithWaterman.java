@@ -93,8 +93,10 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
      */
 
     @Override
-    public SWNativeAlignerResult align(byte[] refArray, byte[] altArray, SWParameters parameters, SWOverhangStrategy overhangStrategy) throws NullPointerException, IllegalArgumentException
+    public SWNativeAlignerResult align(byte[] refArray, byte[] altArray, SWParameters parameters, SWOverhangStrategy overhangStrategy) throws NullPointerException, OutOfMemoryError, IllegalArgumentException
     {
+        int offset = 0;
+
         if(refArray == null)
             throw new NullPointerException("Reference data array is null.");
         if(altArray == null)
@@ -110,7 +112,15 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
         if(cigar.length <= 0 || intStrategy < 9 || intStrategy > 12)
             throw new IllegalArgumentException("Strategy is invalid.");
 
-        int offset = alignNative(refArray, altArray, cigar, parameters.getMatchValue(), parameters.getMismatchPenalty(), parameters.getGapOpenPenalty(), parameters.getGapExtendPenalty(), intStrategy);
+        try {
+            offset = alignNative(refArray, altArray, cigar, parameters.getMatchValue(), parameters.getMismatchPenalty(), parameters.getGapOpenPenalty(), parameters.getGapExtendPenalty(), intStrategy);
+        }  catch (OutOfMemoryError e) {
+            logger.warn("Exception thrown from native SW alignNative function call %s", e.getMessage());
+            throw new OutOfMemoryError("Memory allocation failed");
+        } catch (IllegalArgumentException e) {
+            logger.warn("Exception thrown from native SW alignNative function call %s", e.getMessage());
+            throw new IllegalArgumentException("Ran into invalid argument issue");
+        }
 
         return new SWNativeAlignerResult(new String(cigar).trim(), offset);
     }

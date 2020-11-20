@@ -72,6 +72,15 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
     env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
     env->ReleasePrimitiveArrayCritical(cigar, cigarArray, 0);
 
+    if(offset == -1 || env->ExceptionCheck()) {
+        env->ExceptionClear();
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "Invalid offset value");
+    }
+
+    if(offset == -2) {
+        env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"), "Memory allocation issue");
+    }
+
     return offset;
 }
 

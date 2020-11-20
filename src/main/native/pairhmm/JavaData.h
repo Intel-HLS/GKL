@@ -84,7 +84,7 @@ class JavaData {
   static jfieldID getFieldId(JNIEnv *env, jclass clazz, const char *name, const char *sig) {
     jfieldID id = env->GetFieldID(clazz, name, sig);
     if (id == NULL) {
-      env->ThrowNew(env->FindClass("java/lang/Exception"), "Unable to get field ID"); 
+      env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "Unable to get field ID");
     }
     return id;
   }
