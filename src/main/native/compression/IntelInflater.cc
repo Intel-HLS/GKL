@@ -78,10 +78,8 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelInflater_resetNative
 
      lz_stream = (inflate_state*)calloc(1,sizeof(inflate_state));
       if ( lz_stream == NULL ) {
-
         if(env->ExceptionCheck())
             env->ExceptionClear();
-
         env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"),"Memory allocation error");
       }
       env->SetLongField(obj, FID_inf_lz_stream, (jlong)lz_stream);
