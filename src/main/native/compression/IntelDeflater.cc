@@ -90,8 +90,9 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
     if (lz_stream == 0) {
       lz_stream = (isal_zstream*)malloc(sizeof(isal_zstream));
       if ( lz_stream == NULL ) {
-        jclass Exception = env->FindClass("java/lang/Exception");
-        env->ThrowNew(Exception,"Memory allocation error");
+        if(env->ExceptionCheck())
+            env->ExceptionClear();
+        env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"),"Memory allocation error");
       }
 
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
@@ -121,8 +122,9 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
     if (lz_stream == 0) {
       lz_stream = (z_stream*)calloc(1, sizeof(z_stream));
       if ( lz_stream == NULL ) {
-        jclass Exception = env->FindClass("java/lang/Exception");
-        env->ThrowNew(Exception,"Memory allocation error");
+        if(env->ExceptionCheck())
+            env->ExceptionClear();
+        env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"),"Memory allocation error");
       }
       env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
       
@@ -133,8 +135,9 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
                              nowrap ? -MAX_WBITS : MAX_WBITS,
                              DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
       if (ret != Z_OK) {
-        jclass Exception = env->FindClass("java/lang/Exception");
-        env->ThrowNew(Exception,"IntelDeflater init error");
+        if(env->ExceptionCheck())
+            env->ExceptionClear();
+        env->ThrowNew(env->FindClass("java/lang/RuntimeException"),"IntelDeflater init error");
       }
     }
     else {

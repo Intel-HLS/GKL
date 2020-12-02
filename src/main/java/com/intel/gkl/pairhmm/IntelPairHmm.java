@@ -106,12 +106,21 @@ public class IntelPairHmm implements PairHMMNativeBinding {
     @Override
     public void computeLikelihoods(ReadDataHolder[] readDataArray,
                                    HaplotypeDataHolder[] haplotypeDataArray,
-                                   double[] likelihoodArray) throws NullPointerException
+                                   double[] likelihoodArray) throws NullPointerException, OutOfMemoryError, IllegalArgumentException
     {
         if(readDataArray == null || haplotypeDataArray == null || likelihoodArray == null) {
             throw new NullPointerException("Input is null");
         }
-        computeLikelihoodsNative(readDataArray, haplotypeDataArray, likelihoodArray);
+        try {
+            computeLikelihoodsNative(readDataArray, haplotypeDataArray, likelihoodArray);
+        } catch (OutOfMemoryError e) {
+            logger.warn("Exception thrown from native PairHMM computeLikelihoodsNative function call %s", e.getMessage());
+            throw new OutOfMemoryError("Memory allocation failed");
+        } catch (IllegalArgumentException e) {
+            logger.warn("Exception thrown from native PairHMM computeLikelihoodsNative function call %s", e.getMessage());
+            throw new IllegalArgumentException("Ran into invalid argument issue");
+        }
+
     }
 
     /**
