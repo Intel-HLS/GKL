@@ -30,6 +30,8 @@ package com.intel.gkl.compression;
 
 import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
@@ -39,6 +41,7 @@ import java.util.zip.Deflater;
  * Provides a native Deflater implementation accelerated for the Intel Architecture.
  */
 public final class IntelDeflater extends Deflater implements NativeLibrary {
+    private final static Logger logger = LogManager.getLogger(IntelInflater.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_compression";
     private static boolean initialized = false;
 
@@ -115,8 +118,17 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
     }
 
     @Override
-    public void reset() {
-        resetNative(nowrap);
+    public void reset() throws OutOfMemoryError, RuntimeException {
+        try {
+            resetNative(nowrap);
+        } catch (OutOfMemoryError e) {
+            logger.warn("Exception thrown from native Deflater resetNative function call %s", e.getMessage());
+            throw new OutOfMemoryError("Memory allocation failed");
+        } catch (RuntimeException e) {
+            logger.warn("Exception thrown from native Deflater resetNative function call %s", e.getMessage());
+            throw new RuntimeException("Deflate Initialization issue");
+        }
+
         inputBuffer = null;
         inputBufferLength = 0;
 
