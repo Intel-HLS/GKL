@@ -7,13 +7,19 @@ find_package(JNI)
 include_directories(${JNI_INCLUDE_DIRS})
 
 # common compiler and linker settings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wformat -Werror=format-security")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstack-protector-all")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-strict-overflow -fno-delete-null-pointer-checks -fwrapv")
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if(APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "-static-libstdc++")
 elseif(UNIX)
   set(CMAKE_SHARED_LINKER_FLAGS "-static-libstdc++ -static-libgcc")
 endif()
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,now")
 
 # add CMakeLists.txt in subdirectories
 set(NATIVE_DIR ${PROJECT_SOURCE_DIR}/src/main/native)
