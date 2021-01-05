@@ -116,7 +116,22 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
 
 
         jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
+
+        if (next_in == NULL) {
+          if (env->ExceptionCheck())
+            env->ExceptionClear();
+          env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "inputBuffer is null.");
+          return -1;
+        }
+
         jbyte* next_out = (jbyte*)env->GetPrimitiveArrayCritical(outputBuffer, 0);
+
+        if (next_out == NULL) {
+          if (env->ExceptionCheck())
+            env->ExceptionClear();
+          env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "outputBuffer is null.");
+          return -1;
+        }
 
 
         lz_stream->next_in = (Bytef *) (next_in + inputBufferOffset);
