@@ -60,8 +60,7 @@ public class DeflaterUnitTest {
 
     @Test(enabled = true, expectedExceptions = NullPointerException.class)
     public void setInputShortThrowsNullPointerExceptionWhenNullBufferTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
 
         deflater.setInput(null);
 
@@ -69,8 +68,7 @@ public class DeflaterUnitTest {
     }
     @Test(enabled = true, expectedExceptions = NullPointerException.class)
     public void setInputLongThrowsNullPointerExceptionWhenNullBufferTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
 
         deflater.setInput(null,0, 0);
 
@@ -79,8 +77,7 @@ public class DeflaterUnitTest {
 
     @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
     public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenOffsetLessThanZeroTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
         byte[] buffer = new byte[] {'A', 'C', 'G'};
 
         deflater.setInput(buffer,-1, buffer.length);
@@ -90,8 +87,7 @@ public class DeflaterUnitTest {
 
     @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
     public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenLengthLessThanZeroTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
         byte[] buffer = new byte[] {'A', 'C', 'G'};
 
         deflater.setInput(buffer,0, -1);
@@ -100,8 +96,7 @@ public class DeflaterUnitTest {
     }
     @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
     public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenOffsetGreaterThanLengthTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
         byte[] buffer = new byte[] {'A', 'C', 'G'};
 
         deflater.setInput(buffer,4, buffer.length);
@@ -111,11 +106,7 @@ public class DeflaterUnitTest {
 
     @Test(enabled = true,expectedExceptions = NullPointerException.class)
     public void deflateThrowsNullPointerExceptionWhenNullBufferTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
-        byte[] buffer = new byte[] {'A', 'C', 'G'};
-        deflater.setInput(buffer,0, buffer.length);
-        deflater.finish();
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
 
         deflater.deflate(null, 0, 1);
 
@@ -124,25 +115,18 @@ public class DeflaterUnitTest {
 
     @Test(enabled = true,expectedExceptions = IllegalArgumentException.class)
     public void deflateThrowsIllegalArgumentExceptionWhenOffsetGreaterThanZeroTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
-        byte[] buffer = new byte[] {'A', 'C', 'G'};
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
         byte[] outputBuffer = new byte[10];
-        deflater.setInput(buffer,0, buffer.length);
-        deflater.finish();
 
         deflater.deflate(outputBuffer, 1, outputBuffer.length);
 
         Assert.fail();
     }
+
     @Test(enabled = true,expectedExceptions = IllegalArgumentException.class)
     public void deflateThrowsIllegalArgumentExceptionWhenOffsetLessThanZeroTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
-        byte[] buffer = new byte[] {'A', 'C', 'G'};
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
         byte[] outputBuffer = new byte[10];
-        deflater.setInput(buffer,0, buffer.length);
-        deflater.finish();
 
         deflater.deflate(outputBuffer, -1, outputBuffer.length);
 
@@ -151,25 +135,18 @@ public class DeflaterUnitTest {
 
     @Test(enabled = true,expectedExceptions = ArrayIndexOutOfBoundsException.class)
     public void deflateThrowsArrayIndexOutOfBoundsExceptionWhenLengthLessThanZeroTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
-        byte[] buffer = new byte[] {'A', 'C', 'G'};
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
         byte[] outputBuffer = new byte[10];
-        deflater.setInput(buffer,0, buffer.length);
-        deflater.finish();
 
         deflater.deflate(outputBuffer, 0, -1);
 
         Assert.fail();
     }
+
     @Test(enabled = true,expectedExceptions = ArrayIndexOutOfBoundsException.class)
     public void deflateThrowsArrayIndexOutOfBoundsExceptionWhenLengthEqualZeroTest(){
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
-        byte[] buffer = new byte[] {'A', 'C', 'G'};
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
         byte[] outputBuffer = new byte[10];
-        deflater.setInput(buffer,0, buffer.length);
-        deflater.finish();
 
         deflater.deflate(outputBuffer, 0, 0);
 
