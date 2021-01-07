@@ -35,6 +35,7 @@ import com.intel.gkl.NativeLibraryLoader;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
+import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 /**
@@ -122,16 +123,13 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      * @see IntelDeflater#needsInput
      */
     @Override
-    public void setInput(byte[] b, int off, int len) throws NullPointerException, IllegalArgumentException {
+    public void setInput(byte[] b, int off, int len) {
         if(lz_stream == 0) reset();
         if(b == null) {
-            throw new NullPointerException("Input is null");
+            throw new NullPointerException();
         }
-        if(off < 0 || off > b.length - len) {
-            throw new IllegalArgumentException("offset value is less than zero or exceeds permissible range");
-        }
-        if(len < 0) {
-            throw new IllegalArgumentException("length value is less than zero");
+        if (off < 0 || len < 0 || off > b.length - len) {
+            throw new ArrayIndexOutOfBoundsException();
         }
         inputBuffer = b;
         inputBufferOffset = off;
@@ -152,16 +150,14 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      *         output buffer
      */
     @Override
-    public int inflate (byte[] b, int off, int len ) throws NullPointerException, IllegalArgumentException {
+    public int inflate (byte[] b, int off, int len ) {
         if(b == null) {
-            throw new NullPointerException("Input is null");
+            throw new NullPointerException();
         }
-        if(off < 0 || off > b.length - len) {
-            throw new IllegalArgumentException("offset value is less than zero or exceeds permissible range");
+        if (off < 0 || len < 0 || off > b.length - len) {
+            throw new ArrayIndexOutOfBoundsException();
         }
-        if(len < 0) {
-            throw new IllegalArgumentException("length value is less than zero");
-        }
+
         return inflateNative(b, off, len);
     }
 
@@ -172,10 +168,11 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      * been reached
      */
     @Override
-    public int inflate (byte[] b ) throws NullPointerException {
+    public int inflate (byte[] b) {
         if(b == null) {
-            throw new NullPointerException("Input is null");
+            throw new NullPointerException();
         }
+
         return inflateNative( b, 0, b.length);
     }
 

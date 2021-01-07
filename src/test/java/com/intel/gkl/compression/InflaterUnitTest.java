@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
@@ -25,6 +26,88 @@ public class InflaterUnitTest {
 
     final IntelInflaterFactory intelInflaterFactoryInputTest = new IntelInflaterFactory();
     final Inflater inflaterInputTest = intelInflaterFactoryInputTest.makeInflater(true);
+
+    @Test(enabled = true, expectedExceptions = NullPointerException.class)
+    public void setInputOneArgThrowsNullPointerExceptionWhenNullBufferTest(){
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+
+        inflater.setInput(null);
+
+        Assert.fail();
+    }
+
+    @Test(enabled = true, expectedExceptions = NullPointerException.class)
+    public void setInputThreeArgsThrowsNullPointerExceptionWhenNullBufferTest(){
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+
+        inflater.setInput(null, 0, 10);
+
+        Assert.fail();
+    }
+
+    @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenOffsetLessThanZeroTest(){
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+        byte[] input = new byte[10];
+
+        inflater.setInput(input, -1, input.length);
+
+        Assert.fail();
+    }
+    @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenLengthLessThanZeroTest(){
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+        byte[] input = new byte[10];
+
+        inflater.setInput(input, -1, -1);
+
+        Assert.fail();
+    }
+    @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenOffsetGreaterThanLengthTest(){
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+        byte[] input = new byte[10];
+
+        inflater.setInput(input, input.length+1, input.length);
+
+        Assert.fail();
+    }
+    @Test(enabled = true, expectedExceptions = NullPointerException.class)
+    public void inflateOneArgThrowsNullPointerExceptionWhenNullBufferTest() throws DataFormatException {
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+
+        inflater.inflate(null);
+
+        Assert.fail();
+    }
+    @Test(enabled = true, expectedExceptions = NullPointerException.class)
+    public void inflateThreeArgsThrowsNullPointerExceptionWhenNullBufferTest() throws DataFormatException {
+       final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+
+        inflater.inflate(null, 0, 1);
+
+        Assert.fail();
+    }
+
+    @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void inflateThrowsNArrayIndexOutOfBoundsExceptionLengthLessThanZeroTest() throws DataFormatException {
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+        byte[] output = new byte[10];
+
+        inflater.inflate(output,0, -1);
+
+        Assert.fail();
+    }
+    @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void inflateThrowsNArrayIndexOutOfBoundsExceptionLOffsetGreaterThanLengthTest() throws DataFormatException {
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+        byte[] output = new byte[10];
+
+        inflater.inflate(output,output.length+1, output.length);
+
+        Assert.fail();
+    }
+
 
     @Test (enabled = true)
     public void testInvalidInputsForSetInput() {
