@@ -24,9 +24,6 @@ public class InflaterUnitTest {
     final File inputFile = new File(INPUT_FILE);
     long inputBytes = inputFile.length();
 
-    final IntelInflaterFactory intelInflaterFactoryInputTest = new IntelInflaterFactory();
-    final Inflater inflaterInputTest = intelInflaterFactoryInputTest.makeInflater(true);
-
     @Test(enabled = true, expectedExceptions = NullPointerException.class)
     public void setInputOneArgThrowsNullPointerExceptionWhenNullBufferTest(){
         final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
