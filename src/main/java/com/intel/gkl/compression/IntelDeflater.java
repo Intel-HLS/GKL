@@ -28,7 +28,6 @@
 
 package com.intel.gkl.compression;
 
-import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
