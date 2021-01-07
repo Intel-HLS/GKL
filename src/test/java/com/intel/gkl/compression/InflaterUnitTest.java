@@ -108,69 +108,6 @@ public class InflaterUnitTest {
         Assert.fail();
     }
 
-
-    @Test (enabled = true)
-    public void testInvalidInputsForSetInput() {
-        inflaterInputTest.reset();
-        final byte[] inputbuffer = new byte[(int)inputBytes];
-
-        try {
-            inflaterInputTest.setInput(null, 0, inputbuffer.length);
-            Assert.fail("NullPointerException expected.");
-        }catch (NullPointerException ne){}
-
-        try {
-            inflaterInputTest.setInput(inputbuffer, -1, inputbuffer.length);
-            Assert.fail("IllegalArgumentException expected.");
-        }catch (IllegalArgumentException ie){}
-
-        try {
-            inflaterInputTest.setInput(inputbuffer, 0, -1);
-            Assert.fail("IllegalArgumentException expected.");
-        }catch (IllegalArgumentException ie){}
-
-
-        inflaterInputTest.end();
-    }
-
-    @Test (enabled = true)
-    public void testInvalidInputsForInflate() {
-        final byte[] inputbuffer = new byte[(int)inputBytes];
-        final byte[] outputbuffer = new byte[(int)inputBytes];
-        
-        try{
-            
-            inflaterInputTest.reset();
-            inflaterInputTest.setInput(inputbuffer, 0, inputbuffer.length);
-    
-            try {
-                inflaterInputTest.inflate(null);
-                Assert.fail("NullPointerException expected.");
-            } catch (NullPointerException ne) {}
-    
-            try {
-                inflaterInputTest.inflate(null, 0, inputbuffer.length);
-                Assert.fail("NullPointerException expected.");
-            } catch (NullPointerException ne) {}
-    
-            try {
-                inflaterInputTest.inflate(outputbuffer, -1, inputbuffer.length);
-                Assert.fail("IllegalArgumentException expected.");
-            } catch (IllegalArgumentException ie) {}
-    
-            try {
-                inflaterInputTest.inflate(outputbuffer, 0, -1);
-                Assert.fail("IllegalArgumentException expected.");
-            } catch (IllegalArgumentException ie) {}
-    
-            inflaterInputTest.end();
-
-        } catch (java.util.zip.DataFormatException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     @Test(enabled = true)
     public void inflaterUnitTest() throws IOException {
         int compressedBytes = 0;
