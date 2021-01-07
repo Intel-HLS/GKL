@@ -130,6 +130,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
           if (env->ExceptionCheck())
             env->ExceptionClear();
           env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "outputBuffer is null.");
+          env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
           return -1;
         }
 
@@ -170,8 +171,8 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
         DBG("total_out = %d", lz_stream->total_out);
 
         // release buffers
-        env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
         env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
+        env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
 
         if (ret == ISAL_END_INPUT && lz_stream->avail_in == 0) {
           env->SetBooleanField(obj, FID_inf_finished, true);

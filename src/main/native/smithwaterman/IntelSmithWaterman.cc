@@ -61,6 +61,18 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
          if(env->ExceptionCheck())
              env->ExceptionClear();
          env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "Arrays aren't valid.");
+
+         if (reference != NULL) {
+           env->ReleasePrimitiveArrayCritical(ref, reference, 0);
+         }
+
+         if (alternate != NULL) {
+           env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
+         }
+
+         if (cigarArray != NULL) {
+           env->ReleasePrimitiveArrayCritical(cigar, cigarArray, 0);
+         }
          return -1;
     }
 

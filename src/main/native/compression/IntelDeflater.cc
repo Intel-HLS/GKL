@@ -184,6 +184,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuff
         if (env->ExceptionCheck())
           env->ExceptionClear();
         env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "inputBuffer is null.");
+        env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
         return;
       }
 
@@ -245,6 +246,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
       if (env->ExceptionCheck())
         env->ExceptionClear();
       env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "outputBuffer is null.");
+      env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
       return -1;
     }
 
@@ -279,8 +281,8 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 
 
     // release buffers
-    env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
     env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
+    env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
 
     // set finished if endOfStream was set and all input processed
     if (endOfStream && lz_stream->avail_in == 0) {
@@ -316,6 +318,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
       if (env->ExceptionCheck())
         env->ExceptionClear();
       env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "outputBuffer is null.");
+      env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
       return -1;
     }
 
@@ -345,8 +348,8 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
     int bytes_out = outputBufferLength - lz_stream->avail_out;
 
     // release buffers
-    env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
     env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
+    env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
 
     if (ret == Z_STREAM_END && lz_stream->avail_in == 0) { 
       env->SetBooleanField(obj, FID_finished, true);
