@@ -282,8 +282,8 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 
 
     // release buffers
-    env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
     env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
+    env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
 
     // set finished if endOfStream was set and all input processed
     if (endOfStream && lz_stream->avail_in == 0) {
@@ -349,8 +349,8 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
     int bytes_out = outputBufferLength - lz_stream->avail_out;
 
     // release buffers
-    env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
     env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
+    env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
 
     if (ret == Z_STREAM_END && lz_stream->avail_in == 0) { 
       env->SetBooleanField(obj, FID_finished, true);
