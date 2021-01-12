@@ -96,7 +96,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
         return;
       }
 
-      env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
 
        isal_deflate_stateless_init(lz_stream);
 
@@ -109,9 +108,11 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
             env->ExceptionClear();
           }
           env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"),"Memory allocation error");
+          free(lz_stream);
           return;
       }
 
+      env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
     }
     else {
 
