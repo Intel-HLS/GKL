@@ -35,8 +35,14 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
 {
   DBG("Enter");
 
-  JavaData javaData;
-  javaData.init(env, readDataHolder, haplotypeDataHolder);
+  JavaData javaData(env);
+  try {
+    javaData.init(readDataHolder, haplotypeDataHolder);
+  } catch (JavaException& e) {
+    env->ExceptionClear();
+    env->ThrowNew(env->FindClass(e.classPath), e.message);
+    return;
+  }
 
   g_use_double = use_double;
   
@@ -101,9 +107,19 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
 
   //==================================================================
   // get Java data
-  JavaData javaData;
-  std::vector<testcase> testcases = javaData.getData(env, readDataArray, haplotypeDataArray);
-  double* javaResults = javaData.getOutputArray(env, likelihoodArray);
+  JavaData javaData(env);
+
+  std::vector<testcase> testcases;
+  double* javaResults;
+
+  try {
+    testcases = javaData.getData(readDataArray, haplotypeDataArray);
+    javaResults = javaData.getOutputArray(likelihoodArray);
+  } catch (JavaException& e) {
+    env->ExceptionClear();
+    env->ThrowNew(env->FindClass(e.classPath), e.message);
+    return;
+  }
   
   //==================================================================
   // calcutate pairHMM
@@ -128,9 +144,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
     DBG("result = %e", result_final);
   }
 
-  //==================================================================
-  // release Java data
-  javaData.releaseData(env);
   DBG("Exit");
 }
 
