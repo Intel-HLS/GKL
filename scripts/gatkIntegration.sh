@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-read -p "Enter Path to GKL/scripts: " GKL_SCRIPTS_PATH
+read -t 5 -p "Enter Path to GKL/scripts: " GKL_SCRIPTS_PATH
 export GKL_SCRIPTS_PATH=${GKL_SCRIPTS_PATH:-`pwd`}
 
 #Check if gatk folder exists in GKL/scripts
