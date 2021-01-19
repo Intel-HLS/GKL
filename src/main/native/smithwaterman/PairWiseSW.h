@@ -36,12 +36,13 @@
             VEC_STOREU((VEC_INT_TYPE *)(&H[hCurInd]), h11); \
             }
 
+static int D_MAX_SEQ_LEN = MAX_SEQ_LEN;
 
 void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, int32_t open, int32_t extend, int32_t* E_,int32_t tid)
 {
-    uint32_t seq1[MAX_SEQ_LEN];
-    uint32_t seq1Rev[MAX_SEQ_LEN];
-    uint32_t seq2[MAX_SEQ_LEN];
+    uint32_t seq1[D_MAX_SEQ_LEN];
+    uint32_t seq1Rev[D_MAX_SEQ_LEN];
+    uint32_t seq2[D_MAX_SEQ_LEN];
     int32_t nrow = p->len1;
     int32_t ncol = p->len2;
     int32_t overhangStrategy = p->overhangStrategy;
@@ -61,10 +62,10 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
     VEC_INT_TYPE ins_ext_vec = VEC_SET1_VAL32(INSERT_EXT);
     VEC_INT_TYPE del_ext_vec = VEC_SET1_VAL32(DELETE_EXT);
     INIT_CONSTANTS;
-    int32_t hwidth = MAX_SEQ_LEN + AVX_LENGTH;
-    int32_t ewidth = MAX_SEQ_LEN + AVX_LENGTH;
+    int32_t hwidth = D_MAX_SEQ_LEN + AVX_LENGTH;
+    int32_t ewidth = D_MAX_SEQ_LEN + AVX_LENGTH;
 
-    int32_t *E  = E_ + tid * 6 * (MAX_SEQ_LEN + AVX_LENGTH);
+    int32_t *E  = E_ + tid * 6 * (D_MAX_SEQ_LEN + AVX_LENGTH);
     int32_t *F  = E + 1 * ewidth;
     int32_t *H  = E + 2 * ewidth;
     for(j = 0; j <= ncol; j+=AVX_LENGTH)
@@ -76,12 +77,12 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
         VEC_STORE(E + i, lowInitValue_vec);
     }
 
-    H[MAX_SEQ_LEN >> 1] = 0;
+    H[D_MAX_SEQ_LEN >> 1] = 0;
 
     for(i = 0; i < nrow; i++)
     {
         seq1[i] = p->seq1[i];
-        seq1Rev[MAX_SEQ_LEN - 1 - i] = p->seq1[i];
+        seq1Rev[D_MAX_SEQ_LEN - 1 - i] = p->seq1[i];
     }
     for(i = 0; i < ncol; i++)
     {
@@ -124,8 +125,8 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
             {
             i = antiDiag - j;
             int32_t diag = j - i;
-            int32_t diagInd = MAX_SEQ_LEN + diag;
-            int32_t inde = MAX_SEQ_LEN - i;
+            int32_t diagInd = D_MAX_SEQ_LEN + diag;
+            int32_t inde = D_MAX_SEQ_LEN - i;
             int32_t indf = j;
             int32_t hLeftInd = prev + ((diagInd - 1) >> 1);
             int32_t hTopInd  = hLeftInd + 1;
@@ -137,8 +138,8 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
             {
             i = antiDiag - j;
             int32_t diag = j - i;
-            int32_t diagInd = MAX_SEQ_LEN + diag;
-            int32_t inde = MAX_SEQ_LEN - i;
+            int32_t diagInd = D_MAX_SEQ_LEN + diag;
+            int32_t inde = D_MAX_SEQ_LEN - i;
             int32_t indf = j;
             int32_t hLeftInd = prev + ((diagInd - 1) >> 1);
             int32_t hTopInd  = hLeftInd + 1;
@@ -151,7 +152,7 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
             VEC_INT_TYPE bt_vec_2 = VEC_PERMUTE2x128_EVEN(bt_vec_0, bt_vec_1);
             VEC_INT_TYPE bt_vec_3 = VEC_PERMUTE2x128_ODD(bt_vec_0, bt_vec_1);
             VEC_INT_TYPE bt_vec   = VEC_PACKS_32(bt_vec_2, bt_vec_3);
-            VEC_STREAM(backTrack + antiDiag * MAX_SEQ_LEN + backTrackInd, bt_vec);
+            VEC_STREAM(backTrack + antiDiag * D_MAX_SEQ_LEN + backTrackInd, bt_vec);
         }
 #ifdef IACA_ANALYSIS
         IACA_END
@@ -163,8 +164,8 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
 #endif
             i = antiDiag - j;
             int32_t diag = j - i;
-            int32_t diagInd = MAX_SEQ_LEN + diag;
-            int32_t inde = MAX_SEQ_LEN - i;
+            int32_t diagInd = D_MAX_SEQ_LEN + diag;
+            int32_t inde = D_MAX_SEQ_LEN - i;
             int32_t indf = j;
             int32_t hLeftInd = prev + ((diagInd - 1) >> 1);
             int32_t hTopInd  = hLeftInd + 1;
@@ -177,7 +178,7 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
             VEC_INT_TYPE bt_vec_3 = VEC_PERMUTE2x128_ODD(bt_vec_0, bt_vec_1);
             VEC_INT_TYPE bt_vec   = VEC_PACKS_32(bt_vec_2, bt_vec_3);
             int32_t backTrackInd = j - jlo - 1;
-            VEC_STREAM(backTrack + antiDiag * MAX_SEQ_LEN + backTrackInd, bt_vec);
+            VEC_STREAM(backTrack + antiDiag * D_MAX_SEQ_LEN + backTrackInd, bt_vec);
         }
 #ifdef PERF_DEBUG
         endTick = __rdtsc();
@@ -186,21 +187,21 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
 #endif
         if((overhangStrategy == INDEL) || (overhangStrategy == LEADING_INDEL))
         {
-            H[cur + ((MAX_SEQ_LEN + 2 * jhi - antiDiag) >> 1)] = open + (jhi - 1) * extend;
-            H[cur + ((MAX_SEQ_LEN + 2 * jlo - antiDiag) >> 1)] = open + (ilo - 1) * extend;
+            H[cur + ((D_MAX_SEQ_LEN + 2 * jhi - antiDiag) >> 1)] = open + (jhi - 1) * extend;
+            H[cur + ((D_MAX_SEQ_LEN + 2 * jlo - antiDiag) >> 1)] = open + (ilo - 1) * extend;
         }
         else
         {
-            H[cur + ((MAX_SEQ_LEN + 2 * jhi - antiDiag) >> 1)] = 0;
-            H[cur + ((MAX_SEQ_LEN + 2 * jlo - antiDiag) >> 1)] = 0;
+            H[cur + ((D_MAX_SEQ_LEN + 2 * jhi - antiDiag) >> 1)] = 0;
+            H[cur + ((D_MAX_SEQ_LEN + 2 * jlo - antiDiag) >> 1)] = 0;
         }
         F[jhi] = lowInitValue;
-        E[MAX_SEQ_LEN - ilo] = lowInitValue;
+        E[D_MAX_SEQ_LEN - ilo] = lowInitValue;
 
 #if 1
         if(ilo == (nrow + 1))
         {
-            int32_t score = H[cur + ((MAX_SEQ_LEN + jlo + 1 - (ilo - 1)) >> 1)];
+            int32_t score = H[cur + ((D_MAX_SEQ_LEN + jlo + 1 - (ilo - 1)) >> 1)];
             if((overhangStrategy == SOFTCLIP) || (overhangStrategy == IGNORE))
             {
                 if((maxScore < score) || ((maxScore == score) && (abs(ilo - jlo - 2) < abs(max_i - max_j))))
@@ -214,7 +215,7 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
         }
         if(jhi == (ncol + 1))
         {
-            int32_t score = H[cur + ((MAX_SEQ_LEN + jhi - 1 - (ihi + 1)) >> 1)];
+            int32_t score = H[cur + ((D_MAX_SEQ_LEN + jhi - 1 - (ihi + 1)) >> 1)];
             if((maxScore < score) || ((maxScore == score) && ((max_j == ncol) || (abs(ihi - jhi + 2) <= abs(max_i - max_j)))))
             {
                 //printf("%d, %d) hij = %d\n", i, j, h11);
@@ -227,7 +228,7 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
     }
     //printf("maxScore = %d, max_i = %d, max_j = %d\n", maxScore, max_i, max_j);
     if(overhangStrategy == INDEL)
-        p->score = H[cur + ((MAX_SEQ_LEN + ncol - nrow) >> 1)];
+        p->score = H[cur + ((D_MAX_SEQ_LEN + ncol - nrow) >> 1)];
     else
         p->score = maxScore;
     p->score = maxScore;
@@ -279,12 +280,12 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
         int32_t btrInd;
         if(antiDiag <= nrow)
         {
-            btrInd = antiDiag * MAX_SEQ_LEN + j - 1;
+            btrInd = antiDiag * D_MAX_SEQ_LEN + j - 1;
         }
         else
         {
             int32_t jLo = antiDiag - nrow - 1;
-            btrInd = antiDiag * MAX_SEQ_LEN + j - jLo - 1;
+            btrInd = antiDiag * D_MAX_SEQ_LEN + j - jLo - 1;
         }
         int32_t btr = btrack[btrInd];
         if(state == INSERT_EXT)
@@ -383,7 +384,8 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
         }
 
     }
-    int maxSize =  sizeof(p->cigar);
+
+    int maxSize = max(p->len1, p->len2);
     int curSize = 0;
     for(i = newId; i >= 0; i--)
     {
@@ -407,33 +409,37 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
                 state = 'R';
                 break;
         }
-	// 4 is u16 + Char + Null; look into how to handle the error state  
-        if (curSize < (maxSize - 4)) 
-		curSize += snprintf(p->cigar + curSize, 4, "%d%c", cigarArray[2 * i + 1], state);
+	// expectedLength for converting int to str w/ extra padding for '\0'
+	int expectedLength = snprintf( NULL, 0, "%d%c", cigarArray[2 * i + 1], state);
+	if (curSize >= 0 && expectedLength > 1 && (curSize < maxSize - expectedLength ))
+           {
+                   curSize += snprintf(p->cigar + curSize, expectedLength + 1, "%d%c", cigarArray[2 * i + 1], state);
+           }
     }
-    p->cigarCount = strnlen(p->cigar, maxSize);
+    p->cigarCount = strnlen(p->cigar, curSize);
 }
 
 
 int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount)
 {
 
-
-
     int32_t  w_match = match;
     int32_t  w_mismatch = mismatch;
     int32_t  w_open = open;
     int32_t  w_extend = extend;
 
-    //int len = 2 * max(len1, len2);
-    //if(len >  MAX_SEQ_LEN) {
-	    //printf("Length greater than %d > %d",len,MAX_SEQ_LEN);
-      //      return -1;
-    //}
+    int len = max(len1, len2);
+    if(len > MAX_SEQ_LEN) {
+	while(len > D_MAX_SEQ_LEN)
+	   D_MAX_SEQ_LEN = 2*D_MAX_SEQ_LEN;
+    }
+    else{
+	D_MAX_SEQ_LEN = MAX_SEQ_LEN;
+    }
 
-    int32_t  *E_  = (int32_t *)_mm_malloc((6 * (MAX_SEQ_LEN+ AVX_LENGTH)) * sizeof(int32_t), 64);
-    int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * MAX_SEQ_LEN * MAX_SEQ_LEN + 2 * AVX_LENGTH) * sizeof(int16_t), 64);
-    int16_t  *cigarBuf_  = (int16_t *)_mm_malloc(4 * MAX_SEQ_LEN * sizeof(int16_t), 64);
+    int32_t  *E_  = (int32_t *)_mm_malloc((6 * (D_MAX_SEQ_LEN+ AVX_LENGTH)) * sizeof(int32_t), 64);
+    int16_t  *backTrack_ = (int16_t *)_mm_malloc((2 * D_MAX_SEQ_LEN * D_MAX_SEQ_LEN + 2 * AVX_LENGTH) * sizeof(int16_t), 64);
+    int16_t  *cigarBuf_  = (int16_t *)_mm_malloc(4 * D_MAX_SEQ_LEN * sizeof(int16_t), 64);
 
     if (E_ == NULL  || backTrack_  == NULL || cigarBuf_ == NULL) {
          _mm_free(E_);
@@ -450,13 +456,14 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     p.overhangStrategy = overhangStrategy;
     p.btrack = backTrack_;
     p.cigar = cigarArray;
+
     smithWatermanBackTrack(&p, match, mismatch,  open, extend, E_, 0);
     getCIGAR(&p, cigarBuf_, 0);
-
     (*cigarCount) = p.cigarCount;
 
     _mm_free(E_);
     _mm_free(backTrack_);
     _mm_free(cigarBuf_);
+
     return p.alignmentOffset;
     }
