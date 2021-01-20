@@ -70,7 +70,7 @@ public class DeflaterUnitTest {
     public void setInputLongThrowsNullPointerExceptionWhenNullBufferTest(){
         final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
 
-        deflater.setInput(null,0, 0);
+        deflater.setInput(null, 0, 0);
 
         Assert.fail();
     }

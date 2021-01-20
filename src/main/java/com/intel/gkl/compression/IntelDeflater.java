@@ -147,11 +147,18 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
     public void setInput(byte[] b, int off, int len) {
         if(lz_stream == 0) reset();
         if(b == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Input buffer is null");
         }
-        if (off < 0 || len < 0 || off > b.length - len) {
-            throw new ArrayIndexOutOfBoundsException();
+        if (off < 0) {
+            throw new ArrayIndexOutOfBoundsException("Offset value is less than zero");
         }
+        if(len < 0){
+            throw new ArrayIndexOutOfBoundsException("Length value is less than zero");
+        }
+        if(off > b.length - len){
+            throw new ArrayIndexOutOfBoundsException("Length value exceeds permissible range");
+        }
+
         inputBuffer = b;
         inputBufferLength = len;
     }
@@ -180,13 +187,13 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
     @Override
     public int deflate(byte[] b, int off, int len) {
         if(b == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Output buffer is null");
         }
         if(off != 0) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("The only accepted offset value is 0");
         }
         if(len <= 0) {
-            throw new ArrayIndexOutOfBoundsException();
+            throw new ArrayIndexOutOfBoundsException("Length value is less or equal than zero");
         }
 
         return deflateNative(b, len);
