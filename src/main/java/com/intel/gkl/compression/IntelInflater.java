@@ -126,10 +126,16 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
     public void setInput(byte[] b, int off, int len) {
         if(lz_stream == 0) reset();
         if(b == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Input buffer is null");
         }
-        if (off < 0 || len < 0 || off > b.length - len) {
-            throw new ArrayIndexOutOfBoundsException();
+        if (off < 0) {
+            throw new ArrayIndexOutOfBoundsException("Offset value is less than zero");
+        }
+        if (len < 0) {
+            throw new ArrayIndexOutOfBoundsException("Length value is less than zero");
+        }
+        if (off > b.length - len) {
+            throw new ArrayIndexOutOfBoundsException("Length value exceeds permissible range");
         }
         inputBuffer = b;
         inputBufferOffset = off;
@@ -152,10 +158,16 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
     @Override
     public int inflate (byte[] b, int off, int len ) {
         if(b == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Output buffer is null");
         }
-        if (off < 0 || len < 0 || off > b.length - len) {
-            throw new ArrayIndexOutOfBoundsException();
+        if (off < 0){
+            throw new ArrayIndexOutOfBoundsException("Offset value is less than zero");
+        }
+        if(len < 0){
+            throw new ArrayIndexOutOfBoundsException("Length value is less than zero");
+        }
+        if(off > b.length - len) {
+            throw new ArrayIndexOutOfBoundsException("Length value exceeds permissible range");
         }
 
         return inflateNative(b, off, len);
@@ -170,7 +182,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
     @Override
     public int inflate (byte[] b) {
         if(b == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Output buffer is null");
         }
 
         return inflateNative( b, 0, b.length);
