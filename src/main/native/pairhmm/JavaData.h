@@ -3,25 +3,45 @@
 
 #include <vector>
 #include <debug.h>
+#include <exception>
+#include <string>
 #include "pairhmm_common.h"
+
+class JavaException : std::exception {
+  public:
+  const char* classPath;
+  const char* message;
+
+  JavaException(const char* classPath, const char* message)
+    : classPath(classPath),
+      message(message)
+  { }
+};
 
 class JavaData {
  public:
+  JavaData(JNIEnv *env) : m_env(env) {
+  
+  }
+
+  virtual ~JavaData() {
+    releaseData();
+  }
 
   // cache field ids
-  static void init(JNIEnv *env, jclass readDataHolder, jclass haplotypeDataHolder) {
-    m_readBasesFid = getFieldId(env, readDataHolder, "readBases", "[B");
-    m_readQualsFid = getFieldId(env, readDataHolder, "readQuals", "[B");
-    m_insertionGopFid = getFieldId(env, readDataHolder, "insertionGOP", "[B");
-    m_deletionGopFid = getFieldId(env, readDataHolder, "deletionGOP", "[B");
-    m_overallGcpFid = getFieldId(env, readDataHolder, "overallGCP", "[B");
-    m_haplotypeBasesFid = getFieldId(env, haplotypeDataHolder, "haplotypeBases", "[B");
+  void init(jclass readDataHolder, jclass haplotypeDataHolder) {
+    m_readBasesFid = getFieldId(readDataHolder, "readBases", "[B");
+    m_readQualsFid = getFieldId(readDataHolder, "readQuals", "[B");
+    m_insertionGopFid = getFieldId(readDataHolder, "insertionGOP", "[B");
+    m_deletionGopFid = getFieldId(readDataHolder, "deletionGOP", "[B");
+    m_overallGcpFid = getFieldId(readDataHolder, "overallGCP", "[B");
+    m_haplotypeBasesFid = getFieldId(haplotypeDataHolder, "haplotypeBases", "[B");
   }
 
   // create array of testcases
-  std::vector<testcase> getData(JNIEnv *env, jobjectArray& readDataArray, jobjectArray& haplotypeDataArray) {
-    int numReads = env->GetArrayLength(readDataArray);
-    int numHaplotypes = env->GetArrayLength(haplotypeDataArray);
+  std::vector<testcase> getData(jobjectArray& readDataArray, jobjectArray& haplotypeDataArray) {
+    int numReads = m_env->GetArrayLength(readDataArray);
+    int numHaplotypes = m_env->GetArrayLength(haplotypeDataArray);
 
     std::vector<char*> haplotypes;
     std::vector<int> haplotypeLengths;
@@ -32,7 +52,7 @@ class JavaData {
     // get haplotypes
     for (int i = 0; i < numHaplotypes; i++) {
       int length = 0;
-      haplotypes.push_back(getCharArray(env, haplotypeDataArray, i, m_haplotypeBasesFid, length));
+      haplotypes.push_back(getCharArray(haplotypeDataArray, i, m_haplotypeBasesFid, length));
       haplotypeLengths.push_back(length);
       total_hap_length += length;
     }
@@ -40,12 +60,12 @@ class JavaData {
     // get reads and create testcases 
     for (int r = 0; r < numReads; r++) {
       int length = 0;
-      char* reads = getCharArray(env, readDataArray, r, m_readBasesFid, length);
+      char* reads = getCharArray(readDataArray, r, m_readBasesFid, length);
       int readLength = length;
-      char* insGops = getCharArray(env, readDataArray, r, m_insertionGopFid, length);
-      char* delGops = getCharArray(env, readDataArray, r, m_deletionGopFid, length);
-      char* gapConts = getCharArray(env, readDataArray, r, m_overallGcpFid, length);
-      char* readQuals = getCharArray(env, readDataArray, r, m_readQualsFid, length);
+      char* insGops = getCharArray(readDataArray, r, m_insertionGopFid, length);
+      char* delGops = getCharArray(readDataArray, r, m_deletionGopFid, length);
+      char* gapConts = getCharArray(readDataArray, r, m_overallGcpFid, length);
+      char* readQuals = getCharArray(readDataArray, r, m_readQualsFid, length);
       total_read_length += length;
       
       for (int h = 0; h < numHaplotypes; h++) {
@@ -67,44 +87,44 @@ class JavaData {
     return m_testcases;
   }
 
-  double* getOutputArray(JNIEnv *env, jdoubleArray array) {
-    return getDoubleArray(env, array);
-  }
-
-  void releaseData(JNIEnv *env) {
-    for (int i = 0; i < m_byteArrays.size(); i++) {
-      env->ReleaseByteArrayElements(m_byteArrays[i].first, m_byteArrays[i].second, 0);
-    }
-    for (int i = 0; i < m_doubleArrays.size(); i++) {
-      env->ReleaseDoubleArrayElements(m_doubleArrays[i].first, m_doubleArrays[i].second, 0);
-    }
+  double* getOutputArray(jdoubleArray array) {
+    return getDoubleArray(array);
   }
 
  private:
-  static jfieldID getFieldId(JNIEnv *env, jclass clazz, const char *name, const char *sig) {
-    jfieldID id = env->GetFieldID(clazz, name, sig);
+  void releaseData() {
+    for (int i = 0; i < m_byteArrays.size(); i++) {
+      m_env->ReleaseByteArrayElements(m_byteArrays[i].first, m_byteArrays[i].second, 0);
+    }
+    for (int i = 0; i < m_doubleArrays.size(); i++) {
+      m_env->ReleaseDoubleArrayElements(m_doubleArrays[i].first, m_doubleArrays[i].second, 0);
+    }
+  }
+
+  jfieldID getFieldId(jclass clazz, const char *name, const char *sig) {
+    jfieldID id = m_env->GetFieldID(clazz, name, sig);
     if (id == NULL) {
-      env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "Unable to get field ID");
+      throw JavaException("java/lang/IllegalArgumentException", "Unable to get field ID");
     }
     return id;
   }
 
-  char* getCharArray(JNIEnv* env, jobjectArray& array, int index, jfieldID fieldId, int& length) {
-    jobject object = env->GetObjectArrayElement(array, index);
-    jbyteArray byteArray = (jbyteArray)env->GetObjectField(object, fieldId);
-    jbyte* primArray = (jbyte*)env->GetByteArrayElements(byteArray, NULL);
+  char* getCharArray(jobjectArray& array, int index, jfieldID fieldId, int& length) {
+    jobject object = m_env->GetObjectArrayElement(array, index);
+    jbyteArray byteArray = (jbyteArray)m_env->GetObjectField(object, fieldId);
+    jbyte* primArray = (jbyte*)m_env->GetByteArrayElements(byteArray, NULL);
     if (primArray == NULL) {
-      env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"), "Unable to access jbyteArray");
+      throw JavaException("java/lang/OutOfMemoryError", "Unable to access jbyteArray");
     }
-    length = env->GetArrayLength(byteArray);
+    length = m_env->GetArrayLength(byteArray);
     m_byteArrays.push_back(std::make_pair(byteArray, primArray));
     return (char*)primArray;
   }
 
-  double* getDoubleArray(JNIEnv *env, jdoubleArray array) {
-    jdouble* primArray = (jdouble*)env->GetDoubleArrayElements(array, NULL);
+  double* getDoubleArray(jdoubleArray array) {
+    jdouble* primArray = (jdouble*)m_env->GetDoubleArrayElements(array, NULL);
     if (primArray == NULL) {
-      env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"), "Unable to access jdoubleArray");
+      throw JavaException("java/lang/OutOfMemoryError", "Unable to access jdoubleArray");
     }
     m_doubleArrays.push_back(std::make_pair(array, primArray));
     return (double*)primArray;
@@ -114,6 +134,8 @@ class JavaData {
   std::vector<std::pair<jbyteArray, jbyte*> > m_byteArrays;
   std::vector<std::pair<jdoubleArray, jdouble*> > m_doubleArrays;
   long m_total_cells;
+
+  JNIEnv* m_env;
   
   static jfieldID m_readBasesFid;
   static jfieldID m_readQualsFid;
