@@ -29,15 +29,12 @@
 package com.intel.gkl.compression;
 
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
-import com.intel.gkl.compression.IntelInflater;
-import htsjdk.samtools.util.zip.DeflaterFactory;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import java.security.SecureRandom;
-import java.util.zip.Inflater;
 import java.util.zip.Deflater;
 
 public class DeflaterUnitTest {
@@ -61,66 +58,99 @@ public class DeflaterUnitTest {
         Assert.assertTrue(Supported);
     }
 
-    @Test(enabled = true)
-    public void inputDataTest() {
-        final int LEN = 4*1024*1024;
-        final byte[] input = new byte[LEN];
-        final byte[] compressed = new byte[2*LEN];
+    @Test(enabled = true, expectedExceptions = NullPointerException.class)
+    public void setInputShortThrowsNullPointerExceptionWhenNullBufferTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
 
-        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-        final Deflater deflater = intelDeflaterFactory.makeDeflater(0, true);
+        deflater.setInput(null);
 
-        Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
+        Assert.fail();
+    }
+    @Test(enabled = true, expectedExceptions = NullPointerException.class)
+    public void setInputLongThrowsNullPointerExceptionWhenNullBufferTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
 
-        final boolean isSupported = new IntelInflater().load(null);
-        Assert.assertTrue(isSupported);
-        final IntelInflater inflater = new IntelInflater(true);
+        deflater.setInput(null, 0, 0);
 
-        randomDNA(input);
+        Assert.fail();
+    }
 
-        log.info("Negative testing for offset.");
-        try {
-            deflater.setInput(input, -1, input.length);
-            Assert.fail("IllegalArgumentException expected");
-        }
-        catch(IllegalArgumentException e) {}
+    @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenOffsetLessThanZeroTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+        byte[] buffer = new byte[] {'A', 'C', 'G'};
 
-        try {
-            deflater.setInput(input, input.length, input.length);
-            Assert.fail("IllegalArgumentException expected");
-        }
-        catch(IllegalArgumentException e) {}
+        deflater.setInput(buffer,-1, buffer.length);
 
-        try {
-            deflater.setInput(input, input.length + 1, input.length);
-            Assert.fail("IllegalArgumentException expected");
-        }
-        catch(IllegalArgumentException e) {}
+        Assert.fail();
+    }
 
-        deflater.setInput(input, 0, input.length);
-        deflater.finish();
+    @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenLengthLessThanZeroTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+        byte[] buffer = new byte[] {'A', 'C', 'G'};
 
-        log.info("Deflate parameters negative testing.");
-        try {
-            deflater.deflate(null, 0, compressed.length);
-            Assert.fail("NullPointerException expected.");
-        }
-        catch(NullPointerException e) {}
+        deflater.setInput(buffer,0, -1);
 
-        try {
-            deflater.deflate(compressed, 5, compressed.length);
-            Assert.fail("IllegalArgumentException expected.");
-        }
-        catch(IllegalArgumentException e) {}
+        Assert.fail();
+    }
+    @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenOffsetGreaterThanLengthTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+        byte[] buffer = new byte[] {'A', 'C', 'G'};
 
-        try {
-            deflater.deflate(compressed, 0, -1);
-            Assert.fail("NullPointerException expected.");
-        }
-        catch(NullPointerException e) {}
+        deflater.setInput(buffer,4, buffer.length);
 
-        inflater.end();
-        deflater.end();
+        Assert.fail();
+    }
+
+    @Test(enabled = true,expectedExceptions = NullPointerException.class)
+    public void deflateThrowsNullPointerExceptionWhenNullBufferTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+
+        deflater.deflate(null, 0, 1);
+
+        Assert.fail();
+    }
+
+    @Test(enabled = true,expectedExceptions = IllegalArgumentException.class)
+    public void deflateThrowsIllegalArgumentExceptionWhenOffsetGreaterThanZeroTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+        byte[] outputBuffer = new byte[10];
+
+        deflater.deflate(outputBuffer, 1, outputBuffer.length);
+
+        Assert.fail();
+    }
+
+    @Test(enabled = true,expectedExceptions = IllegalArgumentException.class)
+    public void deflateThrowsIllegalArgumentExceptionWhenOffsetLessThanZeroTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+        byte[] outputBuffer = new byte[10];
+
+        deflater.deflate(outputBuffer, -1, outputBuffer.length);
+
+        Assert.fail();
+    }
+
+    @Test(enabled = true,expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void deflateThrowsArrayIndexOutOfBoundsExceptionWhenLengthLessThanZeroTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+        byte[] outputBuffer = new byte[10];
+
+        deflater.deflate(outputBuffer, 0, -1);
+
+        Assert.fail();
+    }
+
+    @Test(enabled = true,expectedExceptions = ArrayIndexOutOfBoundsException.class)
+    public void deflateThrowsArrayIndexOutOfBoundsExceptionWhenLengthEqualZeroTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+        byte[] outputBuffer = new byte[10];
+
+        deflater.deflate(outputBuffer, 0, 0);
+
+        Assert.fail();
     }
 
     @Test(enabled = true)
@@ -133,14 +163,14 @@ public class DeflaterUnitTest {
 
         for(int level=0; level <10; level++) {
             for (int i = 0; i < 1; i++) {
-            final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
-            final Deflater deflater = intelDeflaterFactory.makeDeflater(level, true);
+                final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+                final Deflater deflater = intelDeflaterFactory.makeDeflater(level, true);
 
-            Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
+                Assert.assertTrue(intelDeflaterFactory.usingIntelDeflater());
 
-            final boolean isSupported = new IntelInflater().load(null);
-            Assert.assertTrue(isSupported);
-            final IntelInflater inflater = new IntelInflater(true);
+                final boolean isSupported = new IntelInflater().load(null);
+                Assert.assertTrue(isSupported);
+                final IntelInflater inflater = new IntelInflater(true);
 
                 randomDNA(input);
                 deflater.setInput(input, 0, input.length);
@@ -172,8 +202,8 @@ public class DeflaterUnitTest {
 
                 Assert.assertEquals(input, result);
 
-            inflater.end();
-            deflater.end();
+                inflater.end();
+                deflater.end();
             }
         }
     }

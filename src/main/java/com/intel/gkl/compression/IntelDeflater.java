@@ -28,7 +28,6 @@
 
 package com.intel.gkl.compression;
 
-import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,7 +81,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
     private boolean nowrap;
 
 
-     /**
+    /**
      * Creates a new compressor using the specified compression level.
      * If 'nowrap' is true then the ZLIB header and checksum fields will
      * not be used in order to support the compression format used in
@@ -100,7 +99,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
 
     }
 
-     /**
+    /**
      * Creates a new compressor using the specified compression level.
      * Compressed data will be generated in ZLIB format.
      * @param level the compression level (0-9)
@@ -145,18 +144,21 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      * @see IntelDeflater
      */
     @Override
-    public void setInput(byte[] b, int off, int len) throws NullPointerException, IllegalArgumentException {
+    public void setInput(byte[] b, int off, int len) {
         if(lz_stream == 0) reset();
         if(b == null) {
-            throw new NullPointerException("Input is null");
+            throw new NullPointerException("Input buffer is null");
         }
-        if(len <= 0) {
-            throw new IllegalArgumentException("Input buffer length is less or equal zero.");
+        if (off < 0) {
+            throw new ArrayIndexOutOfBoundsException("Offset value is less than zero");
         }
-        if(off < 0 || off > b.length - len )
-        {
-            throw new IllegalArgumentException("Offset cannot be less then 0 and greater then length.");
+        if(len < 0){
+            throw new ArrayIndexOutOfBoundsException("Length value is less than zero");
         }
+        if(off > b.length - len){
+            throw new ArrayIndexOutOfBoundsException("Length value exceeds permissible range");
+        }
+
         inputBuffer = b;
         inputBufferLength = len;
     }
@@ -183,15 +185,15 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      *         output buffer
      */
     @Override
-    public int deflate(byte[] b, int off, int len )  throws NullPointerException, IllegalArgumentException {
+    public int deflate(byte[] b, int off, int len) {
         if(b == null) {
-            throw new NullPointerException("Input is null");
-        }
-        if(len <= 0) {
-            throw new NullPointerException("Input buffer length is less or equal zero.");
+            throw new NullPointerException("Output buffer is null");
         }
         if(off != 0) {
-            throw new IllegalArgumentException("Offset must be equal zero.");
+            throw new IllegalArgumentException("The only accepted offset value is 0");
+        }
+        if(len <= 0) {
+            throw new ArrayIndexOutOfBoundsException("Length value is less or equal than zero");
         }
 
         return deflateNative(b, len);
