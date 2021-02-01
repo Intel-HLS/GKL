@@ -161,7 +161,6 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
          (double) (tv2.tv_sec - tv1.tv_sec));
 #endif
-         int bytes_out = outputBufferLength - lz_stream->avail_out;
 
 
         DBG("%s", lz_stream->msg);
@@ -210,10 +209,11 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
 
           env->ExceptionClear();
           env->ThrowNew(env->FindClass("java/lang/RuntimeException"), msg);
+          return -1;
         }
 
+        int bytes_out = outputBufferLength - lz_stream->avail_out;
         return bytes_out;
-
 }
 
 /*

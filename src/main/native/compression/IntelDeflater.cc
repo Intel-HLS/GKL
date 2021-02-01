@@ -283,9 +283,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
              (double) (tv2.tv_sec - tv1.tv_sec));
 #endif
 
-    long bytes_out = outputBufferLength - lz_stream->avail_out;
 
-     DBG ("bytes_out = %d \n", bytes_out);
       DBG ("avail_out = %d \n",lz_stream->avail_out );
 
 
@@ -321,9 +319,12 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 
       env->ExceptionClear();
       env->ThrowNew(env->FindClass("java/lang/RuntimeException"), msg);
+      return -1;
     }
 
     // return number of bytes written to output buffer
+    long bytes_out = outputBufferLength - lz_stream->avail_out;
+    DBG ("bytes_out = %d \n", bytes_out);
     return bytes_out;
   }
   else {
@@ -379,8 +380,6 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
               (double) (tv2.tv_sec - tv1.tv_sec));
  #endif
 
-    int bytes_out = outputBufferLength - lz_stream->avail_out;
-
     // release buffers
     env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
     env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
@@ -404,8 +403,10 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 
       env->ExceptionClear();
       env->ThrowNew(env->FindClass("java/lang/RuntimeException"), msg);
+      return -1;
     }
 
+    int bytes_out = outputBufferLength - lz_stream->avail_out;
     return bytes_out;
   }
 }
