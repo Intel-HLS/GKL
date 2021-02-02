@@ -93,6 +93,11 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
         if ((level < 0 || level > 9) && level != DEFAULT_COMPRESSION) {
             throw new IllegalArgumentException("Illegal compression level");
         }
+
+	if(nowrap == false) {
+		 throw new IllegalArgumentException("ZLIB format is not supported at this time with Intel GKL");
+	}
+	    
         this.level = level;
         this.nowrap = nowrap;
         strategy = DEFAULT_STRATEGY;
@@ -105,7 +110,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      * @param level the compression level (0-9)
      */
     public IntelDeflater(int level) {
-        this(level, false);
+        this(level, true);
     }
 
     /**
@@ -113,7 +118,7 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      * Compressed data will be generated in ZLIB format.
      */
     public IntelDeflater() {
-        this(DEFAULT_COMPRESSION, false);
+        this(DEFAULT_COMPRESSION, true);
     }
 
     @Override
