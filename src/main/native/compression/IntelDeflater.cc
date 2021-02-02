@@ -197,12 +197,21 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuff
         if(env->ExceptionCheck())
             env->ExceptionClear();
         env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"),"Memory allocation error");
+        env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
         return;
       }
 
       memset(histogram, 0, sizeof(isal_huff_histogram));
       isal_update_histogram((unsigned char*)input, 64*1024, histogram);
-      isal_create_hufftables(hufftables_custom, histogram);
+
+      if (isal_create_hufftables(hufftables_custom, histogram) != 0) {
+        env->ExceptionClear();
+        env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "Invalid huffman code was created.");
+        env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
+        free(histogram);
+        return;
+      }
+
       lz_stream->hufftables = hufftables_custom;
 
       env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
@@ -265,7 +274,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
 #endif
 
     // compress and update lz_stream state
-    isal_deflate_stateless(lz_stream);
+    int ret = isal_deflate_stateless(lz_stream);
 
 #ifdef profile
     gettimeofday(&tv2, NULL);
@@ -274,9 +283,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
              (double) (tv2.tv_sec - tv1.tv_sec));
 #endif
 
-    long bytes_out = outputBufferLength - lz_stream->avail_out;
 
-     DBG ("bytes_out = %d \n", bytes_out);
       DBG ("avail_out = %d \n",lz_stream->avail_out );
 
 
@@ -290,7 +297,34 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
       env->SetBooleanField(obj, FID_finished, true);
     }
 
+    if (ret != COMP_OK) {
+      const char* msg;
+      switch (ret) {
+        case INVALID_FLUSH:
+          msg = "Invalid FLUSH selected.";
+          break;
+        case ISAL_INVALID_LEVEL:
+          msg = "Invalid compression level set.";
+          break;
+        case ISAL_INVALID_LEVEL_BUF:
+          msg = "Level buffer is not large enough.";
+          break;
+        case STATELESS_OVERFLOW:
+          msg = "Output buffer too small.";
+          break;
+        default:
+          msg = "isal_deflate_stateless returned an unknown return code.";
+          DBG("isal_deflate_stateless returned %d", ret);
+      }
+
+      env->ExceptionClear();
+      env->ThrowNew(env->FindClass("java/lang/RuntimeException"), msg);
+      return -1;
+    }
+
     // return number of bytes written to output buffer
+    long bytes_out = outputBufferLength - lz_stream->avail_out;
+    DBG ("bytes_out = %d \n", bytes_out);
     return bytes_out;
   }
   else {
@@ -346,16 +380,33 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
               (double) (tv2.tv_sec - tv1.tv_sec));
  #endif
 
-    int bytes_out = outputBufferLength - lz_stream->avail_out;
-
     // release buffers
     env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
     env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
 
     if (ret == Z_STREAM_END && lz_stream->avail_in == 0) { 
       env->SetBooleanField(obj, FID_finished, true);
+    } else if (ret != Z_OK) {
+      const char* msg;
+
+      switch (ret) {
+        case Z_STREAM_ERROR:
+          msg = "Stream state is inconsistent.";
+          break;
+        case Z_BUF_ERROR:
+          msg = "No progress possible.";
+          break;
+        default:
+          msg = "deflate returned an unknown return code.";
+          DBG("deflate returned %d", ret);
+      }
+
+      env->ExceptionClear();
+      env->ThrowNew(env->FindClass("java/lang/RuntimeException"), msg);
+      return -1;
     }
 
+    int bytes_out = outputBufferLength - lz_stream->avail_out;
     return bytes_out;
   }
 }

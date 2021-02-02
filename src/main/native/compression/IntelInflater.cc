@@ -161,7 +161,6 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
          (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
          (double) (tv2.tv_sec - tv1.tv_sec));
 #endif
-         int bytes_out = outputBufferLength - lz_stream->avail_out;
 
 
         DBG("%s", lz_stream->msg);
@@ -174,12 +173,47 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
         env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
         env->ReleasePrimitiveArrayCritical(outputBuffer, next_out, 0);
 
-        if (ret == ISAL_END_INPUT && lz_stream->avail_in == 0) {
+        if (ret == ISAL_DECOMP_OK && lz_stream->avail_in == 0) {
           env->SetBooleanField(obj, FID_inf_finished, true);
         }
 
-        return bytes_out;
+        if (ret != ISAL_DECOMP_OK) {
+          const char* msg;
 
+          switch (ret) {
+            case ISAL_INVALID_BLOCK:
+              msg = "Invalid deflate block found.";
+              break;
+            case ISAL_NEED_DICT:
+              msg = "Stream needs a dictionary to continue.";
+              break;
+            case ISAL_INVALID_SYMBOL:
+              msg = "Invalid deflate symbol found.";
+              break;
+            case ISAL_INVALID_LOOKBACK:
+              msg = "Invalid lookback distance found.";
+              break;
+            case ISAL_INVALID_WRAPPER:
+              msg = "Invalid gzip/zlib wrapper found.";
+              break;
+            case ISAL_UNSUPPORTED_METHOD:
+              msg = "Gzip/zlib wrapper specifies unsupported compress method.";
+              break;
+            case ISAL_INCORRECT_CHECKSUM:
+              msg = "Incorrect checksum found.";
+              break;
+            default:
+              msg = "isal_inflate returned an unknown return code.";
+              DBG("lsal_inflate returned %d", ret);
+          }
+
+          env->ExceptionClear();
+          env->ThrowNew(env->FindClass("java/lang/RuntimeException"), msg);
+          return -1;
+        }
+
+        int bytes_out = outputBufferLength - lz_stream->avail_out;
+        return bytes_out;
 }
 
 /*
