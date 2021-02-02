@@ -53,6 +53,7 @@
 #endif
 
 extern int decode_huffman_code_block_stateless(struct inflate_state *, uint8_t * start_out);
+extern struct isal_hufftables hufftables_default;	/* For known header detection */
 
 #define LARGE_SHORT_SYM_LEN 25
 #define LARGE_SHORT_SYM_MASK ((1 << LARGE_SHORT_SYM_LEN) - 1)
@@ -932,6 +933,76 @@ static void inline make_inflate_huff_code_header(struct inflate_huff_code_small 
 	}
 }
 
+static int header_matches_pregen(struct inflate_state *state)
+{
+#ifndef ISAL_STATIC_INFLATE_TABLE
+	return 0;
+#else
+	uint8_t *in, *hdr;
+	uint32_t in_end_bits, hdr_end_bits;
+	uint32_t bytes_read_in, header_len, last_bits, last_bit_mask;
+	uint64_t bits_read_mask;
+	uint64_t hdr_stash, in_stash;
+	const uint64_t bits_read_prior = 3;	// Have read bfinal(1) and btype(2)
+
+	/* Check if stashed read_in_bytes match header */
+	hdr = &(hufftables_default.deflate_hdr[0]);
+	bits_read_mask = (1ull << state->read_in_length) - 1;
+	hdr_stash = (load_u64(hdr) >> bits_read_prior) & bits_read_mask;
+	in_stash = state->read_in & bits_read_mask;
+
+	if (hdr_stash != in_stash)
+		return 0;
+
+	/* Check if input is byte aligned */
+	if ((state->read_in_length + bits_read_prior) % 8)
+		return 0;
+
+	/* Check if header bulk is the same */
+	in = state->next_in;
+	bytes_read_in = (state->read_in_length + bits_read_prior) / 8;
+	header_len = hufftables_default.deflate_hdr_count;
+
+	if (memcmp(in, &hdr[bytes_read_in], header_len - bytes_read_in))
+		return 0;
+
+	/* If there are any last/end bits to the header check them too */
+	last_bits = hufftables_default.deflate_hdr_extra_bits;
+	last_bit_mask = (1 << last_bits) - 1;
+
+	if (0 == last_bits) {
+		state->next_in += header_len - bytes_read_in;
+		state->avail_in -= header_len - bytes_read_in;
+		state->read_in_length = 0;
+		state->read_in = 0;
+		return 1;
+	}
+
+	in_end_bits = in[header_len - bytes_read_in] & last_bit_mask;
+	hdr_end_bits = hdr[header_len] & last_bit_mask;
+	if (in_end_bits == hdr_end_bits) {
+		state->next_in += header_len - bytes_read_in;
+		state->avail_in -= header_len - bytes_read_in;
+		state->read_in_length = 0;
+		state->read_in = 0;
+		inflate_in_read_bits(state, last_bits);
+		return 1;
+	}
+
+	return 0;
+#endif // ISAL_STATIC_INFLATE_TABLE
+}
+
+static int setup_pregen_header(struct inflate_state *state)
+{
+#ifdef ISAL_STATIC_INFLATE_TABLE
+	memcpy(&state->lit_huff_code, &pregen_lit_huff_code, sizeof(pregen_lit_huff_code));
+	memcpy(&state->dist_huff_code, &pregen_dist_huff_code, sizeof(pregen_dist_huff_code));
+	state->block_state = ISAL_BLOCK_CODED;
+#endif // ISAL_STATIC_INFLATE_TABLE
+	return 0;
+}
+
 /* Sets the inflate_huff_codes in state to be the huffcodes corresponding to the
  * deflate static header */
 static int inline setup_static_header(struct inflate_state *state)
@@ -1189,6 +1260,11 @@ static int inline setup_dynamic_header(struct inflate_state *state)
 		0x10, 0x11, 0x12, 0x00, 0x08, 0x07, 0x09, 0x06,
 		0x0a, 0x05, 0x0b, 0x04, 0x0c, 0x03, 0x0d, 0x02, 0x0e, 0x01, 0x0f
 	};
+
+	/* If you are given a whole header and it matches the pregen header */
+	if (state->avail_in > (hufftables_default.deflate_hdr_count + sizeof(uint64_t))
+	    && header_matches_pregen(state))
+		return setup_pregen_header(state);
 
 	if (state->bfinal && state->avail_in <= SINGLE_SYM_THRESH) {
 		multisym = SINGLE_SYM_FLAG;
@@ -1749,6 +1825,7 @@ void isal_inflate_reset(struct inflate_state *state)
 	state->write_overflow_len = 0;
 	state->copy_overflow_length = 0;
 	state->copy_overflow_distance = 0;
+	state->wrapper_flag = 0;
 	state->tmp_in_size = 0;
 	state->tmp_out_processed = 0;
 	state->tmp_out_valid = 0;
@@ -1786,21 +1863,24 @@ static inline uint32_t fixed_size_read(struct inflate_state *state,
 }
 
 static inline uint32_t buffer_header_copy(struct inflate_state *state, uint32_t in_len,
-					  uint8_t * buf, uint32_t buf_len, uint32_t buf_error)
+					  uint8_t * buf, uint32_t buffer_len, uint32_t offset,
+					  uint32_t buf_error)
 {
 	uint32_t len = in_len;
+	uint32_t buf_len = buffer_len - offset;
+
 	if (len > state->avail_in)
 		len = state->avail_in;
 
 	if (buf != NULL && buf_len < len) {
-		memcpy(buf, state->next_in, buf_len);
+		memcpy(&buf[offset], state->next_in, buf_len);
 		state->next_in += buf_len;
 		state->avail_in -= buf_len;
 		state->count = in_len - buf_len;
 		return buf_error;
 	} else {
 		if (buf != NULL)
-			memcpy(buf, state->next_in, len);
+			memcpy(&buf[offset], state->next_in, len);
 		state->next_in += len;
 		state->avail_in -= len;
 		state->count = in_len - len;
@@ -1813,9 +1893,10 @@ static inline uint32_t buffer_header_copy(struct inflate_state *state, uint32_t 
 }
 
 static inline uint32_t string_header_copy(struct inflate_state *state,
-					  char *str_buf, uint32_t str_len, uint32_t str_error)
+					  char *str_buf, uint32_t str_len,
+					  uint32_t offset, uint32_t str_error)
 {
-	uint32_t len, max_len = str_len;
+	uint32_t len, max_len = str_len - offset;
 
 	if (max_len > state->avail_in || str_buf == NULL)
 		max_len = state->avail_in;
@@ -1823,13 +1904,13 @@ static inline uint32_t string_header_copy(struct inflate_state *state,
 	len = strnlen((char *)state->next_in, max_len);
 
 	if (str_buf != NULL)
-		memcpy(str_buf, state->next_in, len);
+		memcpy(&str_buf[offset], state->next_in, len);
 
 	state->next_in += len;
 	state->avail_in -= len;
 	state->count += len;
 
-	if (str_buf != NULL && len == str_len)
+	if (str_buf != NULL && len == (str_len - offset))
 		return str_error;
 	else if (state->avail_in <= 0)
 		return ISAL_END_INPUT;
@@ -2002,9 +2083,9 @@ int isal_read_gzip_header(struct inflate_state *state, struct isal_gzip_header *
 	case ISAL_GZIP_EXTRA:
 			offset = gz_hdr->extra_len - count;
 			ret =
-			    buffer_header_copy(state, count, gz_hdr->extra + offset,
-					       gz_hdr->extra_buf_len - offset,
-					       ISAL_EXTRA_OVERFLOW);
+			    buffer_header_copy(state, count, gz_hdr->extra,
+					       gz_hdr->extra_buf_len,
+					       offset, ISAL_EXTRA_OVERFLOW);
 
 			if (ret) {
 				state->block_state = ISAL_GZIP_EXTRA;
@@ -2017,9 +2098,9 @@ int isal_read_gzip_header(struct inflate_state *state, struct isal_gzip_header *
 		if (flags & NAME_FLAG) {
 	case ISAL_GZIP_NAME:
 			offset = state->count;
-			ret = string_header_copy(state, gz_hdr->name + offset,
-						 gz_hdr->name_buf_len - offset,
-						 ISAL_NAME_OVERFLOW);
+			ret = string_header_copy(state, gz_hdr->name,
+						 gz_hdr->name_buf_len,
+						 offset, ISAL_NAME_OVERFLOW);
 			if (ret) {
 				state->block_state = ISAL_GZIP_NAME;
 				break;
@@ -2029,9 +2110,9 @@ int isal_read_gzip_header(struct inflate_state *state, struct isal_gzip_header *
 		if (flags & COMMENT_FLAG) {
 	case ISAL_GZIP_COMMENT:
 			offset = state->count;
-			ret = string_header_copy(state, gz_hdr->comment + offset,
-						 gz_hdr->comment_buf_len - offset,
-						 ISAL_COMMENT_OVERFLOW);
+			ret = string_header_copy(state, gz_hdr->comment,
+						 gz_hdr->comment_buf_len,
+						 offset, ISAL_COMMENT_OVERFLOW);
 			if (ret) {
 				state->block_state = ISAL_GZIP_COMMENT;
 				break;
@@ -2147,11 +2228,12 @@ int isal_inflate_stateless(struct inflate_state *state)
 
 	if (state->crc_flag == IGZIP_GZIP) {
 		struct isal_gzip_header gz_hdr;
+		isal_gzip_header_init(&gz_hdr);
 		ret = isal_read_gzip_header(state, &gz_hdr);
 		if (ret)
 			return ret;
 	} else if (state->crc_flag == IGZIP_ZLIB) {
-		struct isal_zlib_header z_hdr;
+		struct isal_zlib_header z_hdr = { 0 };
 		ret = isal_read_zlib_header(state, &z_hdr);
 		if (ret)
 			return ret;
@@ -2219,13 +2301,14 @@ int isal_inflate(struct inflate_state *state)
 
 	if (!state->wrapper_flag && state->crc_flag == IGZIP_GZIP) {
 		struct isal_gzip_header gz_hdr;
+		isal_gzip_header_init(&gz_hdr);
 		ret = isal_read_gzip_header(state, &gz_hdr);
 		if (ret < 0)
 			return ret;
 		else if (ret > 0)
 			return ISAL_DECOMP_OK;
 	} else if (!state->wrapper_flag && state->crc_flag == IGZIP_ZLIB) {
-		struct isal_zlib_header z_hdr;
+		struct isal_zlib_header z_hdr = { 0 };
 		ret = isal_read_zlib_header(state, &z_hdr);
 		if (ret < 0)
 			return ret;

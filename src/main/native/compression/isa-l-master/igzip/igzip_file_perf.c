@@ -98,7 +98,7 @@ int usage(void)
 		"  -h        help\n"
 		"  -X        use compression level X with 0 <= X <= 1\n"
 		"  -b <size> input buffer size, 0 buffers all the input\n"
-		"  -i <time> time in seconds to benchmark (at least 1)\n"
+		"  -i <time> time in seconds to benchmark (at least 0)\n"
 		"  -o <file> output file for compresed data\n"
 		"  -d <file> dictionary file used by compression\n"
 		"  -w <size> log base 2 size of history window, between 8 and 15\n");
@@ -109,17 +109,21 @@ int usage(void)
 void deflate_perf(struct isal_zstream *stream, uint8_t * inbuf, size_t infile_size,
 		  size_t inbuf_size, uint8_t * outbuf, size_t outbuf_size, int level,
 		  uint8_t * level_buf, int level_size, uint32_t hist_bits, uint8_t * dictbuf,
-		  size_t dictfile_size, struct isal_hufftables *hufftables_custom)
+		  size_t dictfile_size, struct isal_dict *dict_str,
+		  struct isal_hufftables *hufftables_custom)
 {
 	int avail_in;
 	isal_deflate_init(stream);
-	if (dictbuf != NULL)
-		isal_deflate_set_dict(stream, dictbuf, dictfile_size);
-	stream->end_of_stream = 0;
-	stream->flush = NO_FLUSH;
 	stream->level = level;
 	stream->level_buf = level_buf;
 	stream->level_buf_size = level_size;
+
+	if (COMP_OK != isal_deflate_reset_dict(stream, dict_str))
+		if (dictbuf != NULL)
+			isal_deflate_set_dict(stream, dictbuf, dictfile_size);
+
+	stream->end_of_stream = 0;
+	stream->flush = NO_FLUSH;
 	stream->next_out = outbuf;
 	stream->avail_out = outbuf_size;
 	stream->next_in = inbuf;
@@ -175,7 +179,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'i':
 			time = atoi(optarg);
-			if (time < 1)
+			if (time < 0)
 				usage();
 			break;
 		case 'b':
@@ -285,11 +289,21 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
+	struct isal_dict dict_str;
+	stream.level = level;
+	isal_deflate_process_dict(&stream, &dict_str, dictbuf, dictfile_size);
+
 	struct perf start;
-	BENCHMARK(&start, time,
-		  deflate_perf(&stream, inbuf, infile_size, inbuf_size, outbuf, outbuf_size,
-			       level, level_buf, level_size, hist_bits, dictbuf,
-			       dictfile_size, NULL));
+	if (time > 0) {
+		BENCHMARK(&start, time,
+			  deflate_perf(&stream, inbuf, infile_size, inbuf_size, outbuf,
+				       outbuf_size, level, level_buf, level_size, hist_bits,
+				       dictbuf, dictfile_size, &dict_str, NULL));
+	} else {
+		deflate_perf(&stream, inbuf, infile_size, inbuf_size, outbuf, outbuf_size,
+			     level, level_buf, level_size, hist_bits, dictbuf,
+			     dictfile_size, &dict_str, NULL);
+	}
 	if (stream.avail_in != 0) {
 		fprintf(stderr, "Could not compress all of inbuf\n");
 		exit(0);
@@ -307,7 +321,7 @@ int main(int argc, char *argv[])
 
 		deflate_perf(&stream, inbuf, infile_size, inbuf_size, outbuf, outbuf_size,
 			     level, level_buf, level_size, hist_bits, dictbuf,
-			     dictfile_size, &hufftables_custom);
+			     dictfile_size, &dict_str, &hufftables_custom);
 
 		printf(" ratio_custom=%3.1f%%", 100.0 * stream.total_out / infile_size);
 	}

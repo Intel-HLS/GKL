@@ -38,7 +38,7 @@
 	.octa		0x00000000dea713f10000000105ec76f0
 	.quad		0x00000000dd45aab8
 	.quad		0x00000000FFFFFFFF
-	.quad		0x00000000dd7e3b0c
+	.quad		0x000000009ef68d35
 
 .macro	crc32_u64	dst,src,data
 	crc32cx		\dst,\src,\data
@@ -53,9 +53,13 @@
 	crc32cb		\dst,\src,\data
 .endm
 /**
- *	 uint32_t crc32c_mix_neoverse_n1(uint32_t * BUF,
+ *	 uint32_t crc32c_mix_neoverse_n1(uint8_t * BUF,
  *	                     size_t LEN, uint CRC)
  */
+	BUF		.req	x0
+	LEN		.req	x1
+	CRC		.req	x2
+	wCRC		.req	w2
 	.align		6
 	.global		crc32c_mix_neoverse_n1
 	.type		crc32c_mix_neoverse_n1, %function

@@ -2,6 +2,7 @@ Intel(R) Intelligent Storage Acceleration Library
 =================================================
 
 [![Build Status](https://travis-ci.org/intel/isa-l.svg?branch=master)](https://travis-ci.org/intel/isa-l)
+[![Package on conda-forge](https://img.shields.io/conda/v/conda-forge/isa-l.svg)](https://anaconda.org/conda-forge/isa-l)
 
 ISA-L is a collection of optimized low-level functions targeting storage
 applications.  ISA-L includes:
@@ -60,6 +61,8 @@ To use a standard makefile run:
 On Windows use nmake to build dll and static lib:
 
     nmake -f Makefile.nmake
+
+or see [details on setting up environment here](doc/build.md).
 
 ### Other make targets
 Other targets include:
