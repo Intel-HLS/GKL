@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.69)
 AC_INIT([libisal],
-        [2.29.0],
+        [2.30.0],
         [sg.support.isal@intel.com],
         [isa-l],
         [http://01.org/storage-acceleration-library])
@@ -51,6 +51,7 @@ fi
 
 # Check for programs
 AC_PROG_CC_STDC
+AC_PROG_LD
 AC_USE_SYSTEM_EXTENSIONS
 AM_SILENT_RULES([yes])
 LT_INIT
@@ -68,6 +69,17 @@ AS_IF([test "x$enable_debug" = "xyes"], [
 
 # If this build is for x86, look for yasm and nasm
 if test x"$is_x86" = x"yes"; then
+  AC_MSG_CHECKING([whether Intel CET is enabled])
+  AC_TRY_COMPILE([],[
+#ifndef __CET__
+# error CET is not enabled
+#endif],
+		  [AC_MSG_RESULT([yes])
+		   intel_cet_enabled=yes],
+		  [AC_MSG_RESULT([no])
+		   intel_cet_enabled=no])
+
+
   # Pick an assembler yasm or nasm
   if test x"$AS" = x""; then
     # Check for yasm and yasm features
@@ -249,6 +261,7 @@ else
   AM_CONDITIONAL(DARWIN, test "x" = "y")
 fi
 
+AM_CONDITIONAL(INTEL_CET_ENABLED, [test x"$intel_cet_enabled" = x"yes"])
 
 # Check for header files
 AC_CHECK_HEADERS([limits.h stdint.h stdlib.h string.h])

@@ -39,7 +39,7 @@
 #	trace - get simulator trace
 #	clean - remove object files
 
-version ?= 2.29.0
+version ?= 2.30.0
 host_cpu ?= $(shell uname -m | sed -e 's/amd/x86_/')
 arch ?= $(shell uname | grep -v -e Linux -e BSD )
 
@@ -163,9 +163,10 @@ $(all_perf_tests): % : %.c $(lib_name)
 $(sort $(notdir $(examples))): % : %.c $(lib_name)
 $(sort $(notdir $(other_tests))): % : %.c $(lib_name)
 
-$(all_llvm_fuzz_tests): FUZZLINK = -lFuzzer
-$(all_llvm_fuzz_tests): CFLAGS += -fsanitize-coverage=trace-pc-guard -fsanitize=address
-$(all_llvm_fuzz_tests): CXXFLAGS += -fsanitize-coverage=trace-pc-guard -fsanitize=address
+fuzz_args = -fsanitize=fuzzer,address
+$(all_llvm_fuzz_tests): FUZZLINK =  $(fuzz_args)
+$(all_llvm_fuzz_tests): CFLAGS   += $(fuzz_args)
+$(all_llvm_fuzz_tests): CXXFLAGS += $(fuzz_args)
 $(all_llvm_fuzz_tests): % : %.o $(lib_name)
 	$(CXX) $(CXXFLAGS)  $^ $(LDLIBS) $(FUZZLINK) -o $@
 

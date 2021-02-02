@@ -62,14 +62,18 @@ DEFINE_INTERFACE_DISPATCHER(crc32_ieee)
 DEFINE_INTERFACE_DISPATCHER(crc32_iscsi)
 {
 	unsigned long auxval = getauxval(AT_HWCAP);
-	if ((HWCAP_CRC32 | HWCAP_PMULL) == (auxval & (HWCAP_CRC32 | HWCAP_PMULL))) {
+	if (auxval & HWCAP_CRC32) {
 		switch (get_micro_arch_id()) {
 		case MICRO_ARCH_ID(ARM, NEOVERSE_N1):
-			return PROVIDER_INFO(crc32c_mix_neoverse_n1);
+		case MICRO_ARCH_ID(ARM, CORTEX_A57):
+		case MICRO_ARCH_ID(ARM, CORTEX_A72):
+			return PROVIDER_INFO(crc32_iscsi_crc_ext);
 		}
 	}
-	if (auxval & HWCAP_CRC32)
-		return PROVIDER_INFO(crc32_iscsi_refl_hw_fold);
+	if ((HWCAP_CRC32 | HWCAP_PMULL) == (auxval & (HWCAP_CRC32 | HWCAP_PMULL))) {
+		return PROVIDER_INFO(crc32_iscsi_3crc_fold);
+	}
+
 	if (auxval & HWCAP_PMULL) {
 		return PROVIDER_INFO(crc32_iscsi_refl_pmull);
 	}
@@ -80,14 +84,19 @@ DEFINE_INTERFACE_DISPATCHER(crc32_iscsi)
 DEFINE_INTERFACE_DISPATCHER(crc32_gzip_refl)
 {
 	unsigned long auxval = getauxval(AT_HWCAP);
-	if ((HWCAP_CRC32 | HWCAP_PMULL) == (auxval & (HWCAP_CRC32 | HWCAP_PMULL))) {
+
+	if (auxval & HWCAP_CRC32) {
 		switch (get_micro_arch_id()) {
 		case MICRO_ARCH_ID(ARM, NEOVERSE_N1):
-			return PROVIDER_INFO(crc32_mix_neoverse_n1);
+		case MICRO_ARCH_ID(ARM, CORTEX_A57):
+		case MICRO_ARCH_ID(ARM, CORTEX_A72):
+			return PROVIDER_INFO(crc32_gzip_refl_crc_ext);
 		}
 	}
-	if (auxval & HWCAP_CRC32)
-		return PROVIDER_INFO(crc32_gzip_refl_hw_fold);
+	if ((HWCAP_CRC32 | HWCAP_PMULL) == (auxval & (HWCAP_CRC32 | HWCAP_PMULL))) {
+		return PROVIDER_INFO(crc32_gzip_refl_3crc_fold);
+	}
+
 	if (auxval & HWCAP_PMULL)
 		return PROVIDER_INFO(crc32_gzip_refl_pmull);
 
