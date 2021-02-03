@@ -29,26 +29,21 @@
 package com.intel.gkl.compression;
 
 
+import com.intel.gkl.testing_utils.CompressionDataProviders;
+import com.intel.gkl.testing_utils.TestingUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
-public class DeflaterUnitTest {
 
-    final SecureRandom rng = new SecureRandom();
-    private final static Logger log = LogManager.getLogger(DeflaterUnitTest.class);
-
-    public void randomDNA(byte[] array) {
-        final byte[] DNA_CHARS = {'A', 'C', 'G', 'T'};
-
-        for (int i = 0; i < array.length; i++) {
-            array[i] = DNA_CHARS[this.rng.nextInt(DNA_CHARS.length)];
-        }
-    }
+public class DeflaterUnitTest extends CompressionUnitTestBase {
+    protected final static Logger log = LogManager.getLogger(DeflaterUnitTest.class);
 
     @Test(enabled = true)
     public void loadLibrary() {
@@ -153,9 +148,66 @@ public class DeflaterUnitTest {
         Assert.fail();
     }
 
+    @Test(enabled = true, dataProviderClass = CompressionDataProviders.class,
+            dataProvider = compatibilityTestsDataProviderName, groups = {"compatibilityTests"})
+    public void intelDeflationJavaInflationCompatibilityTest(int level, boolean nowrap) throws DataFormatException {
+        //arrange
+        int inputLen = TestingUtils.getMaxInputSizeForGivenOutputSize(compatibilityTestsBufferSize, level, nowrap);
+        int compressedLen = compatibilityTestsBufferSize;
+
+        final byte[] input = Arrays.copyOf(compatibilityInputBuffer, inputLen);
+        final byte[] compressed = new byte[compressedLen];
+        final byte[] decompressed = new byte[inputLen];
+
+        Deflater intelDeflater = new IntelDeflaterFactory().makeDeflater(level, nowrap);
+        Inflater javaInflater = new Inflater(nowrap);
+
+        //act
+        intelDeflater.setInput(input,0,input.length);
+        intelDeflater.finish();
+        intelDeflater.deflate(compressed,0,compressed.length);
+        intelDeflater.end();
+
+        javaInflater.setInput(compressed,0,compressed.length);
+        javaInflater.inflate(decompressed,0,decompressed.length);
+        javaInflater.end();
+
+        //assert
+        Assert.assertEquals(decompressed,input);
+    }
+
+
+    @Test(enabled = true, dataProviderClass = CompressionDataProviders.class,
+            dataProvider = compatibilityTestsDataProviderName, groups = {"compatibilityTests"})
+    public void intelDeflationIntelInflationCompatibilityTest(int level, boolean nowrap) throws DataFormatException {
+        //arrange
+        int inputLen = TestingUtils.getMaxInputSizeForGivenOutputSize(compatibilityTestsBufferSize, level, nowrap);
+        int compressedLen = compatibilityTestsBufferSize;
+
+        final byte[] input = Arrays.copyOf(compatibilityInputBuffer, inputLen);
+        final byte[] compressed = new byte[compressedLen];
+        final byte[] decompressed = new byte[inputLen];
+
+        Deflater intelDeflater = new IntelDeflaterFactory().makeDeflater(level, nowrap);
+        Inflater intelInflater = new IntelInflaterFactory().makeInflater(nowrap);
+
+        //act
+        intelDeflater.setInput(input,0,input.length);
+        intelDeflater.finish();
+        intelDeflater.deflate(compressed,0, compressed.length);
+        intelDeflater.end();
+
+        intelInflater.setInput(compressed,0,compressed.length);
+        intelInflater.inflate(decompressed,0,decompressed.length);
+        intelInflater.end();
+
+        //assert
+        Assert.assertEquals(decompressed, input);
+    }
+
     @Test(enabled = true)
     public void randomDNATest() {
-        final int LEN = 4*1024*1024;
+        final int LEN = TestingUtils.SIZE_4MB;
         final byte[] input = new byte[LEN];
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
@@ -172,7 +224,8 @@ public class DeflaterUnitTest {
                 Assert.assertTrue(isSupported);
                 final IntelInflater inflater = new IntelInflater(true);
 
-                randomDNA(input);
+                TestingUtils.randomDNA(input);
+
                 deflater.setInput(input, 0, input.length);
                 deflater.finish();
 

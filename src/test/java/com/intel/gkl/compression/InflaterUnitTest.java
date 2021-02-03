@@ -1,6 +1,8 @@
 package com.intel.gkl.compression;
 
 import com.intel.gkl.IntelGKLUtils;
+import com.intel.gkl.testing_utils.CompressionDataProviders;
+import com.intel.gkl.testing_utils.TestingUtils;
 import htsjdk.samtools.util.BlockCompressedInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +11,7 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -16,7 +19,7 @@ import java.util.zip.Inflater;
 /**
  * Created by pnvaidya on 2/1/17.
  */
-public class InflaterUnitTest {
+public class InflaterUnitTest extends CompressionUnitTestBase {
 
     private final static Logger log = LogManager.getLogger(InflaterUnitTest.class);
     private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
@@ -103,6 +106,34 @@ public class InflaterUnitTest {
         inflater.inflate(output,output.length+1, output.length);
 
         Assert.fail();
+    }
+
+    @Test(enabled = true, dataProviderClass = CompressionDataProviders.class,
+            dataProvider = compatibilityTestsDataProviderName, groups = {"compatibilityTests"})
+    public void javaDeflationIntelInflationCompatibilityTest(int level, boolean nowrap) throws DataFormatException {
+        //arrange
+        int inputLen = TestingUtils.getMaxInputSizeForGivenOutputSize(compatibilityTestsBufferSize, level, nowrap);
+        int outputLen = compatibilityTestsBufferSize;
+
+        final byte[] input = Arrays.copyOf(compatibilityInputBuffer, inputLen);
+        final byte[] compressed = new byte[outputLen];
+        final byte[] decompressed = new byte[inputLen];
+
+        Deflater javaDeflater = new Deflater(level, nowrap);
+        Inflater intelInflater = new IntelInflaterFactory().makeInflater(nowrap);
+
+        //act
+        javaDeflater.setInput(input,0,input.length);
+        javaDeflater.finish();
+        javaDeflater.deflate(compressed,0,compressed.length);
+        javaDeflater.end();
+
+        intelInflater.setInput(compressed,0,compressed.length);
+        intelInflater.inflate(decompressed,0,decompressed.length);
+        intelInflater.end();
+
+        //assert
+        Assert.assertEquals(decompressed,input);
     }
 
     @Test(enabled = true)
