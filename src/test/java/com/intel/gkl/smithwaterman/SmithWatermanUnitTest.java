@@ -1,6 +1,7 @@
 package com.intel.gkl.smithwaterman;
 
 import com.intel.gkl.IntelGKLUtils;
+import com.intel.gkl.testing_utils.TestingUtils;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWNativeAlignerResult;
@@ -70,31 +71,20 @@ public class SmithWatermanUnitTest {
             e.printStackTrace();
         }
     }
-    public byte[] randomDNA(int len) {
-        Random rng = new Random();
-        final byte[] DNA_CHARS = {'A', 'C', 'G', 'T'};
-        byte[] array = new byte[len];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = DNA_CHARS[rng.nextInt(DNA_CHARS.length)];
-        }
-        return array;
-    }
 
-    // MAX SEQUENCE LENGTH = 2^15 -1
-    // MAX MATCH VALUE = 2^16 + 2
-    @Test
+    @Test(enabled = true)
     public void maxSequenceFullAlignmentTest(){
         final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
         final boolean isLoaded = smithWaterman.load(null);
         
         if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
 
-        int matchValue =64*1024;
-        int sequenceLength = 32*1024-1;
+        int matchValue = TestingUtils.MAX_SW_MATCH_VALUE;
+        int sequenceLength = TestingUtils.MAX_SW_SEQUENCE_LENGTH;
 
         String expectedCigar = String.format("%dM", sequenceLength);
 
-        byte[] ref = randomDNA(sequenceLength);
+        byte[] ref = TestingUtils.generateRandomDNAArray(sequenceLength);
         byte[] align = Arrays.copyOf(ref, ref.length);
 
         SWParameters SWparameters = new SWParameters(matchValue, -5, -10, -10);
