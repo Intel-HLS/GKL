@@ -148,7 +148,9 @@ public class SmithWatermanUnitTest {
         }
 
         try {
+
             final File inputFile = new File(smithwatermanData);
+            long inputBytes = inputFile.length();
             final FileReader input = new FileReader(inputFile);
             final BufferedReader in = new BufferedReader(input);
 
