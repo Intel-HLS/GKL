@@ -11,7 +11,6 @@ import org.testng.annotations.Test;
 
 import java.io.*;
 import java.util.Arrays;
-import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -112,7 +111,7 @@ public class SmithWatermanUnitTest {
 
         Assert.fail();
     }
-    
+
     @Test(enabled = true)
     public void maxSequenceFullAlignmentTest(){
         final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
