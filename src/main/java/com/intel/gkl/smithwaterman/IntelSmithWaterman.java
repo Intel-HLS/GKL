@@ -30,6 +30,8 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
     private String nativeLibraryName = "gkl_smithwaterman";
     private static boolean initialized = false;
     private IntelGKLUtils gklUtils = new IntelGKLUtils();
+    private final int MAX_SEQUENCE_LENGTH = 32*1024-1; // 2^15 - 1
+    private final int MAXIMUM_MATCH_VALUE = 64*1024; // 2^16
 
     void setNativeLibraryName(String nativeLibraryName) {
         this.nativeLibraryName = nativeLibraryName;
@@ -108,6 +110,13 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
 
         int intStrategy =  getStrategy(overhangStrategy);
         byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];
+
+        if(refArray.length > MAX_SEQUENCE_LENGTH || altArray.length > MAX_SEQUENCE_LENGTH){
+            throw new IllegalArgumentException(String.format("Sequences exceed maximum length of %d bytes", MAX_SEQUENCE_LENGTH));
+        }
+        if(parameters.getMatchValue() > MAXIMUM_MATCH_VALUE){
+            throw new IllegalArgumentException(String.format("Match value parameter exceed maximum value of %d", MAXIMUM_MATCH_VALUE));
+        }
 
         if(cigar.length <= 0 || intStrategy < 9 || intStrategy > 12)
             throw new IllegalArgumentException("Strategy is invalid.");
