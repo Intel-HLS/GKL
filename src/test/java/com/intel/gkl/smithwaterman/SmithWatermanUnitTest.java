@@ -72,6 +72,47 @@ public class SmithWatermanUnitTest {
         }
     }
 
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void smithWatermanThrowsIllegalArgumentExceptionIfRefSequenceLengthTooLong(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        int sequenceLength = TestingUtils.MAX_SW_SEQUENCE_LENGTH+1;
+
+        byte[] ref = TestingUtils.generateRandomDNAArray(sequenceLength);
+        byte[] align = new byte[]{'T', 'C', 'C', 'G'};
+
+        SWParameters SWparameters = new SWParameters(10, -5, -10, -10);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void smithWatermanThrowsIllegalArgumentExceptionIfAlignSequenceLengthTooLong(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        int sequenceLength = TestingUtils.MAX_SW_SEQUENCE_LENGTH+1;
+
+        byte[] ref = new byte[]{'T', 'C', 'C', 'G'};
+        byte[] align = TestingUtils.generateRandomDNAArray(sequenceLength);
+
+        SWParameters SWparameters = new SWParameters(10, -5, -10, -10);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void smithWatermanThrowsIllegalArgumentExceptionIfMatchValueGreaterThanMaxAllowed(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        int matchValue = TestingUtils.MAX_SW_MATCH_VALUE + 1;
+        byte[] ref = new byte[]{'A', 'C', 'C', 'G'};
+        byte[] align = new byte[]{'T', 'C', 'C', 'G'};
+
+        SWParameters SWparameters = new SWParameters(matchValue, -5, -10, -10);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+    
     @Test(enabled = true)
     public void maxSequenceFullAlignmentTest(){
         final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
