@@ -1,6 +1,5 @@
 package com.intel.gkl.smithwaterman;
 
-import com.intel.gkl.smithwaterman.IntelSmithWaterman;
 import com.intel.gkl.IntelGKLUtils;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
@@ -10,6 +9,9 @@ import org.testng.SkipException;
 import org.testng.annotations.Test;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.Random;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,7 +20,6 @@ public class SmithWatermanUnitTest {
     private final static Logger logger = LogManager.getLogger(SmithWatermanUnitTest.class);
 
     static final String smithwatermanData = IntelGKLUtils.pathToTestResource("smith-waterman.SOFTCLIP.in");
-    int MAX_SEQ_LEN = 1024;
 
     @Test(enabled = true)
     public void inputDataTest() {
@@ -69,6 +70,38 @@ public class SmithWatermanUnitTest {
             e.printStackTrace();
         }
     }
+    public byte[] randomDNA(int len) {
+        Random rng = new Random();
+        final byte[] DNA_CHARS = {'A', 'C', 'G', 'T'};
+        byte[] array = new byte[len];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = DNA_CHARS[rng.nextInt(DNA_CHARS.length)];
+        }
+        return array;
+    }
+
+    // MAX SEQUENCE LENGTH = 2^15 -1
+    // MAX MATCH VALUE = 2^16 + 2
+    @Test
+    public void maxSequenceFullAlignmentTest(){
+        final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
+        final boolean isLoaded = smithWaterman.load(null);
+        
+        if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
+
+        int matchValue =64*1024;
+        int sequenceLength = 32*1024-1;
+
+        String expectedCigar = String.format("%dM", sequenceLength);
+
+        byte[] ref = randomDNA(sequenceLength);
+        byte[] align = Arrays.copyOf(ref, ref.length);
+
+        SWParameters SWparameters = new SWParameters(matchValue, -5, -10, -10);
+        SWNativeAlignerResult result = smithWaterman.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.assertEquals(result.cigar, expectedCigar);
+    }
 
     @Test(enabled = true)
     public void simpleTest() {
@@ -85,9 +118,7 @@ public class SmithWatermanUnitTest {
         }
 
         try {
-
             final File inputFile = new File(smithwatermanData);
-            long inputBytes = inputFile.length();
             final FileReader input = new FileReader(inputFile);
             final BufferedReader in = new BufferedReader(input);
 
