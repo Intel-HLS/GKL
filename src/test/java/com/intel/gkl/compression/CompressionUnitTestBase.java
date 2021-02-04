@@ -1,6 +1,6 @@
 package com.intel.gkl.compression;
 
-import com.intel.gkl.testing_utils.TestingUtils;
+import com.intel.gkl.testingutils.TestingUtils;
 import org.testng.annotations.BeforeClass;
 
 public class CompressionUnitTestBase {

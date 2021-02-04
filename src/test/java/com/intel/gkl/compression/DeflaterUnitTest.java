@@ -29,8 +29,8 @@
 package com.intel.gkl.compression;
 
 
-import com.intel.gkl.testing_utils.CompressionDataProviders;
-import com.intel.gkl.testing_utils.TestingUtils;
+import com.intel.gkl.testingutils.CompressionDataProviders;
+import com.intel.gkl.testingutils.TestingUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.Assert;

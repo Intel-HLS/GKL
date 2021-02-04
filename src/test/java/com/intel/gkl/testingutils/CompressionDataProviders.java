@@ -1,4 +1,4 @@
-package com.intel.gkl.testing_utils;
+package com.intel.gkl.testingutils;
 
 public class CompressionDataProviders {
     @org.testng.annotations.DataProvider(name = "allCompressionCases")

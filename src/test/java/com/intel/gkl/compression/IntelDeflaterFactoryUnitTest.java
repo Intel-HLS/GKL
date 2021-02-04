@@ -1,6 +1,6 @@
 package com.intel.gkl.compression;
 
-import com.intel.gkl.testing_utils.CompressionDataProviders;
+import com.intel.gkl.testingutils.CompressionDataProviders;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
