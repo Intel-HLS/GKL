@@ -8,6 +8,7 @@ public class TestingUtils {
     public static final int MAX_SW_MATCH_VALUE = 64*1024; // 2^16
 
     public static final int SIZE_4MB = 4 *1024 * 1024;
+    //maximum allocatable array size, validated for openjdk-1.8
     public static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE -2;
 
     static SecureRandom rng = new SecureRandom();
