@@ -30,7 +30,10 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
     private String nativeLibraryName = "gkl_smithwaterman";
     private static boolean initialized = false;
     private IntelGKLUtils gklUtils = new IntelGKLUtils();
+
+    // limited due to the internal implementation of the native code in C
     private final int MAX_SEQUENCE_LENGTH = 32*1024-1; // 2^15 - 1
+    // prevents integer overflow on the diagonal of the scoring matrix
     private final int MAXIMUM_MATCH_VALUE = 64*1024; // 2^16
 
     void setNativeLibraryName(String nativeLibraryName) {

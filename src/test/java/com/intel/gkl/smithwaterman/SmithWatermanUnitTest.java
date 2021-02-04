@@ -1,7 +1,7 @@
 package com.intel.gkl.smithwaterman;
 
 import com.intel.gkl.IntelGKLUtils;
-import com.intel.gkl.testing_utils.TestingUtils;
+import com.intel.gkl.testingutils.TestingUtils;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWNativeAlignerResult;

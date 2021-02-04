@@ -1,7 +1,6 @@
-package com.intel.gkl.testing_utils;
+package com.intel.gkl.testingutils;
 
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 public class TestingUtils {
     public static final int MAX_SW_SEQUENCE_LENGTH = 32*1024-1; //2^15 - 1
