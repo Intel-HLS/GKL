@@ -97,7 +97,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      * Compressed data will be generated in ZLIB format.
      */
     public IntelInflater() {
-        this(false);
+        this(true);
     }
 
     @Override
