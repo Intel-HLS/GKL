@@ -38,4 +38,33 @@ public class IntelDeflaterFactoryUnitTest {
         Assert.assertFalse(javaDeflater instanceof IntelDeflater);
     }
 
+    @Test(enabled = true, dataProviderClass = CompressionDataProviders.class, dataProvider = "compressionGzipOptions")
+    public void IntelDeflaterFactoryDoesNotRaiseExceptionIfCompressionLevelMinusOneTest(boolean nowrap){
+        IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+
+        intelDeflaterFactory.makeDeflater(-1, nowrap);
+
+        Assert.assertTrue(true);
+    }
+
+    @Test(enabled = true, dataProviderClass = CompressionDataProviders.class, dataProvider = "compressionGzipOptions",
+            expectedExceptions = IllegalArgumentException.class)
+    public void IntelDeflaterFactoryRaisesIllegalArgumentExceptionIfCompressionLevelIsLessThanMinusOneTest(boolean nowrap){
+        IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+
+        intelDeflaterFactory.makeDeflater(-2, nowrap);
+
+        Assert.fail();
+    }
+
+    @Test(enabled = true, dataProviderClass = CompressionDataProviders.class, dataProvider = "compressionGzipOptions",
+            expectedExceptions = IllegalArgumentException.class)
+    public void IntelDeflaterFactoryRaisesIllegalArgumentExceptionIfCompressionLevelIsGreaterThanNineTest(boolean nowrap){
+        IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+
+        intelDeflaterFactory.makeDeflater(10, nowrap);
+
+        Assert.fail();
+    }
+
 }

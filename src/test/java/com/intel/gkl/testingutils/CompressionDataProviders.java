@@ -32,7 +32,12 @@ public class CompressionDataProviders {
     }
 
     @org.testng.annotations.DataProvider(name = "compressionLevelsOneAndTwo")
-    public static Object[][] CompressionLevelsOnAndTwo(){
+    public static Object[][] compressionLevelsOnAndTwo(){
         return new Object[][]{{1}, {2}};
+    }
+
+    @org.testng.annotations.DataProvider(name = "compressionGzipOptions")
+    public static Object[][] compressionGzipOptions(){
+        return new Object[][]{{true}, {false}};
     }
 }
