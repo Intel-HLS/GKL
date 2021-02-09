@@ -36,7 +36,7 @@
             VEC_STOREU((VEC_INT_TYPE *)(&H[hCurInd]), h11); \
             }
 
-static int D_MAX_SEQ_LEN = MAX_SEQ_LEN;
+static uint32_t D_MAX_SEQ_LEN = MAX_SEQ_LEN;
 
 void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, int32_t open, int32_t extend, int32_t* E_,int32_t tid)
 {
@@ -428,13 +428,13 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     int32_t  w_open = open;
     int32_t  w_extend = extend;
 
+    
+    D_MAX_SEQ_LEN = MAX_SEQ_LEN;
+
     int len = max(len1, len2);
-    if(len > MAX_SEQ_LEN) {
-	while(len > D_MAX_SEQ_LEN)
-	   D_MAX_SEQ_LEN = 2*D_MAX_SEQ_LEN;
-    }
-    else{
-	D_MAX_SEQ_LEN = MAX_SEQ_LEN;
+
+    while(len >= D_MAX_SEQ_LEN){
+	        D_MAX_SEQ_LEN += MAX_SEQ_LEN;
     }
 
     int32_t  *E_  = (int32_t *)_mm_malloc((6 * (D_MAX_SEQ_LEN+ AVX_LENGTH)) * sizeof(int32_t), 64);

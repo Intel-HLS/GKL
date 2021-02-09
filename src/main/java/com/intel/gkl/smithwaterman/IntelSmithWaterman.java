@@ -9,15 +9,9 @@ import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWAlignerNativeBinding;
 
-import htsjdk.samtools.Cigar;
-import htsjdk.samtools.CigarElement;
-import htsjdk.samtools.CigarOperator;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWNativeAlignerResult;
 
 import java.io.File;
-import java.lang.Object;
-import java.nio.charset.Charset;
-import java.util.Arrays;
 
 /**
  * Provides a native SmithWaterman implementation accelerated for the Intel Architecture.
@@ -30,6 +24,11 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
     private String nativeLibraryName = "gkl_smithwaterman";
     private static boolean initialized = false;
     private IntelGKLUtils gklUtils = new IntelGKLUtils();
+
+    // limited due to the internal implementation of the native code in C
+    private final int MAX_SW_SEQUENCE_LENGTH = 32*1024-1; // 2^15 - 1
+    // prevents integer overflow on the diagonal of the scoring matrix
+    private final int MAXIMUM_SW_MATCH_VALUE = 64*1024; // 2^16
 
     void setNativeLibraryName(String nativeLibraryName) {
         this.nativeLibraryName = nativeLibraryName;
@@ -108,6 +107,13 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
 
         int intStrategy =  getStrategy(overhangStrategy);
         byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];
+
+        if(refArray.length > MAX_SW_SEQUENCE_LENGTH || altArray.length > MAX_SW_SEQUENCE_LENGTH){
+            throw new IllegalArgumentException(String.format("Sequences exceed maximum length of %d bytes", MAX_SW_SEQUENCE_LENGTH));
+        }
+        if(parameters.getMatchValue() > MAXIMUM_SW_MATCH_VALUE){
+            throw new IllegalArgumentException(String.format("Match value parameter exceed maximum value of %d", MAXIMUM_SW_MATCH_VALUE));
+        }
 
         if(cigar.length <= 0 || intStrategy < 9 || intStrategy > 12)
             throw new IllegalArgumentException("Strategy is invalid.");

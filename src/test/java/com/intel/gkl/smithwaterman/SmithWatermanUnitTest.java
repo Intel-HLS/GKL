@@ -1,7 +1,7 @@
 package com.intel.gkl.smithwaterman;
 
-import com.intel.gkl.smithwaterman.IntelSmithWaterman;
 import com.intel.gkl.IntelGKLUtils;
+import com.intel.gkl.testingutils.TestingUtils;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWParameters;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWOverhangStrategy;
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWNativeAlignerResult;
@@ -10,6 +10,8 @@ import org.testng.SkipException;
 import org.testng.annotations.Test;
 
 import java.io.*;
+import java.util.Arrays;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,7 +20,6 @@ public class SmithWatermanUnitTest {
     private final static Logger logger = LogManager.getLogger(SmithWatermanUnitTest.class);
 
     static final String smithwatermanData = IntelGKLUtils.pathToTestResource("smith-waterman.SOFTCLIP.in");
-    int MAX_SEQ_LEN = 1024;
 
     @Test(enabled = true)
     public void inputDataTest() {
@@ -68,6 +69,68 @@ public class SmithWatermanUnitTest {
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void smithWatermanThrowsIllegalArgumentExceptionIfRefSequenceLengthTooLong(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        int sequenceLength = TestingUtils.MAX_SW_SEQUENCE_LENGTH+1;
+
+        byte[] ref = TestingUtils.generateRandomDNAArray(sequenceLength);
+        byte[] align = new byte[]{'T', 'C', 'C', 'G'};
+
+        SWParameters SWparameters = new SWParameters(10, -5, -10, -10);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void smithWatermanThrowsIllegalArgumentExceptionIfAlignSequenceLengthTooLong(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        int sequenceLength = TestingUtils.MAX_SW_SEQUENCE_LENGTH+1;
+
+        byte[] ref = new byte[]{'T', 'C', 'C', 'G'};
+        byte[] align = TestingUtils.generateRandomDNAArray(sequenceLength);
+
+        SWParameters SWparameters = new SWParameters(10, -5, -10, -10);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void smithWatermanThrowsIllegalArgumentExceptionIfMatchValueGreaterThanMaxAllowed(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        int matchValue = TestingUtils.MAX_SW_MATCH_VALUE + 1;
+        byte[] ref = new byte[]{'A', 'C', 'C', 'G'};
+        byte[] align = new byte[]{'T', 'C', 'C', 'G'};
+
+        SWParameters SWparameters = new SWParameters(matchValue, -5, -10, -10);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+
+    @Test(enabled = true)
+    public void maxSequenceFullAlignmentTest(){
+        final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
+        final boolean isLoaded = smithWaterman.load(null);
+        
+        if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
+
+        int matchValue = TestingUtils.MAX_SW_MATCH_VALUE;
+        int sequenceLength = TestingUtils.MAX_SW_SEQUENCE_LENGTH;
+
+        String expectedCigar = String.format("%dM", sequenceLength);
+
+        byte[] ref = TestingUtils.generateRandomDNAArray(sequenceLength);
+        byte[] align = Arrays.copyOf(ref, ref.length);
+
+        SWParameters SWparameters = new SWParameters(matchValue, -5, -10, -10);
+        SWNativeAlignerResult result = smithWaterman.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.assertEquals(result.cigar, expectedCigar);
     }
 
     @Test(enabled = true)
