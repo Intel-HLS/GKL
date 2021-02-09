@@ -33,10 +33,13 @@ public class TestingUtils {
         return dna;
     }
 
-    public static int getMaxInputSizeForGivenOutputSize(int outputBufferSize, int level, boolean nowrap){
-        if(level != 0){
-            return outputBufferSize;
+    public static int getMaxInputSizeForGivenOutputSize(int outputBufferSize, int level){
+        if(level == 0){
+            // compression level 0 introduces an overhead
+            // that won't fit into the buffer of the same size
+            return (int) (0.99 * outputBufferSize);
         }
-        return (int) (0.99 * outputBufferSize);
+
+        return outputBufferSize;
     }
 }

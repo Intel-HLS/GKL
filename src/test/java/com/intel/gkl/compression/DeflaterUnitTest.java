@@ -152,7 +152,7 @@ public class DeflaterUnitTest extends CompressionUnitTestBase {
             dataProvider = compatibilityTestsDataProviderName, groups = {"compatibilityTests"})
     public void intelDeflationJavaInflationCompatibilityTest(int level, boolean nowrap) throws DataFormatException {
         //arrange
-        int inputLen = TestingUtils.getMaxInputSizeForGivenOutputSize(compatibilityTestsBufferSize, level, nowrap);
+        int inputLen = TestingUtils.getMaxInputSizeForGivenOutputSize(compatibilityTestsBufferSize, level);
         int compressedLen = compatibilityTestsBufferSize;
 
         final byte[] input = Arrays.copyOf(compatibilityInputBuffer, inputLen);
@@ -181,7 +181,7 @@ public class DeflaterUnitTest extends CompressionUnitTestBase {
             dataProvider = compatibilityTestsDataProviderName, groups = {"compatibilityTests"})
     public void intelDeflationIntelInflationCompatibilityTest(int level, boolean nowrap) throws DataFormatException {
         //arrange
-        int inputLen = TestingUtils.getMaxInputSizeForGivenOutputSize(compatibilityTestsBufferSize, level, nowrap);
+        int inputLen = TestingUtils.getMaxInputSizeForGivenOutputSize(compatibilityTestsBufferSize, level);
         int compressedLen = compatibilityTestsBufferSize;
 
         final byte[] input = Arrays.copyOf(compatibilityInputBuffer, inputLen);

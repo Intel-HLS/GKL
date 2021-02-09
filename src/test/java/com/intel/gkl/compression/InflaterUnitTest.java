@@ -112,7 +112,7 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
             dataProvider = compatibilityTestsDataProviderName, groups = {"compatibilityTests"})
     public void javaDeflationIntelInflationCompatibilityTest(int level, boolean nowrap) throws DataFormatException {
         //arrange
-        int inputLen = TestingUtils.getMaxInputSizeForGivenOutputSize(compatibilityTestsBufferSize, level, nowrap);
+        int inputLen = TestingUtils.getMaxInputSizeForGivenOutputSize(compatibilityTestsBufferSize, level);
         int outputLen = compatibilityTestsBufferSize;
 
         final byte[] input = Arrays.copyOf(compatibilityInputBuffer, inputLen);
