@@ -30,4 +30,9 @@ public class CompressionDataProviders {
         }
         return params;
     }
+
+    @org.testng.annotations.DataProvider(name = "compressionLevelsOneAndTwo")
+    public static Object[][] CompressionLevelsOnAndTwo(){
+        return new Object[][]{{1}, {2}};
+    }
 }
