@@ -31,14 +31,17 @@ public class IntelDeflaterFactory extends DeflaterFactory {
      */
     public Deflater makeDeflater(final int compressionLevel, final boolean gzipCompatible) {
         if (intelDeflaterSupported) {
-            if ((compressionLevel == 1 && gzipCompatible) || compressionLevel != 1) {
-                return new IntelDeflater(compressionLevel, gzipCompatible);
-            }
-        }
-        logger.warn("IntelDeflater is not supported, using Java.util.zip.Deflater");
-        return new Deflater(compressionLevel, gzipCompatible);
-    }
+	      try {
+                    return new IntelDeflater(compressionLevel, gzipCompatible); 
+              } catch  (IllegalArgumentException e) {
+                    logger.warn("Invalid configuration requsted, using Java.util.zip.Deflater");
+	      }
+    	} else {
+                    logger.warn("Intel Deflater not supported, using Java.util.zip.Deflater");
+	       }
 
+        return new Deflater(compressionLevel, gzipCompatible);
+   }
     public boolean usingIntelDeflater() {
         return intelDeflaterSupported;
     }
