@@ -13,7 +13,8 @@
 #include <string.h>
 #include <immintrin.h>
 
-
+#define SW_SUCCESS 0
+#define SW_MEMORY_ALLOCATION_FAILED 1
 
 #define CAT(X,Y) X##Y
 #define CONCAT(X,Y) CAT(X,Y)
