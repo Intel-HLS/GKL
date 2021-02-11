@@ -236,6 +236,13 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
   jint level = env->GetIntField(obj, FID_level);
   const char* err_msg;
 
+  if( outputBufferLength <= 0 || inputBufferLength <= 0 )
+  {
+          if (env->ExceptionCheck())
+              env->ExceptionClear();
+          env->ThrowNew(env->FindClass("java/lang/NullPointerException"), " Buffer size not right.");
+          return -1;
+  }
 
   if(level == 1 || level ==2 ) {
   
@@ -265,7 +272,6 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         lz_stream->avail_out = outputBufferLength ;
 
         int bytes_in = inputBufferLength;
-        // TODO add check here
 
         #ifdef profile
             struct timeval  tv1, tv2;
@@ -364,7 +370,6 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         lz_stream->avail_out = (uInt) outputBufferLength;
 
         int bytes_in = inputBufferLength;
-        // TODO add check here
 
         #ifdef profile
             struct timeval  tv1, tv2;

@@ -86,7 +86,7 @@ public class InflaterUnitTest {
         Assert.fail();
     }
     @Test(enabled = true, expectedExceptions = NullPointerException.class)
-    public void inflateNullInputBufferFailsTest() throws DataFormatException {
+    public void inflateInputBufferNotSetTest() throws DataFormatException {
         final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
         byte[] output = new byte[10];
         try
@@ -99,15 +99,72 @@ public class InflaterUnitTest {
         }
         Assert.fail();
     }
-    @Test(enabled = true)
-    public void inflateNullBufferOverflowTest() throws DataFormatException, java.io.UnsupportedEncodingException
+    @Test(enabled = true, expectedExceptions = RuntimeException.class)
+    public void inflateOutputBufferOverflowShortTest() throws DataFormatException, java.io.UnsupportedEncodingException
     {
-        boolean nowrap = false;
+        boolean nowrap = true;
         int level = 2;
         final Inflater inflater = new IntelInflaterFactory().makeInflater(nowrap);
         final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
         final Deflater deflater = intelDeflaterFactory.makeDeflater(level, nowrap);
 
+        try
+        {
+            String sequence = "ACTGTC";
+            byte[] input = sequence.getBytes("UTF-8");
+            byte[] compressed = new byte[2*sequence.length()];
+            byte[] result = new byte[sequence.length()/2];
+
+            deflater.setInput(input);
+            deflater.finish();
+            int compressedDataLength = deflater.deflate(compressed,0,compressed.length);
+            deflater.end();
+            log.info(String.format("Compressed length : %d Seq : %s" , compressedDataLength ,
+                    new String(compressed, "UTF8")));
+
+            inflater.setInput(compressed, 0, compressedDataLength);
+            int resultLength = inflater.inflate(result, 0 , result.length);
+            inflater.end();
+
+            String seq2 = new String(result, 0, resultLength);
+            log.info(String.format("UnCompressed length : %d Seq : %s" , seq2.length() ,
+                    seq2));
+            Assert.assertEquals(sequence, seq2);
+        }
+        catch(Exception dfe){
+            log.error(dfe.getMessage());
+            throw dfe;
+        }
+        Assert.fail();
+    }
+    @Test(enabled = true, expectedExceptions = NullPointerException.class)
+    public void inflateEmptyInputBufferSetOverflowTest() throws DataFormatException, java.io.UnsupportedEncodingException
+    {
+
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+        try
+        {
+            byte[] input = new byte[0];
+            byte[] result = new byte[1024];
+
+            inflater.setInput(input, 0, input.length);
+            int resultLength = inflater.inflate(result, 0 , 1024);
+            inflater.end();
+        }
+        catch(Exception dfe) {
+            log.error(dfe.getMessage());
+            throw dfe;
+        }
+        Assert.fail();
+    }
+    @Test(enabled = true)
+    public void inflateNowrapFalseJavaTest() throws DataFormatException, java.io.UnsupportedEncodingException
+    {
+        boolean nowrap = false; // not supported for level 1 and 2
+        int level = 2;
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(nowrap);
+        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+        final Deflater deflater = intelDeflaterFactory.makeDeflater(level, nowrap);
         try
         {
             String sequence = "ACTGTC";
@@ -126,7 +183,6 @@ public class InflaterUnitTest {
             int resultLength = inflater.inflate(result, 0 , 1024);
             inflater.end();
 
-            // Decode the bytes into a String
             String seq2 = new String(result, 0, resultLength);
             log.info(String.format("UnCompressed length : %d Seq : %s" , seq2.length() ,
                     seq2));
@@ -134,7 +190,6 @@ public class InflaterUnitTest {
         }
         catch(Exception dfe){
             log.error(dfe.getMessage());
-            //dfe.printStackTrace();
         }
 
     }
