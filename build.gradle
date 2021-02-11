@@ -79,16 +79,23 @@ test.dependsOn copyNativeLib
 //===================================================================
 
 test {
-    useTestNG()
+    def longTestsEnabled = System.getProperty('long_tests')
 
+    def additionalJvmArgs = []
+
+    if (longTestsEnabled != null){
+        additionalJvmArgs.add '-Xmx24G'
+    }
+    useTestNG {
+    }
     // propagate system properties to test JVM
     systemProperties = System.getProperties()
 
     if (project.hasProperty('debug')) {
-        jvmArgs '-verbose:jni', '-Xcheck:jni', '-XX:+RestoreMXCSROnJNICalls'
+        jvmArgs('-verbose:jni', '-Xcheck:jni', '-XX:+RestoreMXCSROnJNICalls', *additionalJvmArgs)
     }
     else {
-        jvmArgs '-Xcheck:jni', '-XX:+RestoreMXCSROnJNICalls'
+        jvmArgs('-Xcheck:jni', '-XX:+RestoreMXCSROnJNICalls', *additionalJvmArgs)
     }
 
     testLogging {
