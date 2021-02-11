@@ -78,7 +78,7 @@ public class DeflaterUnitTest {
     @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
     public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenOffsetLessThanZeroTest(){
         final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
-        byte[] buffer = new byte[] {'A', 'C', 'G'};
+        byte[] buffer = new byte[] {'A', 'C', 'G', 'T'};
 
         deflater.setInput(buffer,-1, buffer.length);
 
@@ -88,7 +88,7 @@ public class DeflaterUnitTest {
     @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
     public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenLengthLessThanZeroTest(){
         final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
-        byte[] buffer = new byte[] {'A', 'C', 'G'};
+        byte[] buffer = new byte[] {'A', 'C', 'G', 'T'};
 
         deflater.setInput(buffer,0, -1);
 
@@ -97,7 +97,7 @@ public class DeflaterUnitTest {
     @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
     public void setInputThrowsArrayIndexOutOfBoundsExceptionWhenOffsetGreaterThanLengthTest(){
         final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
-        byte[] buffer = new byte[] {'A', 'C', 'G'};
+        byte[] buffer = new byte[] {'A', 'C', 'G', 'T'};
 
         deflater.setInput(buffer,4, buffer.length);
 
@@ -117,7 +117,6 @@ public class DeflaterUnitTest {
     public void deflateThrowsIllegalArgumentExceptionWhenOffsetGreaterThanZeroTest(){
         final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
         byte[] outputBuffer = new byte[10];
-
         deflater.deflate(outputBuffer, 1, outputBuffer.length);
 
         Assert.fail();
@@ -153,13 +152,55 @@ public class DeflaterUnitTest {
         Assert.fail();
     }
 
+    @Test(enabled = true, expectedExceptions = RuntimeException.class)
+    public void deflateThrowsBufferOverflowTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+        int LEN = 10;
+        byte[] inputBuffer = new byte[LEN];
+        randomDNA(inputBuffer);
+
+        int bytes = 0;
+        byte[] outputBufferBad = new byte[LEN];
+        try
+        {
+            deflater.setInput(inputBuffer, 0 , inputBuffer.length );
+            bytes = deflater.deflate(outputBufferBad, 0, outputBufferBad.length);
+        }
+        catch(Exception e)
+        {
+            log.error(e.getMessage());
+            throw e;
+        }
+        log.info("Insufficient Buffer : " + outputBufferBad.length  +" Bytes written : " + bytes);
+        Assert.assertEquals(bytes, 0);
+        Assert.fail();
+    }
+
+    @Test(enabled = true, expectedExceptions = NullPointerException.class)
+    public void deflateNullInputBufferLengthTest(){
+        final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
+        int LEN = 10;
+        byte[] inputBuffer = new byte[0];
+        try
+        {
+            byte[] outputBufferBad = new byte[LEN];
+            deflater.setInput(inputBuffer, 0 , inputBuffer.length );
+            int bytes = deflater.deflate(outputBufferBad, 0, outputBufferBad.length);
+        }
+        catch(Exception e)
+        {
+            log.error(e.getMessage());
+            throw e;
+        }
+        Assert.fail();
+    }
+
     @Test(enabled = true)
     public void randomDNATest() {
         final int LEN = 4*1024*1024;
         final byte[] input = new byte[LEN];
         final byte[] compressed = new byte[2*LEN];
         final byte[] result = new byte[LEN];
-
 
         for(int level=0; level <10; level++) {
             for (int i = 0; i < 1; i++) {
@@ -177,8 +218,15 @@ public class DeflaterUnitTest {
                 deflater.finish();
 
                 int compressedBytes = 0;
-                while (!deflater.finished()) {
-                    compressedBytes = deflater.deflate(compressed, 0, compressed.length);
+                try{
+                    while (!deflater.finished()) {
+                        log.info(String.format("Level %d ", level));
+                        compressedBytes = deflater.deflate(compressed, 0, compressed.length);
+                    }
+                }
+                catch(Exception e){
+                    log.error(String.format("%s ", e.getMessage()));
+                    e.printStackTrace();
                 }
 
                 log.info(String.format("%d bytes compressed to %d bytes : %2.2f%% compression",
@@ -197,6 +245,7 @@ public class DeflaterUnitTest {
 
 
                 } catch (Exception e) {
+                    log.error(String.format("%s ", e.getMessage()));
                     e.printStackTrace();
                 }
 

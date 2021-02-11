@@ -85,6 +85,59 @@ public class InflaterUnitTest {
 
         Assert.fail();
     }
+    @Test(enabled = true, expectedExceptions = NullPointerException.class)
+    public void inflateNullInputBufferFailsTest() throws DataFormatException {
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
+        byte[] output = new byte[10];
+        try
+        {
+            inflater.inflate(output, 0, 10);
+        }
+        catch(Exception e){
+            log.error(e.getMessage());
+            throw e;
+        }
+        Assert.fail();
+    }
+    @Test(enabled = true)
+    public void inflateNullBufferOverflowTest() throws DataFormatException, java.io.UnsupportedEncodingException
+    {
+        boolean nowrap = false;
+        int level = 2;
+        final Inflater inflater = new IntelInflaterFactory().makeInflater(nowrap);
+        final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
+        final Deflater deflater = intelDeflaterFactory.makeDeflater(level, nowrap);
+
+        try
+        {
+            String sequence = "ACTGTC";
+            byte[] input = sequence.getBytes("UTF-8");
+            byte[] output = new byte[1024];
+            byte[] result = new byte[1024];
+
+            deflater.setInput(input);
+            deflater.finish();
+            int compressedDataLength = deflater.deflate(output,0,1024);
+            deflater.end();
+            log.info(String.format("Compressed length : %d Seq : %s" , compressedDataLength ,
+                    new String(output, "UTF8")));
+
+            inflater.setInput(output, 0, compressedDataLength);
+            int resultLength = inflater.inflate(result, 0 , 1024);
+            inflater.end();
+
+            // Decode the bytes into a String
+            String seq2 = new String(result, 0, resultLength);
+            log.info(String.format("UnCompressed length : %d Seq : %s" , seq2.length() ,
+                    seq2));
+            Assert.assertEquals(sequence, seq2);
+        }
+        catch(Exception dfe){
+            log.error(dfe.getMessage());
+            //dfe.printStackTrace();
+        }
+
+    }
 
     @Test(enabled = true, expectedExceptions = ArrayIndexOutOfBoundsException.class)
     public void inflateThrowsNArrayIndexOutOfBoundsExceptionLengthLessThanZeroTest() throws DataFormatException {

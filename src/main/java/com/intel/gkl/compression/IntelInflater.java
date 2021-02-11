@@ -169,6 +169,9 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
         if(off > b.length - len) {
             throw new ArrayIndexOutOfBoundsException("Length value exceeds permissible range");
         }
+        if(inputBuffer == null || inputBufferLength == 0) {
+            throw new NullPointerException("Input buffer is null");
+        }
 
         return inflateNative(b, off, len);
     }
