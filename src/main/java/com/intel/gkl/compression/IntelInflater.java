@@ -87,8 +87,11 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      * @param nowrap if true then use GZIP compatible compression
      */
     public IntelInflater(boolean nowrap) {
-      //  initFieldsNative();
-        this.nowrap = nowrap;
+	if(nowrap == false) {
+		 throw new IllegalArgumentException("ZLIB format is not supported at this time with Intel GKL");
+	}
+	    
+	this.nowrap = nowrap;
 
     }
 
