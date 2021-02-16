@@ -106,13 +106,12 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
    jint inputBufferLength = env->GetIntField(obj, FID_inf_inputBufferLength);
    jint inputBufferOffset = env->GetIntField(obj, FID_inf_inputBufferOffset);
 
-   if( outputBufferLength <= 0 || outputBufferOffset >= outputBufferLength
-        || inputBufferLength <= 0  || inputBufferOffset >= inputBufferLength
-        || outputBufferLength < inputBufferLength/2 )
+
+   if(  inputBufferLength == 0 )
    {
         if (env->ExceptionCheck())
             env->ExceptionClear();
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), " Buffer size not right.");
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), " Uncompress Buffer size not right.");
         return -1;
 
    }
@@ -149,8 +148,6 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
    lz_stream->avail_in = (uInt) inputBufferLength;
    lz_stream->next_out = (Bytef *) (next_out + outputBufferOffset);
    lz_stream->avail_out = (uInt) outputBufferLength;
-
-   int bytes_in = inputBufferLength;
 
    DBG("Decompressing");
 
@@ -221,12 +218,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
         }
 
         int bytes_out = outputBufferLength - lz_stream->avail_out;
-        if(bytes_out <= 0 )
-        {
-            env->ExceptionClear();
-            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "No bytes written");
-            return -1;
-        }
+
         return bytes_out;
 }
 

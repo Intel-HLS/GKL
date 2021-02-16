@@ -172,7 +172,7 @@ public class DeflaterUnitTest extends CompressionUnitTestBase {
     }
 
     @Test(enabled = true, expectedExceptions = NullPointerException.class)
-    public void deflateEmprtylInputBufferTest() {
+    public void deflateEmptyInputBufferTest() {
         final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
         int LEN = 10;
         byte[] inputBuffer = new byte[0];

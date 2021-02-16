@@ -106,7 +106,7 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
     public void inflateOutputBufferOverflowShortTest() throws DataFormatException, java.io.UnsupportedEncodingException
     {
         boolean nowrap = true;
-        int level = 2;
+        int level = 1;
         final Inflater inflater = new IntelInflaterFactory().makeInflater(nowrap);
         final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
         final Deflater deflater = intelDeflaterFactory.makeDeflater(level, nowrap);
@@ -115,8 +115,8 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
         {
             String sequence = "ACTGTC";
             byte[] input = sequence.getBytes("UTF-8");
-            byte[] compressed = new byte[2*sequence.length()];
-            byte[] result = new byte[sequence.length()/2];
+            byte[] compressed = new byte[sequence.length()];
+            byte[] result = new byte[sequence.length() - 2];
 
             deflater.setInput(input);
             deflater.finish();
@@ -130,15 +130,13 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
             inflater.end();
 
             String seq2 = new String(result, 0, resultLength);
-            log.info(String.format("UnCompressed length : %d Seq : %s" , seq2.length() ,
-                    seq2));
+            log.info(String.format("UnCompressed length : %d Seq : %s" , seq2.length() ,  seq2));
             Assert.assertEquals(sequence, seq2);
         }
-        catch(Exception dfe){
+        catch(RuntimeException dfe){
             log.error(dfe.getMessage());
             throw dfe;
         }
-        Assert.fail();
     }
     @Test(enabled = true, expectedExceptions = NullPointerException.class)
     public void inflateEmptyInputBufferSetOverflowTest() throws DataFormatException, java.io.UnsupportedEncodingException
@@ -154,7 +152,7 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
             int resultLength = inflater.inflate(result, 0 , 1024);
             inflater.end();
         }
-        catch(Exception dfe) {
+        catch(RuntimeException dfe) {
             log.error(dfe.getMessage());
             throw dfe;
         }

@@ -142,7 +142,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
               int ret = deflateInit2(lz_stream, level,  Z_DEFLATED,
                                      nowrap ? -MAX_WBITS : MAX_WBITS,
                                      DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
-              if (ret != Z_OK) {
+              if (ret != Z_OK ) {
                 if(env->ExceptionCheck())
                     env->ExceptionClear();
                 env->ThrowNew(env->FindClass("java/lang/RuntimeException"),"IntelDeflater init error");
@@ -236,7 +236,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
   jint level = env->GetIntField(obj, FID_level);
   const char* err_msg;
 
-  if( outputBufferLength <= 0 || inputBufferLength <= 0 )
+  if( outputBufferLength == 0 || inputBufferLength == 0 )
   {
           if (env->ExceptionCheck())
               env->ExceptionClear();
@@ -244,7 +244,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
           return -1;
   }
 
-  if(level == 1 || level ==2 ) {
+  if(level == 1 || level == 2 ) {
   
         isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
 
@@ -271,7 +271,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         lz_stream->next_out = (uint8_t*) (next_out);
         lz_stream->avail_out = outputBufferLength ;
 
-        int bytes_in = inputBufferLength;
+        DBG("Compressing");
 
         #ifdef profile
             struct timeval  tv1, tv2;
@@ -328,9 +328,8 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         long bytes_out = outputBufferLength - lz_stream->avail_out;
         if(bytes_out == 0 )
         {
-            err_msg = "No bytes wriNtten";
             env->ExceptionClear();
-            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), err_msg);
+            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "No bytes written");
             return -1;
         }
         
@@ -369,7 +368,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         lz_stream->next_out = (Bytef *) next_out;
         lz_stream->avail_out = (uInt) outputBufferLength;
 
-        int bytes_in = inputBufferLength;
+        DBG("Decompressing");
 
         #ifdef profile
             struct timeval  tv1, tv2;
@@ -411,23 +410,15 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
           env->ThrowNew(env->FindClass("java/lang/RuntimeException"), err_msg);
           return -1;
         }
-        if( lz_stream->next_out - lz_stream->total_out <= 0)
-        {
-            const char* err_msg;
-            env->ExceptionClear();
-            err_msg = "Buffer overflow issue";
-            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), err_msg);
-            return -1;
-        }
 
          int bytes_out = outputBufferLength - lz_stream->avail_out;
-         if(bytes_out == 0 || lz_stream->avail_out == 0)
+         if(bytes_out == 0)
          {
-                    err_msg = "No bytes written";
-                    env->ExceptionClear();
-                    env->ThrowNew(env->FindClass("java/lang/RuntimeException"), err_msg);
-                    return -1;
+            env->ExceptionClear();
+            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "No bytes written");
+            return -1;
          }
+         DBG ("bytes_out = %d \n", bytes_out);
          return bytes_out;
 
     }
