@@ -42,6 +42,8 @@ class ContextBase
     static void initializeJacobianLogTable()
     {
       for (int k = 0; k < JACOBIAN_LOG_TABLE_SIZE; k++) {
+        // Casting k to a double is acceptable considering that a loss of precision is expected in numerical analysis.
+        // The same goes for the final cast o NUMBER which may result in cutting precision in half.
         jacobianLogTable[k] = (NUMBER)(log10(1.0 + pow(10.0, -((double) k) * JACOBIAN_LOG_TABLE_STEP)));
       }
     }
@@ -57,11 +59,13 @@ class ContextBase
           double log10Sum = approximateLog10SumLog10(-0.1*i, -0.1*j);
           double matchToMatchLog10 =
             log1p(-std::min(1.0,pow(10,log10Sum))) * INV_LN10;
+          // The cast to NUMBER is to allow trading off precision for speed.
           matchToMatchProb[offset + j] = (NUMBER)(pow(10,matchToMatchLog10));
         }
     }
     //Called during computation - use single precision where possible
     static int fastRound(NUMBER d) {
+      // The cast to NUMBER is to allow trading off precision for speed.
       return (d > ((NUMBER)0.0)) ? (int) (d + ((NUMBER)0.5)) : (int) (d - ((NUMBER)0.5));
     }
     //Called during computation - use single precision where possible
@@ -77,6 +81,7 @@ class ContextBase
         return big;
 
       NUMBER diff = big - small;
+      // The cast to NUMBER is to allow trading off precision for speed.
       if (diff >= ((NUMBER)MAX_JACOBIAN_TOLERANCE))
         return big;
 
@@ -86,6 +91,8 @@ class ContextBase
       // max(x,y) + log10(1+10^-abs(x-y))
       // we compute the second term as a table lookup with integer quantization
       // we have pre-stored correction for 0,0.1,0.2,... 10.0
+
+      // The cast to NUMBER is to allow trading off precision for speed.
       int ind = fastRound((NUMBER)(diff * ((NUMBER)JACOBIAN_LOG_TABLE_INV_STEP))); // hard rounding
       return big + jacobianLogTable[ind];
     }
@@ -104,6 +111,7 @@ class Context<double> : public ContextBase<double>
       initializeStaticMembers();
       
       for (int x = 0; x < 128; x++) {
+        // With such a small max value of x there is no loss of data when converting to double.
         ph2pr[x] = pow(10.0, -((double)x) / 10.0);
       }
       
@@ -144,6 +152,7 @@ class Context<float> : public ContextBase<float>
       initializeStaticMembers();
       
       for (int x = 0; x < 128; x++) {
+        // With such a small max value of x there is no loss of data when converting to float.
         ph2pr[x] = powf(10.f, -((float)x) / 10.f);
       }
       
