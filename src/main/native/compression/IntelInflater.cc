@@ -102,66 +102,71 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
 
 
 
-   inflate_state* lz_stream = (inflate_state*)env->GetLongField(obj, FID_inf_lz_stream);
-   if (lz_stream == NULL) {
-     if (env->ExceptionCheck())
-       env->ExceptionClear();
-     env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "lz_stream is NULL.");
-     return 0;
+   jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inf_inputBuffer);
+   jint inputBufferLength = env->GetIntField(obj, FID_inf_inputBufferLength);
+   jint inputBufferOffset = env->GetIntField(obj, FID_inf_inputBufferOffset);
+
+
+   if(  inputBufferLength == 0 )
+   {
+        if (env->ExceptionCheck())
+            env->ExceptionClear();
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), " Uncompress Buffer size not right.");
+        return -1;
+
    }
 
-    jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inf_inputBuffer);
-      jint inputBufferLength = env->GetIntField(obj, FID_inf_inputBufferLength);
-      jint inputBufferOffset = env->GetIntField(obj, FID_inf_inputBufferOffset);
+   inflate_state* lz_stream = (inflate_state*)env->GetLongField(obj, FID_inf_lz_stream);
+      if (lz_stream == NULL) {
+        if (env->ExceptionCheck())
+          env->ExceptionClear();
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "lz_stream is NULL.");
+        return 0;
+      }
 
-
-        jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
-
-        if (next_in == NULL) {
+   jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
+   if (next_in == NULL )
+   {
           if (env->ExceptionCheck())
             env->ExceptionClear();
           env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "inputBuffer is null.");
           return -1;
-        }
+   }
 
-        jbyte* next_out = (jbyte*)env->GetPrimitiveArrayCritical(outputBuffer, 0);
-
-        if (next_out == NULL) {
+   jbyte* next_out = (jbyte*)env->GetPrimitiveArrayCritical(outputBuffer, 0);
+   if (next_out == NULL )
+   {
           if (env->ExceptionCheck())
             env->ExceptionClear();
           env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "outputBuffer is null.");
           env->ReleasePrimitiveArrayCritical(inputBuffer, next_in, 0);
           return -1;
-        }
+   }
 
 
-        lz_stream->next_in = (Bytef *) (next_in + inputBufferOffset);
-        lz_stream->avail_in = (uInt) inputBufferLength;
-        lz_stream->next_out = (Bytef *) (next_out + outputBufferOffset);
-        lz_stream->avail_out = (uInt) outputBufferLength;
+   lz_stream->next_in = (Bytef *) (next_in + inputBufferOffset);
+   lz_stream->avail_in = (uInt) inputBufferLength;
+   lz_stream->next_out = (Bytef *) (next_out + outputBufferOffset);
+   lz_stream->avail_out = (uInt) outputBufferLength;
 
-        int bytes_in = inputBufferLength;
+   DBG("Decompressing");
 
-        DBG("Decompressing");
+   // decompress and update lz_stream state
 
-        // compress and update lz_stream state
-
-#ifdef profile
-    struct timeval  tv1, tv2;
-    gettimeofday(&tv1, NULL);
-#endif
-
+    #ifdef profile
+        struct timeval  tv1, tv2;
+        gettimeofday(&tv1, NULL);
+    #endif
 
     int ret = isal_inflate(lz_stream);
 
-#ifdef profile
-    gettimeofday(&tv2, NULL);
+    #ifdef profile
+        gettimeofday(&tv2, NULL);
 
-    DBG ("Total time = %f seconds\n",
-         (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
-         (double) (tv2.tv_sec - tv1.tv_sec));
-#endif
-
+        DBG ("Total time = %f seconds\n",
+             (double) (tv2.tv_usec - tv1.tv_usec) / 1000000 +
+             (double) (tv2.tv_sec - tv1.tv_sec));
+    #endif
 
         DBG("%s", lz_stream->msg);
         DBG("%d", ret);
@@ -213,6 +218,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
         }
 
         int bytes_out = outputBufferLength - lz_stream->avail_out;
+
         return bytes_out;
 }
 

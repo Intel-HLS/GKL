@@ -124,25 +124,35 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
   //==================================================================
   // calcutate pairHMM
 
-#ifdef _OPENMP
-  #pragma omp parallel for schedule(dynamic, 1) num_threads(g_max_threads)
-#endif
-  for (int i = 0; i < testcases.size(); i++) {
-    double result_final = 0;
+    try {
+        #ifdef _OPENMP
+              #pragma omp parallel for schedule(dynamic, 1) num_threads(g_max_threads)
+        #endif
+        for (int i = 0; i < testcases.size(); i++) {
 
-    float result_float = g_use_double ? 0.0f : g_compute_full_prob_float(&testcases[i]);
+            double result_final = 0;
+            float result_float = g_use_double ? 0.0f : g_compute_full_prob_float(&testcases[i]);
 
-    if (result_float < MIN_ACCEPTED) {
-      double result_double = g_compute_full_prob_double(&testcases[i]);
-      result_final = log10(result_double) - g_ctxd.LOG10_INITIAL_CONSTANT;
+            if (result_float < MIN_ACCEPTED) {
+              double result_double = g_compute_full_prob_double(&testcases[i]);
+              result_final = log10(result_double) - g_ctxd.LOG10_INITIAL_CONSTANT;
+            }
+            else {
+              result_final = (double)(log10f(result_float) - g_ctxf.LOG10_INITIAL_CONSTANT);
+            }
+
+            javaResults[i] = result_final;
+            DBG("result = %e", result_final);
+          }
     }
-    else {
-      result_final = (double)(log10f(result_float) - g_ctxf.LOG10_INITIAL_CONSTANT);
+    catch (JavaException& e) {
+       #ifdef _OPENMP
+            #pragma omp barrier
+       #endif
+       env->ExceptionClear();
+       env->ThrowNew(env->FindClass(e.classPath), "Error in pairhmm processing.");
+       return;
     }
-
-    javaResults[i] = result_final;
-    DBG("result = %e", result_final);
-  }
 
   DBG("Exit");
 }
@@ -156,5 +166,4 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
 JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_doneNative
 (JNIEnv* env, jobject obj)
 {
-
 }

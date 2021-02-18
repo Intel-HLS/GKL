@@ -12,7 +12,7 @@ import java.util.zip.Inflater;
  * Created by pnvaidya on 2/1/17.
  */
 public class IntelInflaterFactory extends InflaterFactory {
-    private final static Logger logger = LogManager.getLogger(IntelDeflaterFactory.class);
+    private final static Logger logger = LogManager.getLogger(IntelInflaterFactory.class);
     private boolean intelInflaterSupported;
 
     public IntelInflaterFactory(File tmpDir) {

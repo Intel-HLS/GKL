@@ -90,12 +90,14 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
      * @param nowrap if true then use GZIP compatible compression
      */
     public IntelDeflater(int level, boolean nowrap) {
+
         if ((level < 0 || level > 9) && level != DEFAULT_COMPRESSION) {
             throw new IllegalArgumentException("Illegal compression level");
         }
-	if ((level == 1 || level == 2) && nowrap == false) {
-	    throw new IllegalArgumentException("Compression configuration requested not supported");
-	}
+
+        if ((level == 1 || level == 2) && nowrap == false) {
+            throw new IllegalArgumentException("Compression configuration requested not supported");
+        }
  
         this.level = level;
         this.nowrap = nowrap;
@@ -199,8 +201,14 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
         if(len <= 0) {
             throw new ArrayIndexOutOfBoundsException("Length value is less or equal than zero");
         }
+        if(inputBuffer == null || inputBufferLength == 0) {
+            throw new NullPointerException("Input buffer is null");
+        }
 
-        return deflateNative(b, len);
+        int bytesWritten = deflateNative(b, len);
+        if(bytesWritten == 0)
+            logger.warn(String.format(" Zero Bytes Written : %d", bytesWritten));
+        return bytesWritten;
     }
 
     /**
