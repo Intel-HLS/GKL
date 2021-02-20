@@ -106,7 +106,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             throw new NullPointerException("OverhangStrategy is null.");
 
         int intStrategy =  getStrategy(overhangStrategy);
-        byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];
+        byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length) + 1];
 
         if(refArray.length > MAX_SW_SEQUENCE_LENGTH || altArray.length > MAX_SW_SEQUENCE_LENGTH){
             throw new IllegalArgumentException(String.format("Sequences exceed maximum length of %d bytes", MAX_SW_SEQUENCE_LENGTH));
@@ -119,7 +119,9 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             throw new IllegalArgumentException("Strategy is invalid.");
 
         try {
+
             offset = alignNative(refArray, altArray, cigar, parameters.getMatchValue(), parameters.getMismatchPenalty(), parameters.getGapOpenPenalty(), parameters.getGapExtendPenalty(), intStrategy);
+
         }  catch (OutOfMemoryError e) {
             logger.warn("Exception thrown from native SW alignNative function call %s", e.getMessage());
             throw new OutOfMemoryError("Memory allocation failed");

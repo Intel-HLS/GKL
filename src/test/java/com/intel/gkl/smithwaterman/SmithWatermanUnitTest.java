@@ -88,7 +88,7 @@ public class SmithWatermanUnitTest {
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void smithWatermanThrowsIllegalArgumentExceptionIfAlignSequenceLengthTooLong(){
         final IntelSmithWaterman sw = new IntelSmithWaterman();
-        int sequenceLength = TestingUtils.MAX_SW_SEQUENCE_LENGTH+1;
+        int sequenceLength = TestingUtils.MAX_SW_SEQUENCE_LENGTH + 1;
 
         byte[] ref = new byte[]{'T', 'C', 'C', 'G'};
         byte[] align = TestingUtils.generateRandomDNAArray(sequenceLength);
@@ -97,6 +97,26 @@ public class SmithWatermanUnitTest {
         sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
 
         Assert.fail();
+    }
+
+    @Test(enabled = true)
+    public void smithWatermanAlignArraySizeOne(){
+
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        final boolean isLoaded = sw.load(null);
+
+        byte[] ref = new byte[]{'G','T','A'};
+        byte[] align = new byte[]{'A'};
+        SWParameters SWparameters = new SWParameters(100, -1 ,-3, -5);
+
+        try {
+            SWNativeAlignerResult result = sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+            logger.info(String.format("Using IntelSmithWaterman Library : %b, Offset : %d, Cigar : %s",isLoaded, result.alignment_offset, result.cigar));
+        }
+        catch(Exception | Error e){
+            logger.error(e.getMessage());
+        }
+
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
