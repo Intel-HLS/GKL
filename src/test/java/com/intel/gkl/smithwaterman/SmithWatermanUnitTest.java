@@ -113,6 +113,33 @@ public class SmithWatermanUnitTest {
     }
 
     @Test(enabled = true)
+    public void singleElementSequencesAlignmentTest(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        sw.load(null);
+
+        byte[] ref =    new byte [] {'C'};
+        byte[] align =  new byte [] {'C'};
+
+        SWParameters SWparameters = new SWParameters( 3,-2,-2,-1);
+        SWNativeAlignerResult result = sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.assertEquals(result.cigar, "1M");
+    }
+    @Test(enabled = true)
+    public void twoElementSequencesAlignmentTest(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        sw.load(null);
+
+        byte[] ref =    new byte [] {'A', 'D'};
+        byte[] align =  new byte [] {'A', 'T'};
+
+        SWParameters SWparameters = new SWParameters( 3,-5,-2,-1);
+        SWNativeAlignerResult result = sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.assertEquals(result.cigar, "1M1I");
+    }
+
+    @Test(enabled = false)
     public void maxSequenceFullAlignmentTest(){
         final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
         final boolean isLoaded = smithWaterman.load(null);
