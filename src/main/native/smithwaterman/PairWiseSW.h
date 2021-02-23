@@ -386,7 +386,6 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t cigarBufLength, int
 
     }
 
-    int maxSize = max(p->len1, p->len2);
     int curSize = 0;
     for(i = newId; i >= 0; i--)
     {
