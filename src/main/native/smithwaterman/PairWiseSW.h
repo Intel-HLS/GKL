@@ -238,7 +238,7 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
     return;
 }
 
-void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
+void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t cigarBufLength, int32_t tid)
 {
     int16_t *btrack = p->btrack;
     int32_t max_i = p->max_i;
@@ -333,7 +333,7 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
     if(overhangStrategy == SOFTCLIP)
     {
         if(j > 0)
-        {
+        {   
             cigarArray[cigarId * 2] = SOFTCLIP;
             cigarArray[cigarId * 2 + 1] = j;
             cigarId++;
@@ -351,7 +351,7 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
         p->alignmentOffset = i - j;
     }
     else // overhangStrategy == INDEL || overhangStrategy == LEADING_INDEL
-    {
+    {   
         if (i > 0)
         {
             cigarArray[cigarId * 2] = DELETE;
@@ -410,20 +410,35 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t tid)
                 state = 'R';
                 break;
         }
-	// expectedLength for converting int to str w/ extra padding for '\0'
-	int expectedLength = snprintf( NULL, 0, "%d%c", cigarArray[2 * i + 1], state);
-	if (curSize >= 0 && expectedLength > 1 && (curSize < maxSize - expectedLength ))
-           {
-                   curSize += snprintf(p->cigar + curSize, expectedLength + 1, "%d%c", cigarArray[2 * i + 1], state);
-           }
+        // expectedLength for converting int to str w/ extra padding for '\0'
+	    int expectedLength = snprintf( NULL, 0, "%d%c", cigarArray[2 * i + 1], state);
+        if (curSize >= 0 && expectedLength > 1){ 
+            
+            int tempNewCurSize = curSize + expectedLength;
+
+            if (tempNewCurSize < cigarBufLength)
+            {
+                curSize += snprintf(p->cigar + curSize, expectedLength + 1, "%d%c", cigarArray[2 * i + 1], state);
+            }
+
+            else if (tempNewCurSize == cigarBufLength)
+            {
+                char * tempBuff = (char*) malloc(sizeof(char) * (expectedLength + 1));
+                snprintf(tempBuff, expectedLength + 1, "%d%c", cigarArray[2 * i + 1], state);
+                
+                strncpy(p->cigar + curSize, tempBuff, expectedLength);
+                curSize += expectedLength;
+                
+                free(tempBuff);
+            }   
+        }
     }
     p->cigarCount = strnlen(p->cigar, curSize);
 }
 
 
-int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int16_t *cigarCount, int32_t *offset)
+int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, int16_t *cigarCount, int32_t *offset)
 {
-
     int32_t  w_match = match;
     int32_t  w_mismatch = mismatch;
     int32_t  w_open = open;
@@ -459,7 +474,7 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     p.cigar = cigarArray;
 
     smithWatermanBackTrack(&p, match, mismatch,  open, extend, E_, 0);
-    getCIGAR(&p, cigarBuf_, 0);
+    getCIGAR(&p, cigarBuf_, cigarLen, 0);
     (*cigarCount) = p.cigarCount;
 
     _mm_free(E_);
