@@ -60,7 +60,7 @@ static jfieldID FID_level;
 
 
 /**
- *  Cache the Java field IDs. Called once when the native library is loaded. 
+ *  Cache the Java field IDs. Called once when the native library is loaded.
  */
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_initNative
 (JNIEnv* env, jclass cls) {
@@ -80,7 +80,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_initNative
  */
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 (JNIEnv* env, jobject obj, jboolean nowrap) {
- 
+
   jint level = env->GetIntField(obj, FID_level);
 
   if(level == 1 || level ==2) {
@@ -245,7 +245,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
   }
 
   if(level == 1 || level == 2 ) {
-  
+
         isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
 
         jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
@@ -300,7 +300,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         }
 
         if (ret != COMP_OK) {
-              
+
               switch (ret) {
                 case INVALID_FLUSH:
                   err_msg = "Invalid FLUSH selected.";
@@ -325,6 +325,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         }
 
         // return number of bytes written to output buffer
+        // ISAL is capable of handling 64 bit buffer sizes but we're truncating to stay consistent with the Java interface.
         long bytes_out = outputBufferLength - lz_stream->avail_out;
         if(bytes_out == 0 )
         {
@@ -332,12 +333,12 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
             env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "No bytes written");
             return -1;
         }
-        
+
         DBG ("bytes_out = %d \n", bytes_out);
         return bytes_out;
   }
   else {
-      
+
         z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
         if (lz_stream == NULL) {
           if(env->ExceptionCheck())

@@ -56,7 +56,8 @@ class ContextBase
      
       for (int i = 0, offset = 0; i <= MAX_QUAL; offset += ++i)
         for (int j = 0; j <= i; j++) {
-          double log10Sum = approximateLog10SumLog10(-0.1*i, -0.1*j);
+          // Casting is fine because the algorithm is intended to have limited precision.
+          double log10Sum = approximateLog10SumLog10((NUMBER)-0.1*(NUMBER)i, (NUMBER)-0.1*(NUMBER)j);
           double matchToMatchLog10 =
             log1p(-std::min(1.0,pow(10,log10Sum))) * INV_LN10;
           // The cast to NUMBER is to allow trading off precision for speed.
@@ -179,7 +180,8 @@ class Context<float> : public ContextBase<float>
     }
 
     return MAX_QUAL < maxQual ?
-        1.0f - POW(10.0f, approximateLog10SumLog10(-0.1f * minQual, -0.1f * maxQual)) :
+        // Casting is fine because the algorithm is intended to have limited precision.
+        1.0f - POW(10.0f, approximateLog10SumLog10(-0.1f * (float) minQual, -0.1f * (float) maxQual)) :
         matchToMatchProb[((maxQual * (maxQual + 1)) >> 1) + minQual];
   }
 };

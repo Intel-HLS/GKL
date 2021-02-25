@@ -81,6 +81,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
     int32_t offset = 0;
 
     // call the low level routine
+    // Strategy is defined in Java as an int for simplicity but the actual argument only has a few valid values, no information is lost when type casting.
     int32_t result = g_runSWOnePairBT(match, mismatch, open, extend, (uint8_t*) reference, (uint8_t*) alternate, refLength, altLength, strategy, (char *) cigarArray, cigarLength, (int16_t*) &count, &offset);
     // release buffers
     env->ReleasePrimitiveArrayCritical(ref, reference, 0);
