@@ -157,6 +157,7 @@ public class SmithWatermanUnitTest {
         SWParameters SWparameters = new SWParameters(matchValue, -5, -10, -10);
         SWNativeAlignerResult result = smithWaterman.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
 
+
         Assert.assertEquals(result.cigar, expectedCigar);
     }
 
