@@ -325,8 +325,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         }
 
         // return number of bytes written to output buffer
-        // ISAL is capable of handling 64 bit buffer sizes but we're truncating to stay consistent with the Java interface.
-        long bytes_out = outputBufferLength - lz_stream->avail_out;
+        uint32_t bytes_out = outputBufferLength - lz_stream->avail_out;
         if(bytes_out == 0 )
         {
             env->ExceptionClear();
