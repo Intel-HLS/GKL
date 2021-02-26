@@ -20,7 +20,7 @@
 static jfieldID FID_reflength;
 static jfieldID FID_altlength;
 
-int32_t (*g_runSWOnePairBT)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, int16_t *cigarCount, int32_t *offset);
+int32_t (*g_runSWOnePairBT)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int16_t len1, int16_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, int16_t *cigarCount, int32_t *offset);
 
 JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initNative
   (JNIEnv * env, jclass obj )
@@ -47,7 +47,7 @@ if(is_avx512_supported())
  * Method:    alignNative
  */
 JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignNative
-  (JNIEnv * env, jclass obj, jbyteArray ref, jbyteArray alt, jbyteArray cigar, jint match, jint mismatch, jint open, jint extend, jint strategy)
+  (JNIEnv * env, jclass obj, jbyteArray ref, jbyteArray alt, jbyteArray cigar, jint match, jint mismatch, jint open, jint extend, jbyte strategy)
 {
     jint refLength = env->GetArrayLength(ref);
     jint altLength = env->GetArrayLength(alt);
@@ -81,8 +81,9 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
     int32_t offset = 0;
 
     // call the low level routine
+    // Sequence length should fit in 16 bytes. This is validated earlier at the Java layer.
     // Strategy is defined in Java as an int for simplicity but the actual argument only has a few valid values, no information is lost when type casting.
-    int32_t result = g_runSWOnePairBT(match, mismatch, open, extend, (uint8_t*) reference, (uint8_t*) alternate, refLength, altLength, strategy, (char *) cigarArray, cigarLength, (int16_t*) &count, &offset);
+    int32_t result = g_runSWOnePairBT(match, mismatch, open, extend,(uint8_t*) reference, (uint8_t*) alternate, (int16_t)refLength, (int16_t)altLength, strategy, (char *) cigarArray, (int16_t*) &count, &offset);
     // release buffers
     env->ReleasePrimitiveArrayCritical(ref, reference, 0);
     env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
