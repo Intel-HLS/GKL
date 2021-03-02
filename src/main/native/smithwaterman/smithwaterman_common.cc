@@ -17,7 +17,7 @@ int32_t fast_itoa(char * ptr, int32_t number){
     }
     while (cp_number != 0);
     
-    if (ptr == nullptr){
+    if (ptr == NULL){
         return digits + is_neg;
     }
 
