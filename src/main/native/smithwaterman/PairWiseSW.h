@@ -409,27 +409,12 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t cigarBufLength, int
                 state = 'R';
                 break;
         }
-        // expectedLength for converting int to str w/ extra padding for '\0'
-	    int expectedLength = snprintf( NULL, 0, "%d%c", cigarArray[2 * i + 1], state);
-        if (curSize >= 0 && expectedLength > 1){ 
-            
-            int tempNewCurSize = curSize + expectedLength;
+        int expectedLength = fast_itoa(NULL, cigarArray[2 * i + 1]) + 1;
 
-            if (tempNewCurSize < cigarBufLength)
-            {
-                curSize += snprintf(p->cigar + curSize, expectedLength + 1, "%d%c", cigarArray[2 * i + 1], state);
-            }
+        if (curSize >= 0 && expectedLength > 1 && curSize + expectedLength <= cigarBufLength){ 
+            curSize += fast_itoa(p->cigar + curSize, cigarArray[2 * i + 1]);
+            p->cigar[curSize++] = state;
 
-            else if (tempNewCurSize == cigarBufLength)
-            {
-                char * tempBuff = (char*) malloc(sizeof(char) * (expectedLength + 1));
-                snprintf(tempBuff, expectedLength + 1, "%d%c", cigarArray[2 * i + 1], state);
-                
-                strncpy(p->cigar + curSize, tempBuff, expectedLength);
-                curSize += expectedLength;
-                
-                free(tempBuff);
-            }   
         }
     }
     p->cigarCount = strnlen(p->cigar, curSize);

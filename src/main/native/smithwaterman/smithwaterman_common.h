@@ -45,6 +45,8 @@ typedef struct dnaSeqPair
         int16_t alignmentOffset;
 }SeqPair;
 
+int32_t fast_itoa(char *, int32_t);
+
 //the maximum DNA sequence length
 #define MAX_SEQ_LEN 1024
 #define MAX_NUM_PAIRS 800000
