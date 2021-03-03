@@ -33,11 +33,10 @@ int32_t fast_itoa(char * ptr, int32_t number){
     int32_t cp_number = number;
     int32_t digits = 0;
     
-    do {
+    while (cp_number > 0){
         cp_number /= 10;
         digits++;
     }
-    while (cp_number != 0);
     
     if (ptr == NULL){
         return digits + (int) is_neg;
