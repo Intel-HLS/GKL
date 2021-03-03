@@ -40,7 +40,7 @@ int32_t fast_itoa(char * ptr, int32_t number){
     while (cp_number != 0);
     
     if (ptr == NULL){
-        return digits + is_neg;
+        return digits + (int) is_neg;
     }
 
     if(is_neg){
@@ -52,5 +52,5 @@ int32_t fast_itoa(char * ptr, int32_t number){
         number /= 10;
     }
 
-    return digits + is_neg;
+    return digits + (int) is_neg;
 }
