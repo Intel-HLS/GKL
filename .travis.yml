@@ -11,11 +11,13 @@ jdk:
 
 before_install:
     |
-    if [ $TRAVIS_OS_NAME = "osx" ]; then 
+    if [ $TRAVIS_OS_NAME = "osx" ]; then
+        sysctl -a | grep machdep.cpu;
         brew update ;
         brew install gcc r git cmake libtool automake yasm zlib nasm ;
         echo "Building GKL"; 
     else
+        lscpu;
         sudo unlink /usr/bin/gcc ;
         sudo ln -s /usr/bin/gcc-5 /usr/bin/gcc;
         sudo unlink /usr/bin/g++;
