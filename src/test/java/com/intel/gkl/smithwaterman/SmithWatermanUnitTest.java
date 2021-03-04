@@ -115,7 +115,8 @@ public class SmithWatermanUnitTest {
     @Test(enabled = true)
     public void singleElementSequencesAlignmentTest(){
         final IntelSmithWaterman sw = new IntelSmithWaterman();
-        sw.load(null);
+        boolean isLoaded = sw.load(null);
+        if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
 
         byte[] ref =    new byte [] {'C'};
         byte[] align =  new byte [] {'C'};
@@ -128,7 +129,8 @@ public class SmithWatermanUnitTest {
     @Test(enabled = true)
     public void twoElementSequencesAlignmentTest(){
         final IntelSmithWaterman sw = new IntelSmithWaterman();
-        sw.load(null);
+        boolean isLoaded = sw.load(null);
+        if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
 
         byte[] ref =    new byte [] {'A', 'D'};
         byte[] align =  new byte [] {'A', 'T'};
