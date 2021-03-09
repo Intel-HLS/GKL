@@ -428,7 +428,7 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t cigarBufLength, int
 }
 
 
-int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int16_t len1, int16_t len2, int8_t overhangStrategy, char *cigarArray, uint32_t *cigarCount, int32_t *offset)
+int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int16_t len1, int16_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, uint32_t *cigarCount, int32_t *offset)
 {
     int32_t  w_match = match;
     int32_t  w_mismatch = mismatch;
