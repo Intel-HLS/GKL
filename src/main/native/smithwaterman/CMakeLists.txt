@@ -21,7 +21,7 @@ set(TARGET gkl_smithwaterman)
 
 
 add_library(${TARGET} SHARED
-    IntelSmithWaterman.cc avx2_impl.cc avx512_impl.cc)
+    IntelSmithWaterman.cc avx2_impl.cc avx512_impl.cc smithwaterman_common.cc)
 
 install(TARGETS ${TARGET} DESTINATION ${CMAKE_BINARY_DIR})
 
