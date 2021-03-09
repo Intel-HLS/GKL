@@ -41,6 +41,7 @@ int32_t fast_itoa(char * ptr, int32_t number){
     }
     
     if (ptr == NULL){
+        // if the number is negative add 1 for the minus sign, 0 otherwise
         return digits + (int) is_neg;
     }
 
@@ -53,5 +54,6 @@ int32_t fast_itoa(char * ptr, int32_t number){
         number /= 10;
     }
 
+    // if the number is negative add 1 for the minus sign, 0 otherwise
     return digits + (int) is_neg;
 }
