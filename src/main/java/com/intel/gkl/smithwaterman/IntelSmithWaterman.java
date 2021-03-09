@@ -127,6 +127,9 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             throw new NullPointerException("Parameter structure is null.");
         if(overhangStrategy == null)
             throw new NullPointerException("OverhangStrategy is null.");
+        if(refArray.length <=0 || altArray.length <=0)
+            throw new IllegalArgumentException("Cannot align empty sequences");
+
 
         int intStrategy =  getStrategy(overhangStrategy);
         byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];

@@ -112,7 +112,62 @@ public class SmithWatermanUnitTest {
         Assert.fail();
     }
 
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void emptyReferenceSequenceThrowsIllegalArgumentExceptionTest(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+
+        byte[] ref = new byte [0];
+        byte[] align =  new byte [] {'A', 'C'};
+
+        SWParameters SWparameters = new SWParameters( 3,-2,-2,-1);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void emptyAlignedSequenceThrowsIllegalArgumentExceptionTest(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+
+        byte[] ref =  new byte [] {'A', 'C'};
+        byte[] align = new byte [0];
+
+        SWParameters SWparameters = new SWParameters( 3,-2,-2,-1);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+
     @Test(enabled = true)
+    public void singleElementSequencesAlignmentTest(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        boolean isLoaded = sw.load(null);
+        if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
+
+        byte[] ref =    new byte [] {'C'};
+        byte[] align =  new byte [] {'C'};
+
+        SWParameters SWparameters = new SWParameters( 3,-2,-2,-1);
+        SWNativeAlignerResult result = sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.assertEquals(result.cigar, "1M");
+    }
+    @Test(enabled = true)
+    public void twoElementSequencesAlignmentTest(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+        boolean isLoaded = sw.load(null);
+        if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
+
+        byte[] ref =    new byte [] {'A', 'D'};
+        byte[] align =  new byte [] {'A', 'T'};
+
+        SWParameters SWparameters = new SWParameters( 3,-5,-2,-1);
+        SWNativeAlignerResult result = sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.assertEquals(result.cigar, "1M1I");
+    }
+
+    @Test(enabled = false)
     public void maxSequenceFullAlignmentTest(){
         final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
         final boolean isLoaded = smithWaterman.load(null);
@@ -129,6 +184,7 @@ public class SmithWatermanUnitTest {
 
         SWParameters SWparameters = new SWParameters(matchValue, -5, -10, -10);
         SWNativeAlignerResult result = smithWaterman.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
 
         Assert.assertEquals(result.cigar, expectedCigar);
     }

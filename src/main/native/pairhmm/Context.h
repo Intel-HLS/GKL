@@ -73,7 +73,7 @@ class ContextBase
         small = t;
       }
 
-      if (std::isinf(small) == -1 || std::isinf(big) == -1)
+      if (std::isinf(small) || std::isinf(big))
         return big;
 
       NUMBER diff = big - small;

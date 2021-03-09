@@ -1,18 +1,18 @@
-/**
+/*
  * The MIT License (MIT)
- *
- * Copyright (c) 2016-2021 Intel Corporation
- *
+ * 
+ * Copyright (c) 2021 Intel Corporation
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,18 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include "avx512_impl.h"
 
-#ifndef __APPLE__
+#include "smithwaterman_common.h"
 
-#include "avx512-smithwaterman.h"
+int32_t fast_itoa(char * ptr, int32_t number){
+    bool is_neg = false;
 
-int32_t (*runSWOnePairBT_fp_avx512)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, int16_t *cigarCount, int32_t *offset)= &runSWOnePairBT_avx512;
+    if(number < 0){
+        number = -number;
+        is_neg = true;
+    }
 
+    int32_t cp_number = number;
+    int32_t digits = 0;
+    
+    while (cp_number > 0){
+        cp_number /= 10;
+        digits++;
+    }
+    
+    if (ptr == NULL){
+        // if the number is negative add 1 for the minus sign, 0 otherwise
+        return digits + (int) is_neg;
+    }
 
-#else
+    if(is_neg){
+        *(ptr++) = '-';
+    }
 
-int32_t (*runSWOnePairBT_fp_avx512)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, int16_t *cigarCount, int32_t *offset)= NULL;
+    for(int i = digits-1; i >= 0; i--){
+        *(ptr + i) = '0' +  (number % 10);
+        number /= 10;
+    }
 
-
-#endif
+    // if the number is negative add 1 for the minus sign, 0 otherwise
+    return digits + (int) is_neg;
+}
