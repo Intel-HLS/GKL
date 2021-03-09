@@ -45,7 +45,15 @@ typedef struct dnaSeqPair
         int16_t alignmentOffset;
 }SeqPair;
 
-int32_t fast_itoa(char *, int32_t);
+
+/* Description : Function for converting integer number to a string.
+ * Returns : Number of chars written 
+ * Parameters :
+ *    1. char * ptr : pointer to char array where the number will be written
+ *    2. int number : number to convert 
+ * @author : pawel.kolakowski@intel.com
+ */
+int32_t fast_itoa(char * ptr, int32_t number);
 
 //the maximum DNA sequence length
 #define MAX_SEQ_LEN 1024
