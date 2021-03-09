@@ -112,6 +112,32 @@ public class SmithWatermanUnitTest {
         Assert.fail();
     }
 
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void emptyReferenceSequenceThrowsIllegalArgumentExceptionTest(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+
+        byte[] ref = new byte [0];
+        byte[] align =  new byte [] {'A', 'C'};
+
+        SWParameters SWparameters = new SWParameters( 3,-2,-2,-1);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void emptyAlignedSequenceThrowsIllegalArgumentExceptionTest(){
+        final IntelSmithWaterman sw = new IntelSmithWaterman();
+
+        byte[] ref =  new byte [] {'A', 'C'};
+        byte[] align = new byte [0];
+
+        SWParameters SWparameters = new SWParameters( 3,-2,-2,-1);
+        sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
+
+        Assert.fail();
+    }
+
     @Test(enabled = true)
     public void singleElementSequencesAlignmentTest(){
         final IntelSmithWaterman sw = new IntelSmithWaterman();
