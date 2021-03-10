@@ -8,6 +8,7 @@ jobs:
 
 jdk:
 - oraclejdk8
+- oraclejdk11
 
 before_install:
     |
