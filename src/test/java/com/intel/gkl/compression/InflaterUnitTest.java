@@ -31,7 +31,7 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
     public void setInputOneArgThrowsNullPointerExceptionWhenNullBufferTest(){
         final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
 
-        inflater.setInput(null);
+        inflater.setInput((byte[]) null);
 
         Assert.fail();
     }
@@ -76,7 +76,7 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
     public void inflateOneArgThrowsNullPointerExceptionWhenNullBufferTest() throws DataFormatException {
         final Inflater inflater = new IntelInflaterFactory().makeInflater(true);
 
-        inflater.inflate(null);
+        inflater.inflate((byte []) null);
 
         Assert.fail();
     }
