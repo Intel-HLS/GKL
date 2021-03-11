@@ -64,7 +64,7 @@ typedef struct dnaSeqPair
         int16_t max_j;
         int16_t *btrack;
         char *cigar;
-        int16_t cigarCount;
+        uint32_t cigarCount;
         int16_t alignmentOffset;
 }SeqPair;
 

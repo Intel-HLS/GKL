@@ -39,7 +39,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initN
  * Signature: ([B[B[BIIIII)I
  */
 JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignNative
-  (JNIEnv *, jclass, jbyteArray, jbyteArray, jbyteArray, jint, jint, jint, jint, jint);
+  (JNIEnv *, jclass, jbyteArray, jbyteArray, jbyteArray, jint, jint, jint, jint, jbyte);
 
 /*
  * Class:     com_intel_gkl_smithwaterman_IntelSmithWaterman

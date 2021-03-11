@@ -131,7 +131,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             throw new IllegalArgumentException("Cannot align empty sequences");
 
 
-        int intStrategy =  getStrategy(overhangStrategy);
+        byte intStrategy =  getStrategy(overhangStrategy);
         byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];
 
         if(refArray.length > MAX_SW_SEQUENCE_LENGTH || altArray.length > MAX_SW_SEQUENCE_LENGTH){
@@ -157,9 +157,9 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
         return new SWNativeAlignerResult(new String(cigar).trim(), offset);
     }
 
-    public int getStrategy(SWOverhangStrategy strategy)
+    public byte getStrategy(SWOverhangStrategy strategy)
     {
-        int intStrategy = 0;
+        byte intStrategy = 0;
 
         switch(strategy){
             case SOFTCLIP: intStrategy = 9;
@@ -182,7 +182,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
     }
 
     private native static void initNative();
-    private native static int alignNative(byte[] refArray, byte[] altArray, byte[] cigar, int match, int mismatch, int open, int extend, int strategy);
+    private native static int alignNative(byte[] refArray, byte[] altArray, byte[] cigar, int match, int mismatch, int open, int extend, byte strategy);
     private native static void doneNative();
 }
 

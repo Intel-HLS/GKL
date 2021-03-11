@@ -256,21 +256,22 @@ void inline smithWatermanBackTrack(SeqPair *p, int32_t match, int32_t mismatch, 
     else
         p->score = maxScore;
     p->score = maxScore;
-    p->max_i = max_i;
-    p->max_j = max_j;
+    // i and j are bounded by the length of the input which is at most 16 bit.
+    p->max_i = (int16_t)max_i;
+    p->max_j = (int16_t)max_j;
     return;
 }
 
 void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t cigarBufLength, int32_t tid)
 {
     int16_t *btrack = p->btrack;
-    int32_t max_i = p->max_i;
-    int32_t max_j = p->max_j;
-    int32_t nrow = p->len1;
-    int32_t ncol = p->len2;
-    int32_t overhangStrategy = p->overhangStrategy;
+    int16_t max_i = p->max_i;
+    int16_t max_j = p->max_j;
+    int16_t nrow = p->len1;
+    int16_t ncol = p->len2;
+    int8_t overhangStrategy = p->overhangStrategy;
 
-    int32_t i, j;
+    int16_t i, j;
     int16_t *cigarArray = cigarBuf_;
 
     int32_t cigarId = 0;
@@ -294,7 +295,9 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t cigarBufLength, int
     if(j < ncol)
     {
         cigarArray[cigarId * 2] = SOFTCLIP;
-        cigarArray[cigarId * 2 + 1] = ncol - j;
+        // ncol - j is automatically converted to an int because the result of int16_t - int16_t may overflow int16_t
+        // That never happens in this case as both are guaranteed to be positive and j < ncol.
+        cigarArray[cigarId * 2 + 1] = (int16_t)(ncol - j);
         cigarId++;
     }
     int state = 0;
@@ -371,7 +374,9 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t cigarBufLength, int
             cigarArray[cigarId * 2 + 1] = j;
             cigarId++;
         }
-        p->alignmentOffset = i - j;
+        // i - j is automatically converted to an int because the result of int16_t - int16_t may overflow int16_t
+        // That never happens in this case as both are guaranteed to be positive.
+        p->alignmentOffset = (int16_t)(i - j);
     }
     else // overhangStrategy == INDEL || overhangStrategy == LEADING_INDEL
     {   
@@ -389,15 +394,16 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t cigarBufLength, int
         }
         p->alignmentOffset = 0;
     }
-    int32_t newId = 0;
-    int32_t prev = cigarArray[newId * 2];
+    int16_t newId = 0;
+    int16_t prev = cigarArray[newId * 2];
     //printf("cigarId = %d\n", cigarId);
     for(i = 1; i < cigarId; i++)
     {
-        int32_t cur = cigarArray[i * 2];
+        int16_t cur = cigarArray[i * 2];
         if(cur == prev)
         {
-            cigarArray[newId * 2 + 1] += cigarArray[i * 2 + 1];
+            // cigarArray elements will never overflow int16_t because they're bounded by the 16 bit input length.
+            cigarArray[newId * 2 + 1] = (int16_t)(cigarArray[newId * 2 + 1] + cigarArray[i * 2 + 1]);
         }
         else
         {
@@ -440,11 +446,12 @@ void inline getCIGAR(SeqPair *p, int16_t *cigarBuf_, int32_t cigarBufLength, int
 
         }
     }
-    p->cigarCount = strnlen(p->cigar, curSize);
+    // CIGARs are specified to have their length fit in uint32_t
+    p->cigarCount = (uint32_t)strnlen(p->cigar, curSize);
 }
 
 
-int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int32_t len1, int32_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, int16_t *cigarCount, int32_t *offset)
+int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int16_t len1, int16_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, uint32_t *cigarCount, int32_t *offset)
 {
     int32_t  w_match = match;
     int32_t  w_mismatch = mismatch;
@@ -474,6 +481,7 @@ int32_t CONCAT(runSWOnePairBT_,SIMD_ENGINE)(int32_t match, int32_t mismatch, int
     SeqPair p;
     p.seq1 = seq1;
     p.seq2 = seq2;
+    // len1 and len2 are bounded by the length of the input with is at most 16 bit.
     p.len1 = len1;
     p.len2 = len2;
     p.overhangStrategy = overhangStrategy;
