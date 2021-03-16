@@ -327,8 +327,8 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
             env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "No bytes written");
             return -1;
         }
-
-        DBG ("bytes_out = %d \n", bytes_out);
+        
+        DBG ("bytes_out = %ld \n", bytes_out);
         return bytes_out;
   }
   else {
@@ -398,7 +398,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
               break;
             default:
               err_msg = zError(ret);
-              DBG("deflate returned %d", err_msg);
+              DBG("deflate returned %s", err_msg);
           }
 
           env->ExceptionClear();

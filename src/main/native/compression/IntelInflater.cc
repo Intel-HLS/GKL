@@ -163,7 +163,6 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelInflater_inflateNativ
              (double) (tv2.tv_sec - tv1.tv_sec));
     #endif
 
-        DBG("%s", lz_stream->msg);
         DBG("%d", ret);
         DBG("avail_in = %d", lz_stream->avail_in);
         DBG("avail_out = %d", lz_stream->avail_out);
