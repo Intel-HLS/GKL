@@ -57,7 +57,7 @@ public class DeflaterUnitTest extends CompressionUnitTestBase {
     public void setInputShortThrowsNullPointerExceptionWhenNullBufferTest(){
         final Deflater deflater = new IntelDeflaterFactory().makeDeflater(0, true);
 
-        deflater.setInput(null);
+        deflater.setInput((byte []) null);
 
         Assert.fail();
     }

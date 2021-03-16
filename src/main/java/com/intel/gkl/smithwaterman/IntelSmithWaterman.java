@@ -1,3 +1,26 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2016-2021 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package com.intel.gkl.smithwaterman;
 
 import org.apache.logging.log4j.LogManager;
@@ -104,8 +127,11 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             throw new NullPointerException("Parameter structure is null.");
         if(overhangStrategy == null)
             throw new NullPointerException("OverhangStrategy is null.");
+        if(refArray.length <=0 || altArray.length <=0)
+            throw new IllegalArgumentException("Cannot align empty sequences");
 
-        int intStrategy =  getStrategy(overhangStrategy);
+
+        byte intStrategy =  getStrategy(overhangStrategy);
         byte[] cigar = new byte[2*Integer.max(refArray.length, altArray.length)];
 
         if(refArray.length > MAX_SW_SEQUENCE_LENGTH || altArray.length > MAX_SW_SEQUENCE_LENGTH){
@@ -131,9 +157,9 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
         return new SWNativeAlignerResult(new String(cigar).trim(), offset);
     }
 
-    public int getStrategy(SWOverhangStrategy strategy)
+    public byte getStrategy(SWOverhangStrategy strategy)
     {
-        int intStrategy = 0;
+        byte intStrategy = 0;
 
         switch(strategy){
             case SOFTCLIP: intStrategy = 9;
@@ -156,7 +182,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
     }
 
     private native static void initNative();
-    private native static int alignNative(byte[] refArray, byte[] altArray, byte[] cigar, int match, int mismatch, int open, int extend, int strategy);
+    private native static int alignNative(byte[] refArray, byte[] altArray, byte[] cigar, int match, int mismatch, int open, int extend, byte strategy);
     private native static void doneNative();
 }
 

@@ -1,3 +1,26 @@
+/**
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2016-2021 Intel Corporation
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #ifdef PRECISION
 
 void CONCAT(CONCAT(precompute_masks_,SIMD_ENGINE), PRECISION)(const testcase& tc, int COLS, int numMaskVecs, MASK_TYPE (*maskArr)[NUM_DISTINCT_CHARS]) {
@@ -83,7 +106,8 @@ inline void CONCAT(CONCAT(computeDistVec,SIMD_ENGINE), PRECISION) (BITMASK_VEC& 
 template<class NUMBER> void CONCAT(CONCAT(initializeVectors,SIMD_ENGINE), PRECISION)(int ROWS, int COLS, NUMBER* shiftOutM, NUMBER *shiftOutX, NUMBER *shiftOutY, Context<NUMBER> ctx, testcase *tc,  SIMD_TYPE *p_MM, SIMD_TYPE *p_GAPM, SIMD_TYPE *p_MX, SIMD_TYPE *p_XX, SIMD_TYPE *p_MY, SIMD_TYPE *p_YY, SIMD_TYPE *distm1D)
 {
     NUMBER zero = ctx._(0.0);
-    NUMBER init_Y = ctx.INITIAL_CONSTANT / (tc->haplen);
+    // Casting is fine because the algorithm is intended to have limited precision.
+    NUMBER init_Y = ctx.INITIAL_CONSTANT / (NUMBER)(tc->haplen);
     for (int s=0;s<ROWS+COLS+AVX_LENGTH;s++)
     {
         shiftOutM[s] = zero;
@@ -148,7 +172,8 @@ template<class NUMBER> inline void CONCAT(CONCAT(stripeINITIALIZATION,SIMD_ENGIN
     pYY   = p_YY[i];
 
     NUMBER zero = ctx._(0.0);
-    NUMBER init_Y = ctx.INITIAL_CONSTANT / (tc->haplen);
+    // Casting is fine because the algorithm is intended to have limited precision.
+    NUMBER init_Y = ctx.INITIAL_CONSTANT / (NUMBER)(tc->haplen);
     UNION_TYPE packed1;  packed1.d = VEC_SET1_VAL(1.0);
     UNION_TYPE packed3;  packed3.d = VEC_SET1_VAL(3.0);
 
@@ -244,7 +269,8 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
     NUMBER zero = ctx._(0.0);
     UNION_TYPE packed1;  packed1.d = VEC_SET1_VAL(1.0);
     SIMD_TYPE N_packed256 = VEC_POPCVT_CHAR('N');
-    NUMBER init_Y = ctx.INITIAL_CONSTANT / (tc->haplen);
+    // Casting is fine because the algorithm is intended to have limited precision.
+    NUMBER init_Y = ctx.INITIAL_CONSTANT / (NUMBER)(tc->haplen);
     int remainingRows = (ROWS-1) % AVX_LENGTH;
     int stripe_cnt = ((ROWS-1) / AVX_LENGTH) + (remainingRows!=0);
 

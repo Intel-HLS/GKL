@@ -21,16 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.intel.gkl.pairhmm;
+#include "smithwaterman_common.h"
 
-/**
- * Provides a native PairHMM implementation accelerated for the Intel Architecture using multithreaded OpenMP.
- */
-public final class IntelPairHmmOMP extends IntelPairHmm {
-    private static final String NATIVE_LIBRARY_NAME = "gkl_pairhmm_omp";
+int32_t fast_itoa(char * ptr, int32_t number){
+    bool is_neg = false;
 
-    public IntelPairHmmOMP() {
-        setNativeLibraryName(NATIVE_LIBRARY_NAME);
-        useOmp = true;
+    if(number < 0){
+        number = -number;
+        is_neg = true;
     }
+
+    int32_t cp_number = number;
+    int32_t digits = 0;
+    
+    while (cp_number > 0){
+        cp_number /= 10;
+        digits++;
+    }
+    
+    if (ptr == NULL){
+        // if the number is negative add 1 for the minus sign, 0 otherwise
+        return digits + (int) is_neg;
+    }
+
+    if(is_neg){
+        *(ptr++) = '-';
+    }
+
+    for(int i = digits-1; i >= 0; i--){
+        *(ptr + i) = '0' +  (number % 10);
+        number /= 10;
+    }
+
+    // if the number is negative add 1 for the minus sign, 0 otherwise
+    return digits + (int) is_neg;
 }

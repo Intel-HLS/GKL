@@ -24,7 +24,7 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.13.2'
     compile 'org.apache.logging.log4j:log4j-core:2.13.2'
     compile 'com.github.samtools:htsjdk:2.21.1'
-    testCompile 'org.testng:testng:7.0.0'
+    testCompile 'org.testng:testng:7.4.0'
 }
 
  wrapper {

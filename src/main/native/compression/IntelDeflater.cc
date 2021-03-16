@@ -1,31 +1,26 @@
-/*
- * The MIT License
+/**
+ * The MIT License (MIT)
  *
- * Copyright (c) 2016 Intel Corporation
+ * Copyright (c) 2016-2021 Intel Corporation
  *
- *  Permission is hereby granted, free of charge, to any person
- *  obtaining a copy of this software and associated documentation
- *  files (the "Software"), to deal in the Software without
- *  restriction, including without limitation the rights to use,
- *  copy, modify, merge, publish, distribute, sublicense, and/or
- *  sell copies of the Software, and to permit persons to whom the
- *  Software is furnished to do so, subject to the following
- *  conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- *  The above copyright notice and this permission notice shall be
- *  included in all copies or substantial portions of the
- *  Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
- *  KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
- *  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- *  PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- *  COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- *  OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- *  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -60,7 +55,7 @@ static jfieldID FID_level;
 
 
 /**
- *  Cache the Java field IDs. Called once when the native library is loaded. 
+ *  Cache the Java field IDs. Called once when the native library is loaded.
  */
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_initNative
 (JNIEnv* env, jclass cls) {
@@ -80,7 +75,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_initNative
  */
 JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 (JNIEnv* env, jobject obj, jboolean nowrap) {
- 
+
   jint level = env->GetIntField(obj, FID_level);
 
   if(level == 1 || level ==2) {
@@ -245,7 +240,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
   }
 
   if(level == 1 || level == 2 ) {
-  
+
         isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
 
         jbyte* next_in = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
@@ -300,7 +295,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         }
 
         if (ret != COMP_OK) {
-              
+
               switch (ret) {
                 case INVALID_FLUSH:
                   err_msg = "Invalid FLUSH selected.";
@@ -325,7 +320,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
         }
 
         // return number of bytes written to output buffer
-        long bytes_out = outputBufferLength - lz_stream->avail_out;
+        uint32_t bytes_out = outputBufferLength - lz_stream->avail_out;
         if(bytes_out == 0 )
         {
             env->ExceptionClear();
@@ -333,11 +328,11 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
             return -1;
         }
         
-        DBG ("bytes_out = %d \n", bytes_out);
+        DBG ("bytes_out = %ld \n", bytes_out);
         return bytes_out;
   }
   else {
-      
+
         z_stream* lz_stream = (z_stream*)env->GetLongField(obj, FID_lz_stream);
         if (lz_stream == NULL) {
           if(env->ExceptionCheck())
@@ -403,7 +398,7 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_compression_IntelDeflater_deflateNativ
               break;
             default:
               err_msg = zError(ret);
-              DBG("deflate returned %d", err_msg);
+              DBG("deflate returned %s", err_msg);
           }
 
           env->ExceptionClear();
