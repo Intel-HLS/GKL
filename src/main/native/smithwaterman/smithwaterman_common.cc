@@ -49,7 +49,7 @@ int32_t fast_itoa(char * ptr, int32_t number){
     }
 
     for(int i = digits-1; i >= 0; i--){
-        *(ptr + i) = '0' +  (number % 10);
+        *(ptr + i) = (char)((int)'0' +  (number % 10));
         number /= 10;
     }
 
