@@ -51,7 +51,7 @@ public class LongReadsDeflateInflateTest {
      * For example:
      * ./gradlew test --tests LongReadsDeflateInflateTest -D longreads-directory=/tmp/genomics_temp/longreads
      */
-    @Test(enabled = true, dataProvider = "inflateDeflateData")
+    @Test(enabled = false, dataProvider = "inflateDeflateData")
     public void testInflateDeflate(String path, Integer level) throws IOException, DataFormatException {
         File rawFile = new File(path);
         FileInputStream rawInputStream = new FileInputStream(path);
