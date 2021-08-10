@@ -33,7 +33,7 @@ GKL release binaries are built on CentOS 7, to enable running on most Linux dist
 ## Setup
 Run these commands to setup the build environment on CentOS:
 ```
-sudo yum install -y java-1.8.0-openjdk-devel git cmake patch libtool automake yasm zlib-devel centos-release-scl
+sudo yum install -y java-1.8.0-openjdk-devel git cmake patch libtool automake yasm zlib-devel centos-release-scl help2man
 sudo yum install -y devtoolset-7-gcc-c++
 source scl_source enable devtoolset-7
 ```
