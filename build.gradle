@@ -199,16 +199,16 @@ uploadArchives {
                 }
                 developers {
                     developer {
-                        name = "George Powley"
-                        email = "george.s.powley@intel.com"
+                        name = "Keith Mannthey"
+                        email = "keith.mannthey@intel.com"
                     }
                     developer {
                         name = "Priya Vaidya"
                         email = "priya.n.vaidya@intel.com"
                     }
                     developer {
-                        name = "Ernesto Brau"
-                        email = "ernesto.brau@intel.com"
+                        name = "Marissa Powers"
+                        email = "marissa.e.powers@intel.com"
                     }
                 }
             }
