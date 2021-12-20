@@ -1,3 +1,6 @@
+The Intel Genomics Libary does not include the latest functional and security updates. Intel Genomics Libary Version 0.8.9 is targeted to be released in December 2021 and will include additional functional and security updates. Customers should update to the latest version as it becomes available.
+
+
 [![Build Status](https://travis-ci.org/Intel-HLS/GKL.svg?branch=master)](https://travis-ci.org/Intel-HLS/GKL)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.intel.gkl/gkl/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.intel.gkl/gkl)
 
