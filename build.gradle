@@ -21,8 +21,8 @@ repositories {
 dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'org.broadinstitute:gatk-native-bindings:1.0.0'
-    compile 'org.apache.logging.log4j:log4j-api:2.16.0'
-    compile 'org.apache.logging.log4j:log4j-core:2.16.0'
+    compile 'org.apache.logging.log4j:log4j-api:2.17.0'
+    compile 'org.apache.logging.log4j:log4j-core:2.17.0'
     compile 'com.github.samtools:htsjdk:2.21.1'
     testCompile 'org.testng:testng:7.4.0'
 }
