@@ -25,8 +25,8 @@ package com.intel.gkl;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 
 import java.io.File;
 import java.net.URL;
@@ -37,7 +37,7 @@ import java.util.Set;
  * Loads native libraries from the classpath, usually from a jar file.
  */
 public final class NativeLibraryLoader {
-    private static final Logger logger;
+    private static final Log logger;
     private static final String USE_LIBRARY_PATH;
     private static final Set<String> loadedLibraries = new HashSet<>();
     private static final int MAX_PATH;
@@ -45,7 +45,7 @@ public final class NativeLibraryLoader {
     private static enum NATIVE_LIB {gkl_compression, gkl_pairhmm, gkl_pairhmm_omp, gkl_smithwaterman, gkl_utils}
 
     static {
-        logger = LogManager.getLogger(NativeLibraryLoader.class);
+        logger = LogFactory.getLog(NativeLibraryLoader.class);
         USE_LIBRARY_PATH = "USE_LIBRARY_PATH";
         MAX_PATH = 4096;
     }

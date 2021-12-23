@@ -31,8 +31,8 @@ package com.intel.gkl.compression;
 
 import com.intel.gkl.testingutils.CompressionDataProviders;
 import com.intel.gkl.testingutils.TestingUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -43,7 +43,7 @@ import java.util.zip.Inflater;
 
 
 public class DeflaterUnitTest extends CompressionUnitTestBase {
-    protected final static Logger log = LogManager.getLogger(DeflaterUnitTest.class);
+    protected final static Log log = LogFactory.getLog(DeflaterUnitTest.class);
 
     @Test(enabled = true)
     public void loadLibrary() {

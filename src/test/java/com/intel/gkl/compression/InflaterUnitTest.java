@@ -4,8 +4,8 @@ import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.testingutils.CompressionDataProviders;
 import com.intel.gkl.testingutils.TestingUtils;
 import htsjdk.samtools.util.BlockCompressedInputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -21,7 +21,7 @@ import java.util.zip.Inflater;
  */
 public class InflaterUnitTest extends CompressionUnitTestBase {
 
-    private final static Logger log = LogManager.getLogger(InflaterUnitTest.class);
+    private final static Log log = LogFactory.getLog(InflaterUnitTest.class);
     private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
 
     final File inputFile = new File(INPUT_FILE);

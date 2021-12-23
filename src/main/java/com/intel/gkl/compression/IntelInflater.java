@@ -23,8 +23,8 @@
  */
 package com.intel.gkl.compression;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 
 import com.intel.gkl.NativeLibraryLoader;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
@@ -37,7 +37,7 @@ import java.util.zip.Inflater;
  * Provides a native Inflater implementation accelerated for the Intel Architecture.
  */
 public final class IntelInflater extends Inflater implements NativeLibrary {
-    private static final Logger logger = LogManager.getLogger(IntelInflater.class);
+    private static final Log logger = LogFactory.getLog(IntelInflater.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_compression";
     private static boolean initialized = false;
 
@@ -103,7 +103,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
         try {
             resetNative(nowrap);
         } catch (OutOfMemoryError e) {
-            logger.warn("Exception thrown from native Inflater resetNative function call %s", e.getMessage());
+            logger.warn("Exception thrown from native Inflater resetNative function call " + e.getMessage());
             throw new OutOfMemoryError("Memory allocation failed");
         }
 

@@ -12,12 +12,12 @@ import org.testng.annotations.Test;
 import java.io.*;
 import java.util.Arrays;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 
 public class SmithWatermanUnitTest {
 
-    private final static Logger logger = LogManager.getLogger(SmithWatermanUnitTest.class);
+    private final static Log logger = LogFactory.getLog(SmithWatermanUnitTest.class);
 
     static final String smithwatermanData = IntelGKLUtils.pathToTestResource("smith-waterman.SOFTCLIP.in");
 

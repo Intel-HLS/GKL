@@ -23,8 +23,8 @@
  */
 package com.intel.gkl.pairhmm;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 
 import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
@@ -39,7 +39,7 @@ import java.io.File;
  * Provides a native PairHMM implementation accelerated for the Intel Architecture.
  */
 public class IntelPairHmm implements PairHMMNativeBinding {
-    private final static Logger logger = LogManager.getLogger(IntelPairHmm.class);
+    private final static Log logger = LogFactory.getLog(IntelPairHmm.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_pairhmm";
     private String nativeLibraryName = "gkl_pairhmm";
     private IntelGKLUtils gklUtils = new IntelGKLUtils();
@@ -137,10 +137,10 @@ public class IntelPairHmm implements PairHMMNativeBinding {
         try {
             computeLikelihoodsNative(readDataArray, haplotypeDataArray, likelihoodArray);
         } catch (OutOfMemoryError e) {
-            logger.warn("Exception thrown from native PairHMM computeLikelihoodsNative function call %s", e.getMessage());
+            logger.warn("Exception thrown from native PairHMM computeLikelihoodsNative function call " + e.getMessage());
             throw new OutOfMemoryError("Memory allocation failed");
         } catch (IllegalArgumentException e) {
-            logger.warn("Exception thrown from native PairHMM computeLikelihoodsNative function call %s", e.getMessage());
+            logger.warn("Exception thrown from native PairHMM computeLikelihoodsNative function call " + e.getMessage());
             throw new IllegalArgumentException("Ran into invalid argument issue");
         }
 

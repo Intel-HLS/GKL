@@ -10,8 +10,8 @@ import org.broadinstitute.gatk.nativebindings.pairhmm.ReadDataHolder;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,7 +20,7 @@ import java.util.Scanner;
 
 public class PairHmmUnitTest {
     static final String pairHMMTestData = IntelGKLUtils.pathToTestResource("pairhmm-testdata.txt");
-    private static final Logger log = LogManager.getLogger(PairHmmUnitTest.class);
+    private static final Log log = LogFactory.getLog(PairHmmUnitTest.class);
 
     @Test (enabled = true)
     public void testInvalidInputsForComputeLikelihoods() {
