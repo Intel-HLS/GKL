@@ -23,8 +23,6 @@
  */
 package com.intel.gkl;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
@@ -34,12 +32,10 @@ import java.util.regex.Pattern;
  * Provides utilities used by the GKL library.
  */
 public final class IntelGKLUtils implements NativeLibrary {
-    private final static Logger logger;
     private static final String NATIVE_LIBRARY_NAME;
     private static boolean initialized;
 
     static {
-        logger = LogManager.getLogger(IntelGKLUtils.class);
         NATIVE_LIBRARY_NAME = "gkl_utils";
         initialized = false;
     }

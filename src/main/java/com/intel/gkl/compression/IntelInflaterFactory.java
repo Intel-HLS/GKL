@@ -25,8 +25,8 @@ package com.intel.gkl.compression;
 
 import htsjdk.samtools.util.zip.InflaterFactory;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 
 import java.io.File;
 import java.util.zip.Inflater;
@@ -35,7 +35,7 @@ import java.util.zip.Inflater;
  * Created by pnvaidya on 2/1/17.
  */
 public class IntelInflaterFactory extends InflaterFactory {
-    private final static Logger logger = LogManager.getLogger(IntelInflaterFactory.class);
+    private final static Log logger = LogFactory.getLog(IntelInflaterFactory.class);
     private boolean intelInflaterSupported;
 
     public IntelInflaterFactory(File tmpDir) {

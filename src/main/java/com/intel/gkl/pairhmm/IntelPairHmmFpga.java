@@ -23,15 +23,15 @@
  */
 package com.intel.gkl.pairhmm;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 
 /**
  * Provides a native PairHMM implementation accelerated using Intel FPGAs
  */
 public final class IntelPairHmmFpga extends IntelPairHmm {
     private static final String NATIVE_LIBRARY_NAME = "gkl_pairhmm";
-    private final static Logger logger = LogManager.getLogger(IntelPairHmmFpga.class);
+    private final static Log logger = LogFactory.getLog(IntelPairHmmFpga.class);
 
     public IntelPairHmmFpga() {
    	    	logger.warn("PairHMM does not support FPGA Implementation. Please use AVX PairHMM");

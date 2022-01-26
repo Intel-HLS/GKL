@@ -3,8 +3,8 @@ package com.intel.gkl.compression;
 import com.intel.gkl.IntelGKLUtils;
 import htsjdk.samtools.*;
 import htsjdk.samtools.util.zip.DeflaterFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -20,7 +20,7 @@ import java.util.zip.Deflater;
  */
 public class DeflaterProfile {
 
-    private final static Logger log = LogManager.getLogger(DeflaterIntegrationTest.class);
+    private final static Log log = LogFactory.getLog(DeflaterIntegrationTest.class);
     private final static String INPUT_FILE = IntelGKLUtils.pathToTestResource("HiSeq.1mb.1RG.2k_lines.bam");
 
     @Test(enabled = true)

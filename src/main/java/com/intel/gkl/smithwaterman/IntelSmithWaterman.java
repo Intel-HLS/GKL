@@ -23,8 +23,8 @@
  */
 package com.intel.gkl.smithwaterman;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import com.intel.gkl.IntelGKLUtils;
 import com.intel.gkl.NativeLibraryLoader;
 
@@ -42,7 +42,7 @@ import java.io.File;
 
 public class IntelSmithWaterman implements SWAlignerNativeBinding {
 
-    private final static Logger logger = LogManager.getLogger(IntelSmithWaterman.class);
+    private final static Log logger = LogFactory.getLog(IntelSmithWaterman.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_smithwaterman";
     private String nativeLibraryName = "gkl_smithwaterman";
     private static boolean initialized = false;
@@ -147,10 +147,10 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
         try {
             offset = alignNative(refArray, altArray, cigar, parameters.getMatchValue(), parameters.getMismatchPenalty(), parameters.getGapOpenPenalty(), parameters.getGapExtendPenalty(), intStrategy);
         }  catch (OutOfMemoryError e) {
-            logger.warn("Exception thrown from native SW alignNative function call %s", e.getMessage());
+            logger.warn("Exception thrown from native SW alignNative function call " + e.getMessage());
             throw new OutOfMemoryError("Memory allocation failed");
         } catch (IllegalArgumentException e) {
-            logger.warn("Exception thrown from native SW alignNative function call %s", e.getMessage());
+            logger.warn("Exception thrown from native SW alignNative function call " + e.getMessage());
             throw new IllegalArgumentException("Ran into invalid argument issue");
         }
 
