@@ -40,7 +40,7 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
     private static final Log logger = LogFactory.getLog(IntelInflater.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_compression";
     private static boolean initialized = false;
-
+    private static final Object lock_class = new Object();
     /**
      * Loads the native library, if it is supported on this platform. <p>
      * Returns false if AVX is not supported. <br>
@@ -52,14 +52,16 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
      */
     @Override
     public synchronized boolean load(File tempDir) {
-        if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
-            return false;
-        }
-        if (!initialized) {
-            initNative();
-            initialized = true;
-        }
-        return true;
+        synchronized (lock_class) {
+		if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
+			return false;
+		}
+		if (!initialized) {
+			initNative();
+			initialized = true;
+		}
+	}
+	return true;
     }
 
     private long lz_stream;

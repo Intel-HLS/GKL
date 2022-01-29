@@ -46,6 +46,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
     private static final String NATIVE_LIBRARY_NAME = "gkl_smithwaterman";
     private String nativeLibraryName = "gkl_smithwaterman";
     private static boolean initialized = false;
+    private static final Object lock_class = new Object();
     private IntelGKLUtils gklUtils = new IntelGKLUtils();
 
     // limited due to the internal implementation of the native code in C
@@ -89,10 +90,12 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
         if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
             return false;
         }
-        if (!initialized) {
 
-            initialized = true;
-        }
+	synchronized (lock_class) {
+		if (!initialized) {
+			initialized = true;
+		}
+	}
 
         if(gklUtils.isAvx512Supported()) {
             logger.info("Using CPU-supported AVX-512 instructions");

@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 public final class IntelGKLUtils implements NativeLibrary {
     private static final String NATIVE_LIBRARY_NAME;
     private static boolean initialized;
+    private static final Object lock_class = new Object();
 
     static {
         NATIVE_LIBRARY_NAME = "gkl_utils";
@@ -45,20 +46,19 @@ public final class IntelGKLUtils implements NativeLibrary {
      * Returns false if the native library cannot be loaded for any reason. <br>
      *
      * @param tempDir  directory where the native library is extracted or null to use the system temp directory
-     * @return  true if the native library is supported and loaded, false otherwise
+ 1    * @return  true if the native library is supported and loaded, false otherwise
      */
     @Override
-
-
     public synchronized boolean load(File tempDir) {
-
-        if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
-            return false;
-        }
-        if (!initialized) {
-            initialized = true;
-        }
-        return true;
+	synchronized (lock_class) {
+		if (!NativeLibraryLoader.load(tempDir, NATIVE_LIBRARY_NAME)) {
+			return false;
+		}
+		if (!initialized) {
+			initialized = true;
+		}
+	}
+	return true;
     }
 
     private static final String TEST_RESOURCES_PATH = System.getProperty("user.dir") + "/src/test/resources/";
