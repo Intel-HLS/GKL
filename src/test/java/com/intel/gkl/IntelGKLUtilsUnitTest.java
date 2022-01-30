@@ -31,7 +31,7 @@ public class IntelGKLUtilsUnitTest {
         assert(value == false);
     }
 
-    class ChildThread extends Thread {
+    static class ChildThread extends Thread {
         boolean ftzValue;
 
         public void run() {
