@@ -75,8 +75,6 @@ public class IntelGKLUtilsUnitTest {
     @Test(enabled = true)
     public void testInvalidInputsForPathToTestResource() {
 
-        IntelGKLUtils utils = new IntelGKLUtils();
-
         try {
             IntelGKLUtils.pathToTestResource(null);
             Assert.fail("NullPointerException expected.");

@@ -180,6 +180,8 @@ public class DeflaterUnitTest extends CompressionUnitTestBase {
             byte[] outputBufferBad = new byte[LEN];
             deflater.setInput(inputBuffer, 0, inputBuffer.length);
             int bytes = deflater.deflate(outputBufferBad, 0, outputBufferBad.length);
+	    if (bytes != 0)
+		 Assert.fail();
         } catch (Exception e) {
             log.error(e.getMessage());
             throw e;

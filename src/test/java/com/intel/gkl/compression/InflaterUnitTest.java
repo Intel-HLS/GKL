@@ -150,7 +150,9 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
 
             inflater.setInput(input, 0, input.length);
             int resultLength = inflater.inflate(result, 0 , 1024);
-            inflater.end();
+            if (resultLength != 0)
+		 Assert.fail();
+	    inflater.end();
         }
         catch(RuntimeException dfe) {
             log.error(dfe.getMessage());

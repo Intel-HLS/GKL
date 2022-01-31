@@ -49,7 +49,8 @@ public class SmithWatermanUnitTest {
             	altString = in.readLine();
 	    } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
             try {
-                smithWaterman.align(null, altString.getBytes("UTF-8"), SWparameters, SWstrategy);
+                if (altString != null)
+			smithWaterman.align(null, altString.getBytes("UTF-8"), SWparameters, SWstrategy);
                 Assert.fail("NullPointerException expected.");
             } catch(NullPointerException e) {}
 
@@ -231,27 +232,27 @@ public class SmithWatermanUnitTest {
 		 refString = in.readLine();
 	    } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
 
-	    while(refString !=null) {
+	   while(refString !=null) {
 
-               ref = refString.getBytes("UTF-8");
-               try {
-                  altString = in.readLine();
-               } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
-	       alt = altString.getBytes("UTF-8");
+		ref = refString.getBytes("UTF-8");
+		try {
+			altString = in.readLine();
+		} catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
 
-                //Get the results for one pair
-               SWNativeAlignerResult result = smithWaterman.align(refString.getBytes("UTF-8"), altString.getBytes("UTF-8"), SWparameters, SWstrategy);
-
-	       try {
-                  refString = in.readLine();
-	       } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
-
+		if (altString !=null) {
+			alt = altString.getBytes("UTF-8");
+			//Get the results for one pair
+			SWNativeAlignerResult result = smithWaterman.align(refString.getBytes("UTF-8"), altString.getBytes("UTF-8"), SWparameters, SWstrategy);
+		}
+		try {
+			refString = in.readLine();
+		} catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
 
             }
 	    in.close();
 	    input.close();
         } catch (java.io.IOException e) {
-            e.printStackTrace();
+		e.printStackTrace();
         }
 	smithWaterman.close();
     }
