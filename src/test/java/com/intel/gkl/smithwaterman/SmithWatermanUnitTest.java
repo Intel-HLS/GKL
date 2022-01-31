@@ -216,28 +216,37 @@ public class SmithWatermanUnitTest {
         try {
 
             final File inputFile = new File(smithwatermanData);
-            long inputBytes = inputFile.length();
             final FileReader input = new FileReader(inputFile);
             final BufferedReader in = new BufferedReader(input);
 
             byte[] ref;
             byte[] alt;
 
-            String refString, altString;
+            String refString = new String(""), altString = new String("");
             SWParameters SWparameters = new SWParameters(200, -150, -260, -11);
             //SWParameters SWparameters = new SWParameters(3, -1, -4, -3);
             SWOverhangStrategy SWstrategy = SWOverhangStrategy.SOFTCLIP;
 
-	    refString = in.readLine();
-            while(refString !=null) {
+	    try {
+		 refString = in.readLine();
+	    } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
+
+	    while(refString !=null) {
 
                ref = refString.getBytes("UTF-8");
-               altString = in.readLine();
-               alt = altString.getBytes("UTF-8");
+               try {
+                  altString = in.readLine();
+               } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
+	       alt = altString.getBytes("UTF-8");
 
                 //Get the results for one pair
-                SWNativeAlignerResult result = smithWaterman.align(refString.getBytes("UTF-8"), altString.getBytes("UTF-8"), SWparameters, SWstrategy);
-		refString = in.readLine();
+               SWNativeAlignerResult result = smithWaterman.align(refString.getBytes("UTF-8"), altString.getBytes("UTF-8"), SWparameters, SWstrategy);
+
+	       try {
+                  refString = in.readLine();
+	       } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
+
+
             }
 	    in.close();
 	    input.close();
