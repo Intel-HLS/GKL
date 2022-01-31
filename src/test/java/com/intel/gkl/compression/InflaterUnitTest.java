@@ -259,11 +259,13 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
             final IntelDeflaterFactory intelDeflaterFactory = new IntelDeflaterFactory();
             final Deflater deflater = intelDeflaterFactory.makeDeflater(i, true);
 
+	    final BlockCompressedInputStream inputStream = new BlockCompressedInputStream(inputFile);
+	    try {
+		inputBytes = inputStream.read(inputbuffer, 0, inputbuffer.length);
+	    } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
+	    inputStream.close();
 
-            final BlockCompressedInputStream inputStream = new BlockCompressedInputStream(inputFile);
-
-            inputBytes = inputStream.read(inputbuffer, 0, inputbuffer.length);
-            deflater.reset();
+	    deflater.reset();
             deflater.setInput(inputbuffer, 0, inputbuffer.length);
             deflater.finish();
             compressedBytes = deflater.deflate(outputbuffer, 0, outputbuffer.length);

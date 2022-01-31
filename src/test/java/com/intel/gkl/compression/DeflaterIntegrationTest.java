@@ -90,6 +90,8 @@ DeflaterIntegrationTest {
                     assert(expected.toString().equals(generated.toString()));
 
                 }
+		expectedFile.close();
+		generatedFile.close();
 
             }
         }

@@ -51,12 +51,13 @@ public class DeflaterProfile {
         deflaterFactories.add(intelDeflaterFactory);
         deflaterFactories.add(javaDeflaterFactory);
 
-        // create profile log file
+	// create profile log file
         final FileWriter fileWriter = new FileWriter(profileFile);
+	try {
+		fileWriter.write("level, time(sec), filesize\n");
+	} catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
 
-        fileWriter.write("level, time(sec), filesize\n");
-
-        //int loopCount = Integer.parseInt(System.getProperty("loop", "10"));
+	//int loopCount = Integer.parseInt(System.getProperty("loop", "10"));
         int loopCount = 1;
         for (DeflaterFactory deflaterFactory : deflaterFactories) {
             for (int compressionLevel = 1; compressionLevel < 2; compressionLevel++) {
@@ -82,9 +83,11 @@ public class DeflaterProfile {
                         writer.close();
                     }
                 }
-                fileWriter.write(String.format("%d, %.3f, %d\n",
-                        compressionLevel, totalTime / 1000.0 / loopCount, outputFile.length()));
-                fileWriter.flush();
+		try {
+			fileWriter.write(String.format("%d, %.3f, %d\n",
+					compressionLevel, (totalTime/1000.0/loopCount), outputFile.length()));
+			fileWriter.flush();
+		} catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
             }
         }
         fileWriter.close();

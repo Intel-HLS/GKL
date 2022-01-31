@@ -30,6 +30,7 @@ public class SmithWatermanUnitTest {
         if(!isLoaded) {
             String err = "Could not load IntelSmithWaterman; skipping test...";
             logger.warn(err);
+	    smithWaterman.close();
             throw new SkipException(err);
         }
 
@@ -43,10 +44,10 @@ public class SmithWatermanUnitTest {
             SWParameters SWparameters = new SWParameters(200, -150, -260, -11);
             //SWParameters SWparameters = new SWParameters(3, -1, -4, -3);
             SWOverhangStrategy SWstrategy = SWOverhangStrategy.SOFTCLIP;
-
-            refString = in.readLine();
-            altString = in.readLine();
-
+	    try {
+            	refString = in.readLine();
+            	altString = in.readLine();
+	    } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
             try {
                 smithWaterman.align(null, altString.getBytes(), SWparameters, SWstrategy);
                 Assert.fail("NullPointerException expected.");
@@ -68,7 +69,11 @@ public class SmithWatermanUnitTest {
             } catch(NullPointerException e) {}
         } catch (java.io.IOException e) {
             e.printStackTrace();
-        }
+
+        in.close();
+	input.close();
+	}
+	smithWaterman.close();
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
@@ -142,28 +147,33 @@ public class SmithWatermanUnitTest {
     public void singleElementSequencesAlignmentTest(){
         final IntelSmithWaterman sw = new IntelSmithWaterman();
         boolean isLoaded = sw.load(null);
-        if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
-
+        if(!isLoaded) {
+		sw.close();
+		throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
+	}
         byte[] ref =    new byte [] {'C'};
         byte[] align =  new byte [] {'C'};
 
         SWParameters SWparameters = new SWParameters( 3,-2,-2,-1);
         SWNativeAlignerResult result = sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
-
+	sw.close();
         Assert.assertEquals(result.cigar, "1M");
     }
     @Test(enabled = true)
     public void twoElementSequencesAlignmentTest(){
         final IntelSmithWaterman sw = new IntelSmithWaterman();
         boolean isLoaded = sw.load(null);
-        if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
-
+        if(!isLoaded) {
+		sw.close();
+		throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
+	}
         byte[] ref =    new byte [] {'A', 'D'};
         byte[] align =  new byte [] {'A', 'T'};
 
         SWParameters SWparameters = new SWParameters( 3,-5,-2,-1);
         SWNativeAlignerResult result = sw.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
 
+	sw.close();
         Assert.assertEquals(result.cigar, "1M1I");
     }
 
@@ -172,8 +182,10 @@ public class SmithWatermanUnitTest {
         final IntelSmithWaterman smithWaterman = new IntelSmithWaterman();
         final boolean isLoaded = smithWaterman.load(null);
         
-        if(!isLoaded) throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
-
+        if(!isLoaded) {
+		smithWaterman.close();
+		throw new SkipException("Could not load IntelSmithWaterman; skipping test...");
+	}
         int matchValue = TestingUtils.MAX_SW_MATCH_VALUE;
         int sequenceLength = TestingUtils.MAX_SW_SEQUENCE_LENGTH;
 
@@ -185,7 +197,7 @@ public class SmithWatermanUnitTest {
         SWParameters SWparameters = new SWParameters(matchValue, -5, -10, -10);
         SWNativeAlignerResult result = smithWaterman.align(ref, align, SWparameters, SWOverhangStrategy.IGNORE);
 
-
+	smithWaterman.close();
         Assert.assertEquals(result.cigar, expectedCigar);
     }
 
