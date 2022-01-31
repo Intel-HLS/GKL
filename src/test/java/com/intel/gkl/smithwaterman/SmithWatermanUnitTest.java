@@ -11,6 +11,10 @@ import org.testng.annotations.Test;
 
 import java.io.*;
 import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
@@ -35,10 +39,8 @@ public class SmithWatermanUnitTest {
         }
 
         try {
-
-            final File inputFile = new File(smithwatermanData);
-            final FileReader input = new FileReader(inputFile);
-            final BufferedReader in = new BufferedReader(input);
+            final Path Data = Paths.get(smithwatermanData);
+            final BufferedReader in  = new BufferedReader(Files.newBufferedReader(Data, StandardCharsets.UTF_8));
 
             String refString = new String(""), altString = new String("");
             SWParameters SWparameters = new SWParameters(200, -150, -260, -11);
@@ -213,12 +215,9 @@ public class SmithWatermanUnitTest {
             smithWaterman.close();
 	    throw new SkipException(err);
         }
-
         try {
-
-            final File inputFile = new File(smithwatermanData);
-            final FileReader input = new FileReader(inputFile);
-            final BufferedReader in = new BufferedReader(input);
+            final Path Data = Paths.get(smithwatermanData);
+            final BufferedReader in  = new BufferedReader(Files.newBufferedReader(Data, StandardCharsets.UTF_8));
 
             byte[] ref;
             byte[] alt;
@@ -250,7 +249,6 @@ public class SmithWatermanUnitTest {
 
             }
 	    in.close();
-	    input.close();
         } catch (java.io.IOException e) {
 		e.printStackTrace();
         }

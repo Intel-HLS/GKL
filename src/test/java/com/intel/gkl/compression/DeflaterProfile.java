@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.zip.Deflater;
-
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 /**
  * Integration and performance/compression profiling test for IntelDeflater
  */
@@ -52,7 +53,9 @@ public class DeflaterProfile {
         deflaterFactories.add(javaDeflaterFactory);
 
 	// create profile log file
-        final FileWriter fileWriter = new FileWriter(profileFile);
+	final FileOutputStream fileStream = new FileOutputStream(profileFile);
+	final OutputStreamWriter fileWriter = new OutputStreamWriter(fileStream, "UTF-8");
+//	final FileWriter fileWriter = new FileWriter(profileFile);
 	try {
 		fileWriter.write("level, time(sec), filesize\n");
 	} catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
@@ -84,7 +87,7 @@ public class DeflaterProfile {
                     }
                 }
 		try {
-			fileWriter.write(String.format("%d, %.3f, %d\n",
+			fileWriter.write(String.format("%d, %.3f, %d%n",
 					compressionLevel, (totalTime/1000.0/loopCount), outputFile.length()));
 			fileWriter.flush();
 		} catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}

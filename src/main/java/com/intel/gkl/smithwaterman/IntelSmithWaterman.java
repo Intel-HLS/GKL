@@ -35,6 +35,7 @@ import org.broadinstitute.gatk.nativebindings.smithwaterman.SWAlignerNativeBindi
 import org.broadinstitute.gatk.nativebindings.smithwaterman.SWNativeAlignerResult;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides a native SmithWaterman implementation accelerated for the Intel Architecture.
@@ -157,7 +158,7 @@ public class IntelSmithWaterman implements SWAlignerNativeBinding {
             throw new IllegalArgumentException("Ran into invalid argument issue");
         }
 
-        return new SWNativeAlignerResult(new String(cigar).trim(), offset);
+        return new SWNativeAlignerResult(new String(cigar,StandardCharsets.UTF_8).trim(), offset);
     }
 
     public byte getStrategy(SWOverhangStrategy strategy)

@@ -11,6 +11,7 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
@@ -129,7 +130,7 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
             int resultLength = inflater.inflate(result, 0 , result.length);
             inflater.end();
 
-            String seq2 = new String(result, 0, resultLength);
+            String seq2 = new String(result, 0, resultLength, "UTF8");
             log.info(String.format("UnCompressed length : %d Seq : %s" , seq2.length() ,  seq2));
             Assert.assertEquals(sequence, seq2);
         }
@@ -186,7 +187,7 @@ public class InflaterUnitTest extends CompressionUnitTestBase {
             int resultLength = inflater.inflate(result, 0 , 1024);
             inflater.end();
 
-            String seq2 = new String(result, 0, resultLength);
+            String seq2 = new String(result, 0, resultLength, "UTF8");
             log.info(String.format("UnCompressed length : %d Seq : %s" , seq2.length() ,
                     seq2));
             Assert.assertEquals(sequence, seq2);
