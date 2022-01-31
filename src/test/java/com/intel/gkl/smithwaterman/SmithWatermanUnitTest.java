@@ -40,7 +40,7 @@ public class SmithWatermanUnitTest {
             final FileReader input = new FileReader(inputFile);
             final BufferedReader in = new BufferedReader(input);
 
-            String refString, altString;
+            String refString = new String(""), altString = new String("");
             SWParameters SWparameters = new SWParameters(200, -150, -260, -11);
             //SWParameters SWparameters = new SWParameters(3, -1, -4, -3);
             SWOverhangStrategy SWstrategy = SWOverhangStrategy.SOFTCLIP;
@@ -67,11 +67,8 @@ public class SmithWatermanUnitTest {
                 smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, null);
                 Assert.fail("NullPointerException expected.");
             } catch(NullPointerException e) {}
-        } catch (java.io.IOException e) {
+	} catch (java.io.IOException e) {
             e.printStackTrace();
-
-        in.close();
-	input.close();
 	}
 	smithWaterman.close();
     }
@@ -212,7 +209,8 @@ public class SmithWatermanUnitTest {
         if(!isLoaded) {
             String err = "Could not load IntelSmithWaterman; skipping test...";
             logger.warn(err);
-            throw new SkipException(err);
+            smithWaterman.close();
+	    throw new SkipException(err);
         }
 
         try {
@@ -230,24 +228,23 @@ public class SmithWatermanUnitTest {
             //SWParameters SWparameters = new SWParameters(3, -1, -4, -3);
             SWOverhangStrategy SWstrategy = SWOverhangStrategy.SOFTCLIP;
 
+	    refString = in.readLine();
+            while(refString !=null) {
 
-            while(in.readLine() !=null) {
-
-               refString = in.readLine();
-                ref = refString.getBytes();
-
-                altString = in.readLine();
-               alt = altString.getBytes();
-
+               ref = refString.getBytes("UTF-8");
+               altString = in.readLine();
+               alt = altString.getBytes("UTF-8");
 
                 //Get the results for one pair
-                SWNativeAlignerResult result = smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, SWstrategy);
-
+                SWNativeAlignerResult result = smithWaterman.align(refString.getBytes("UTF-8"), altString.getBytes("UTF-8"), SWparameters, SWstrategy);
+		refString = in.readLine();
             }
-
+	    in.close();
+	    input.close();
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
+	smithWaterman.close();
     }
 }
 
