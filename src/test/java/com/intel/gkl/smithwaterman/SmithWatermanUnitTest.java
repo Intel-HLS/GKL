@@ -49,22 +49,22 @@ public class SmithWatermanUnitTest {
             	altString = in.readLine();
 	    } catch (IOException e) {System.err.println("Caught IOException: " +  e.getMessage());}
             try {
-                smithWaterman.align(null, altString.getBytes(), SWparameters, SWstrategy);
+                smithWaterman.align(null, altString.getBytes("UTF-8"), SWparameters, SWstrategy);
                 Assert.fail("NullPointerException expected.");
             } catch(NullPointerException e) {}
 
             try {
-                smithWaterman.align(refString.getBytes(), null, SWparameters, SWstrategy);
+                smithWaterman.align(refString.getBytes("UTF-8"), null, SWparameters, SWstrategy);
                 Assert.fail("NullPointerException expected.");
             } catch(NullPointerException e) {}
 
             try {
-                smithWaterman.align(refString.getBytes(), altString.getBytes(), null, SWstrategy);
+                smithWaterman.align(refString.getBytes("UTF-8"), altString.getBytes("UTF-8"), null, SWstrategy);
                 Assert.fail("NullPointerException expected.");
             } catch(NullPointerException e) {}
 
             try {
-                smithWaterman.align(refString.getBytes(), altString.getBytes(), SWparameters, null);
+                smithWaterman.align(refString.getBytes("UTF-8"), altString.getBytes("UTF-8"), SWparameters, null);
                 Assert.fail("NullPointerException expected.");
             } catch(NullPointerException e) {}
 	} catch (java.io.IOException e) {
