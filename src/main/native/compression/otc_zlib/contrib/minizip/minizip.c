@@ -71,8 +71,8 @@
 #define MAXFILENAME (256)
 
 #ifdef _WIN32
-static int filetime(f, tmzip, dt)
-    const char *f;          /* name of file to get info on */
+uLong filetime(f, tmzip, dt)
+    char *f;                /* name of file to get info on */
     tm_zip *tmzip;             /* return value: access, modific. and creation times */
     uLong *dt;             /* dostime */
 {
@@ -94,13 +94,12 @@ static int filetime(f, tmzip, dt)
   return ret;
 }
 #else
-#if defined(unix) || defined(__APPLE__)
-static int filetime(f, tmzip, dt)
-    const char *f;         /* name of file to get info on */
+#ifdef unix || __APPLE__
+uLong filetime(f, tmzip, dt)
+    char *f;               /* name of file to get info on */
     tm_zip *tmzip;         /* return value: access, modific. and creation times */
     uLong *dt;             /* dostime */
 {
-  (void)dt;
   int ret=0;
   struct stat s;        /* results of stat() */
   struct tm* filedate;
@@ -109,7 +108,7 @@ static int filetime(f, tmzip, dt)
   if (strcmp(f,"-")!=0)
   {
     char name[MAXFILENAME+1];
-    size_t len = strlen(f);
+    int len = strlen(f);
     if (len > MAXFILENAME)
       len = MAXFILENAME;
 
@@ -139,7 +138,7 @@ static int filetime(f, tmzip, dt)
 }
 #else
 uLong filetime(f, tmzip, dt)
-    const char *f;          /* name of file to get info on */
+    char *f;                /* name of file to get info on */
     tm_zip *tmzip;             /* return value: access, modific. and creation times */
     uLong *dt;             /* dostime */
 {
@@ -151,7 +150,7 @@ uLong filetime(f, tmzip, dt)
 
 
 
-static int check_exist_file(filename)
+int check_exist_file(filename)
     const char* filename;
 {
     FILE* ftestexist;
@@ -164,13 +163,13 @@ static int check_exist_file(filename)
     return ret;
 }
 
-static void do_banner()
+void do_banner()
 {
     printf("MiniZip 1.1, demo of zLib + MiniZip64 package, written by Gilles Vollant\n");
     printf("more info on MiniZip at http://www.winimage.com/zLibDll/minizip.html\n\n");
 }
 
-static void do_help()
+void do_help()
 {
     printf("Usage : minizip [-o] [-a] [-0 to -9] [-p password] [-j] file.zip [files_to_add]\n\n" \
            "  -o  Overwrite existing file.zip\n" \
@@ -183,7 +182,7 @@ static void do_help()
 
 /* calculate the CRC32 of a file,
    because to encrypt a file, we need known the CRC32 of the file before */
-static int getFileCrc(const char* filenameinzip,void*buf,unsigned long size_buf,unsigned long* result_crc)
+int getFileCrc(const char* filenameinzip,void*buf,unsigned long size_buf,unsigned long* result_crc)
 {
    unsigned long calculate_crc=0;
    int err=ZIP_OK;
@@ -200,7 +199,7 @@ static int getFileCrc(const char* filenameinzip,void*buf,unsigned long size_buf,
         do
         {
             err = ZIP_OK;
-            size_read = fread(buf,1,size_buf,fin);
+            size_read = (int)fread(buf,1,size_buf,fin);
             if (size_read < size_buf)
                 if (feof(fin)==0)
             {
@@ -209,7 +208,7 @@ static int getFileCrc(const char* filenameinzip,void*buf,unsigned long size_buf,
             }
 
             if (size_read>0)
-                calculate_crc = crc32_z(calculate_crc,buf,size_read);
+                calculate_crc = crc32(calculate_crc,buf,size_read);
             total_read += size_read;
 
         } while ((err == ZIP_OK) && (size_read>0));
@@ -222,7 +221,7 @@ static int getFileCrc(const char* filenameinzip,void*buf,unsigned long size_buf,
     return err;
 }
 
-static int isLargeFile(const char* filename)
+int isLargeFile(const char* filename)
 {
   int largeFile = 0;
   ZPOS64_T pos = 0;
@@ -230,8 +229,8 @@ static int isLargeFile(const char* filename)
 
   if(pFile != NULL)
   {
-    FSEEKO_FUNC(pFile, 0, SEEK_END);
-    pos = (ZPOS64_T)FTELLO_FUNC(pFile);
+    int n = FSEEKO_FUNC(pFile, 0, SEEK_END);
+    pos = FTELLO_FUNC(pFile);
 
                 printf("File : %s is %lld bytes\n", filename, pos);
 
@@ -256,7 +255,7 @@ int main(argc,argv)
     char filename_try[MAXFILENAME+16];
     int zipok;
     int err=0;
-    size_t size_buf=0;
+    int size_buf=0;
     void* buf=NULL;
     const char* password=NULL;
 
@@ -397,7 +396,7 @@ int main(argc,argv)
                   (strlen(argv[i]) == 2)))
             {
                 FILE * fin;
-                size_t size_read;
+                int size_read;
                 const char* filenameinzip = argv[i];
                 const char *savefilenameinzip;
                 zip_fileinfo zi;
@@ -473,7 +472,7 @@ int main(argc,argv)
                     do
                     {
                         err = ZIP_OK;
-                        size_read = fread(buf,1,size_buf,fin);
+                        size_read = (int)fread(buf,1,size_buf,fin);
                         if (size_read < size_buf)
                             if (feof(fin)==0)
                         {
@@ -483,7 +482,7 @@ int main(argc,argv)
 
                         if (size_read>0)
                         {
-                            err = zipWriteInFileInZip (zf,buf,(unsigned)size_read);
+                            err = zipWriteInFileInZip (zf,buf,size_read);
                             if (err<0)
                             {
                                 printf("error in writing %s in the zipfile\n",

@@ -1,5 +1,5 @@
 /* deflate.h -- internal compression state
- * Copyright (C) 1995-2018 Jean-loup Gailly
+ * Copyright (C) 1995-2016 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -51,9 +51,6 @@
 #define Buf_size 16
 /* size of bit buffer in bi_buf */
 
-#define END_BLOCK 256
-/* end of block literal code */
-
 #define INIT_STATE    42    /* zlib header -> BUSY_STATE */
 #ifdef GZIP
 #  define GZIP_STATE  57    /* gzip header -> BUSY_STATE | EXTRA_STATE */
@@ -66,12 +63,6 @@
 #define FINISH_STATE 666    /* stream complete */
 /* Stream status */
 
-typedef enum {
-    need_more,      /* block not completed, need more input or more output */
-    block_done,     /* block flush performed */
-    finish_started, /* finish started, need only more output at next deflate */
-    finish_done     /* finish done, accept no more input or output */
-} block_state;
 
 /* Data structure describing a single value and its code string. */
 typedef struct ct_data_s {
@@ -118,10 +109,6 @@ typedef struct internal_state {
     ulg   gzindex;       /* where in extra, name, or comment */
     Byte  method;        /* can only be DEFLATED */
     int   last_flush;    /* value of flush param for previous deflate call */
-
-#if defined(USE_PCLMUL_CRC)
-    unsigned zalign(16) crc0[4 * 5];
-#endif
 
                 /* used by deflate.c: */
 
@@ -230,7 +217,7 @@ typedef struct internal_state {
     /* Depth of each subtree used as tie breaker for trees of equal frequency
      */
 
-    uchf *sym_buf;        /* buffer for distances and literals/lengths */
+    uchf *l_buf;          /* buffer for literals or lengths */
 
     uInt  lit_bufsize;
     /* Size of match buffer for literals/lengths.  There are 4 reasons for
@@ -252,8 +239,13 @@ typedef struct internal_state {
      *   - I can't count above 4
      */
 
-    uInt sym_next;      /* running index in sym_buf */
-    uInt sym_end;       /* symbol table full when sym_next reaches this */
+    uInt last_lit;      /* running index in l_buf */
+
+    ushf *d_buf;
+    /* Buffer for distances. To simplify the code, d_buf and l_buf have
+     * the same number of elements. To use different lengths, an extra flag
+     * array would be necessary.
+     */
 
     ulg opt_len;        /* bit length of current block with optimal trees */
     ulg static_len;     /* bit length of current block with static trees */
@@ -303,11 +295,6 @@ typedef struct internal_state {
 /* Number of bytes after end of data in window to initialize in order to avoid
    memory checker errors from longest match routines */
 
-#define NIL 0
-/* Tail of hash chains */
-
-uInt longest_match  OF((deflate_state *s, IPos cur_match));
-
         /* in trees.c */
 void ZLIB_INTERNAL _tr_init OF((deflate_state *s));
 int ZLIB_INTERNAL _tr_tally OF((deflate_state *s, unsigned dist, unsigned lc));
@@ -317,7 +304,6 @@ void ZLIB_INTERNAL _tr_flush_bits OF((deflate_state *s));
 void ZLIB_INTERNAL _tr_align OF((deflate_state *s));
 void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
                         ulg stored_len, int last));
-void ZLIB_INTERNAL bi_windup      OF((deflate_state *s));
 
 #define d_code(dist) \
    ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
@@ -339,192 +325,25 @@ void ZLIB_INTERNAL bi_windup      OF((deflate_state *s));
 
 # define _tr_tally_lit(s, c, flush) \
   { uch cc = (c); \
-    s->sym_buf[s->sym_next++] = 0; \
-    s->sym_buf[s->sym_next++] = 0; \
-    s->sym_buf[s->sym_next++] = cc; \
+    s->d_buf[s->last_lit] = 0; \
+    s->l_buf[s->last_lit++] = cc; \
     s->dyn_ltree[cc].Freq++; \
-    flush = (s->sym_next == s->sym_end); \
+    flush = (s->last_lit == s->lit_bufsize-1); \
    }
 # define _tr_tally_dist(s, distance, length, flush) \
   { uch len = (uch)(length); \
     ush dist = (ush)(distance); \
-    s->sym_buf[s->sym_next++] = (uch)dist; \
-    s->sym_buf[s->sym_next++] = (uch)(dist >> 8); \
-    s->sym_buf[s->sym_next++] = len; \
+    s->d_buf[s->last_lit] = dist; \
+    s->l_buf[s->last_lit++] = len; \
     dist--; \
     s->dyn_ltree[_length_code[len]+LITERALS+1].Freq++; \
     s->dyn_dtree[d_code(dist)].Freq++; \
-    flush = (s->sym_next == s->sym_end); \
+    flush = (s->last_lit == s->lit_bufsize-1); \
   }
 #else
 # define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
 # define _tr_tally_dist(s, distance, length, flush) \
               flush = _tr_tally(s, distance, length)
 #endif
-
-#ifndef ZLIB_DEBUG
-#  define send_code(s, c, tree) send_bits(s, tree[c].Code, tree[c].Len)
-   /* Send a code of the given tree. c and tree must not have side effects */
-
-#else /* !ZLIB_DEBUG */
-#  define send_code(s, c, tree) \
-     { if (z_verbose>2) fprintf(stderr,"\ncd %3d ",(c)); \
-       send_bits(s, tree[c].Code, tree[c].Len); }
-#endif
-
-/* ===========================================================================
- * Output a short LSB first on the stream.
- * IN assertion: there is enough room in pendingBuf.
- */
-#define put_short(s, w) { \
-    put_byte(s, (uch)((w) & 0xff)); \
-    put_byte(s, (uch)((ush)(w) >> 8)); \
-}
-
-/* ===========================================================================
- * Send a value on a given number of bits.
- * IN assertion: length <= 16 and value fits in length bits.
- */
-#ifdef ZLIB_DEBUG
-local void send_bits      OF((deflate_state *s, int value, int length));
-
-local void send_bits(s, value, length)
-    deflate_state *s;
-    int value;  /* value to send */
-    int length; /* number of bits */
-{
-    Tracevv((stderr," l %2d v %4x ", length, value));
-    Assert(length > 0 && length <= 15, "invalid length");
-    s->bits_sent += (ulg)length;
-
-    /* If not enough room in bi_buf, use (valid) bits from bi_buf and
-     * (16 - bi_valid) bits from value, leaving (width - (16-bi_valid))
-     * unused bits in value.
-     */
-    if (s->bi_valid > (int)Buf_size - length) {
-        s->bi_buf |= (ush)value << s->bi_valid;
-        put_short(s, s->bi_buf);
-        s->bi_buf = (ush)value >> (Buf_size - s->bi_valid);
-        s->bi_valid += length - Buf_size;
-    } else {
-        s->bi_buf |= (ush)value << s->bi_valid;
-        s->bi_valid += length;
-    }
-}
-#else /* !ZLIB_DEBUG */
-
-#define send_bits(s, value, length) \
-{ int len = length;\
-  if (s->bi_valid > (int)Buf_size - len) {\
-    int val = (int)value;\
-    s->bi_buf |= (ush)val << s->bi_valid;\
-    put_short(s, s->bi_buf);\
-    s->bi_buf = (ush)val >> (Buf_size - s->bi_valid);\
-    s->bi_valid += len - Buf_size;\
-  } else {\
-    s->bi_buf |= (ush)(value) << s->bi_valid;\
-    s->bi_valid += len;\
-  }\
-}
-#endif /* ZLIB_DEBUG */
-
-/* the arguments must not have side effects */
-
-ZLIB_INTERNAL void flush_pending  OF((z_streamp strm));
-ZLIB_INTERNAL void fill_window    OF((deflate_state *s));
-
-#ifdef ZLIB_DEBUG
-ZLIB_INTERNAL void check_match OF((deflate_state *s, IPos start, IPos match,
-                            int length));
-#else
-#  define check_match(s, start, match, length)
-#endif
-
-/* ===========================================================================
- * Update a hash value with the given input byte
- * IN  assertion: all calls to UPDATE_HASH are made with consecutive input
- *    characters, so that a running hash key can be computed from the previous
- *    key instead of complete recalculation each time.
- */
-#define UPDATE_HASH_C(s,h,c) (h = (((h)<<s->hash_shift) ^ (c)) & s->hash_mask)
-
-#include <inttypes.h>
-
-#ifdef USE_CRC_HASH
-
-#ifndef _MSC_VER
-#define UPDATE_HASH_CRC(s,h,c) ( \
-{\
-    deflate_state *z_const state = (s);\
-    uintptr_t ip = (uintptr_t)(&c) - (MIN_MATCH-1);\
-    unsigned val = *(unsigned *)ip; \
-    unsigned hash = 0;\
-    if (state->level >= 6) val &= 0xFFFFFF; \
-    __asm__ __volatile__ ("crc32 %1,%0\n\t" : "+r" (hash) : "r" (val) : ); \
-    h = hash & s->hash_mask; \
-})
-#else
-#include <intrin.h>
-
-#define UPDATE_HASH_CRC(s, h, c) \
-	(h = _mm_crc32_u32(0, \
-		((deflate_state *)s)->level >= 6 \
-		 ?  (*(unsigned *)((uintptr_t)(&c) - (MIN_MATCH-1))) & 0xFFFFFF \
-		 :   *(unsigned *)((uintptr_t)(&c) - (MIN_MATCH-1))) \
-	 & ((deflate_state *)s)->hash_mask)
-#endif
-
-
-#define UPDATE_HASH(s,h,c) ( \
-    x86_cpu_has_sse42 ? UPDATE_HASH_CRC(s,h,c) : UPDATE_HASH_C(s,h,c)\
-) 
-
-#else
-#define UPDATE_HASH(s,h,c) (UPDATE_HASH_C(s,h,c))
-#endif
-
-/* ===========================================================================
- * Insert string str in the dictionary and set match_head to the previous head
- * of the hash chain (the most recent string with same hash key). Return
- * the previous length of the hash chain.
- * If this file is compiled with -DFASTEST, the compression level is forced
- * to 1, and no hash chains are maintained.
- * IN  assertion: all calls to INSERT_STRING are made with consecutive input
- *    characters and the first MIN_MATCH bytes of str are valid (except for
- *    the last MIN_MATCH-1 bytes of the input file).
- */
-#include <stdio.h>
-#ifdef FASTEST
-#define INSERT_STRING(s, str, match_head) \
-   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
-    match_head = s->head[s->ins_h], \
-    s->head[s->ins_h] = (Pos)(str))
-#else
-#define INSERT_STRING(s, str, match_head) \
-   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
-    match_head = s->prev[(str) & s->w_mask] = s->head[s->ins_h], \
-    s->head[s->ins_h] = (Pos)(str))
-#endif
-
-/* ===========================================================================
- * Flush the current block, with given end-of-file flag.
- * IN assertion: strstart is set to the end of the current match.
- */
-#define FLUSH_BLOCK_ONLY(s, last) { \
-   _tr_flush_block(s, (s->block_start >= 0L ? \
-                   (charf *)&s->window[(unsigned)s->block_start] : \
-                   (charf *)Z_NULL), \
-                (ulg)((long)s->strstart - s->block_start), \
-                (last)); \
-   s->block_start = s->strstart; \
-   flush_pending(s->strm); \
-   Tracev((stderr,"[FLUSH]")); \
-}
-
-/* Same but force premature exit if necessary. */
-#define FLUSH_BLOCK(s, last) { \
-   FLUSH_BLOCK_ONLY(s, last); \
-   if (s->strm->avail_out == 0) return (last) ? finish_started : need_more; \
-}
 
 #endif /* DEFLATE_H */
