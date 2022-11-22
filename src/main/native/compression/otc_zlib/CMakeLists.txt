@@ -3,7 +3,7 @@ set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 
 project(zlib C)
 
-set(VERSION "1.2.12.1")
+set(VERSION "1.2.11")
 
 option(ASM686 "Enable building i686 assembly implementation")
 option(AMD64 "Enable building amd64 assembly implementation")
@@ -103,7 +103,6 @@ set(ZLIB_PRIVATE_HDRS
     inflate.h
     inftrees.h
     trees.h
-    x86.h
     zutil.h
 )
 set(ZLIB_SRCS
@@ -121,7 +120,6 @@ set(ZLIB_SRCS
     inffast.c
     trees.c
     uncompr.c
-    x86.c
     zutil.c
 )
 
