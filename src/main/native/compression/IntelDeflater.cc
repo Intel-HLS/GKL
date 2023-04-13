@@ -82,7 +82,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
 
         isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
         if (lz_stream == 0) {
-              lz_stream = (isal_zstream*)malloc(sizeof(isal_zstream));
+              lz_stream = (isal_zstream*)calloc(1, sizeof(isal_zstream));
               if ( lz_stream == NULL ) {
                 if(env->ExceptionCheck())
                     env->ExceptionClear();
