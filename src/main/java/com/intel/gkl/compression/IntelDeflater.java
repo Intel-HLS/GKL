@@ -203,8 +203,6 @@ public final class IntelDeflater extends Deflater implements NativeLibrary {
         }
 
         int bytesWritten = deflateNative(b, len);
-        if(bytesWritten == 0)
-            logger.warn(String.format(" Zero Bytes Written : %d", bytesWritten));
         return bytesWritten;
     }
 
