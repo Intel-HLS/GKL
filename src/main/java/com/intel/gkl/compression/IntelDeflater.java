@@ -35,7 +35,7 @@ import java.util.zip.Deflater;
  * Provides a native Deflater implementation accelerated for the Intel Architecture.
  */
 public final class IntelDeflater extends Deflater implements NativeLibrary {
-    private final static Log logger = LogFactory.getLog(IntelInflater.class);
+    private final static Log logger = LogFactory.getLog(IntelDeflater.class);
     private static final String NATIVE_LIBRARY_NAME = "gkl_compression";
     private static boolean initialized = false;
     private static final Object lock_class = new Object();
