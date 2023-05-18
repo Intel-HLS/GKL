@@ -1,7 +1,7 @@
-*** configure	2020-02-19 15:55:05.049975110 -0800
---- configure_new	2020-02-19 15:53:58.853492011 -0800
+*** configure	2023-05-18 15:55:05.049975110 -0800
+--- configure_new	2023-05-18 15:53:58.853492011 -0800
 ***************
-*** 182,188 ****
+*** 194,200 ****
   if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
     echo ... using gcc >> configure.log
     CC="$cc"
@@ -9,7 +9,7 @@
     SFLAGS="${CFLAGS--O3} -fPIC"
     if test "$ARCHS"; then
       CFLAGS="${CFLAGS} ${ARCHS}"
---- 182,188 ----
+--- 194,200 ----
   if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
     echo ... using gcc >> configure.log
     CC="$cc"

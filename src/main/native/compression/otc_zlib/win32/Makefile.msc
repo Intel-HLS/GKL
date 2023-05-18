@@ -4,10 +4,6 @@
 # Usage:
 #   nmake -f win32/Makefile.msc                          (standard build)
 #   nmake -f win32/Makefile.msc LOC=-DFOO                (nonstandard build)
-#   nmake -f win32/Makefile.msc LOC="-DASMV -DASMINF" \
-#         OBJA="inffas32.obj match686.obj"               (use ASM code, x86)
-#   nmake -f win32/Makefile.msc AS=ml64 LOC="-DASMV -DASMINF -I." \
-#         OBJA="inffasx64.obj gvmat64.obj inffas8664.obj"  (use ASM code, x64)
 
 # The toplevel directory of the source tree.
 #
@@ -33,8 +29,10 @@ LDFLAGS = -nologo -debug -incremental:no -opt:ref
 ARFLAGS = -nologo
 RCFLAGS = /dWIN32 /r
 
-OBJS = adler32.obj compress.obj crc32.obj deflate.obj gzclose.obj gzlib.obj gzread.obj \
-       gzwrite.obj infback.obj inflate.obj inftrees.obj inffast.obj trees.obj uncompr.obj zutil.obj
+OBJS = adler32.obj crc_folding.obj compress.obj crc32.obj deflate_quick.obj \
+       deflate_medium.obj deflate.obj gzclose.obj gzlib.obj gzread.obj gzwrite.obj \
+       infback.obj inflate.obj inftrees.obj inffast.obj match.obj slide_sse.obj \
+       trees.obj uncompr.obj x86.obj zutil.obj
 OBJA =
 
 
@@ -118,6 +116,18 @@ inftrees.obj: $(TOP)/inftrees.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TO
 trees.obj: $(TOP)/trees.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/deflate.h $(TOP)/trees.h
 
 uncompr.obj: $(TOP)/uncompr.c $(TOP)/zlib.h $(TOP)/zconf.h
+
+x86.obj: $(TOP)/x86.c $(TOP)/x86.h
+
+slide_sse.obj: $(TOP)/slide_sse.c $(TOP)/deflate.h
+
+match.obj: $(TOP)/match.c $(TOP)/deflate.h
+
+crc_folding.obj: $(TOP)/crc_folding.c
+
+deflate_quick.obj: $(TOP)/deflate_quick.c
+
+deflate_medium.obj: $(TOP)/deflate_medium.c $(TOP)/deflate.h
 
 zutil.obj: $(TOP)/zutil.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h
 

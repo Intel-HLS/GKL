@@ -7,10 +7,6 @@
 # Normally configure builds both a static and a shared library.
 # If you want to build just a static library, use: ./configure --static
 
-# To use the asm code, type:
-#    cp contrib/asm?86/match.S ./match.S
-#    make LOC=-DASMV OBJA=match.o
-
 # To install /usr/local/lib/libz.* and /usr/local/include/zlib.h, type:
 #    make install
 # To install in $HOME instead of /usr/local, use:
@@ -26,13 +22,13 @@ CFLAGS=-O3 -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN
 
 SFLAGS=-O3 -fPIC -D_LARGEFILE64_SOURCE=1 -DHAVE_HIDDEN
 LDFLAGS=
-TEST_LDFLAGS=-L. libz.a
+TEST_LDFLAGS=$(LDFLAGS) -L. libz.a
 LDSHARED=gcc -shared -Wl,-soname,libz.so.1,--version-script,zlib.map
-CPP=gcc -E
+CPP=
 
 STATICLIB=libz.a
 SHAREDLIB=libz.so
-SHAREDLIBV=libz.so.1.2.11
+SHAREDLIBV=libz.so.1.2.13
 SHAREDLIBM=libz.so.1
 LIBS=$(STATICLIB) $(SHAREDLIBV)
 
@@ -57,11 +53,11 @@ SRCDIR=
 ZINC=
 ZINCOUT=-I.
 
-OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
+OBJZ = adler32.o crc32.o crc_folding.o deflate_quick.o deflate_medium.o deflate.o infback.o inffast.o inflate.o inftrees.o match.o slide_sse.o trees.o x86.o  zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
+PIC_OBJZ = adler32.lo crc32.lo crc_folding.lo deflate_quick.lo deflate_medium.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo match.lo slide_sse.lo trees.lo x86.lo zutil.lo
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -87,12 +83,12 @@ test: all teststatic testshared test64
 
 teststatic: static
 	@TMPST=tmpst_$$; \
-	if echo hello world | ./minigzip | ./minigzip -d && ./example $$TMPST ; then \
+	if echo hello world | ${QEMU_RUN} ./minigzip | ${QEMU_RUN} ./minigzip -d && ${QEMU_RUN} ./example $$TMPST ; then \
 	  echo '		*** zlib test OK ***'; \
 	else \
 	  echo '		*** zlib test FAILED ***'; false; \
-	fi; \
-	rm -f $$TMPST
+	fi
+	@rm -f tmpst_$$
 
 testshared: shared
 	@LD_LIBRARY_PATH=`pwd`:$(LD_LIBRARY_PATH) ; export LD_LIBRARY_PATH; \
@@ -100,21 +96,21 @@ testshared: shared
 	DYLD_LIBRARY_PATH=`pwd`:$(DYLD_LIBRARY_PATH) ; export DYLD_LIBRARY_PATH; \
 	SHLIB_PATH=`pwd`:$(SHLIB_PATH) ; export SHLIB_PATH; \
 	TMPSH=tmpsh_$$; \
-	if echo hello world | ./minigzipsh | ./minigzipsh -d && ./examplesh $$TMPSH; then \
+	if echo hello world | ${QEMU_RUN} ./minigzipsh | ${QEMU_RUN} ./minigzipsh -d && ${QEMU_RUN} ./examplesh $$TMPSH; then \
 	  echo '		*** zlib shared test OK ***'; \
 	else \
 	  echo '		*** zlib shared test FAILED ***'; false; \
-	fi; \
-	rm -f $$TMPSH
+	fi
+	@rm -f tmpsh_$$
 
 test64: all64
 	@TMP64=tmp64_$$; \
-	if echo hello world | ./minigzip64 | ./minigzip64 -d && ./example64 $$TMP64; then \
+	if echo hello world | ${QEMU_RUN} ./minigzip64 | ${QEMU_RUN} ./minigzip64 -d && ${QEMU_RUN} ./example64 $$TMP64; then \
 	  echo '		*** zlib 64-bit test OK ***'; \
 	else \
 	  echo '		*** zlib 64-bit test FAILED ***'; false; \
-	fi; \
-	rm -f $$TMP64
+	fi
+	@rm -f tmp64_$$
 
 infcover.o: $(SRCDIR)test/infcover.c $(SRCDIR)zlib.h zconf.h
 	$(CC) $(CFLAGS) $(ZINCOUT) -c -o $@ $(SRCDIR)test/infcover.c
@@ -124,24 +120,12 @@ infcover: infcover.o libz.a
 
 cover: infcover
 	rm -f *.gcda
-	./infcover
+	${QEMU_RUN} ./infcover
 	gcov inf*.c
 
 libz.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
-
-match.o: match.S
-	$(CPP) match.S > _match.s
-	$(CC) -c _match.s
-	mv _match.o match.o
-	rm -f _match.s
-
-match.lo: match.S
-	$(CPP) match.S > _match.s
-	$(CC) -c -fPIC _match.s
-	mv _match.o match.lo
-	rm -f _match.s
 
 example.o: $(SRCDIR)test/example.c $(SRCDIR)zlib.h zconf.h
 	$(CC) $(CFLAGS) $(ZINCOUT) -c -o $@ $(SRCDIR)test/example.c
@@ -201,6 +185,23 @@ gzread.o: $(SRCDIR)gzread.c
 gzwrite.o: $(SRCDIR)gzwrite.c
 	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)gzwrite.c
 
+x86.o: $(SRCDIR)x86.c
+	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)x86.c
+
+slide_sse.o: $(SRCDIR)slide_sse.c
+	$(CC) $(CFLAGS) $(ZINC) -msse2 -c -o $@ $(SRCDIR)slide_sse.c
+
+crc_folding.o: $(SRCDIR)crc_folding.c
+	$(CC) $(CFLAGS) $(ZINC) -mpclmul -msse4 -c -o $@ $(SRCDIR)crc_folding.c
+
+deflate_quick.o: $(SRCDIR)deflate_quick.c
+	$(CC) $(CFLAGS) $(ZINC) -msse4 -c -o $@ $(SRCDIR)deflate_quick.c
+
+deflate_medium.o: $(SRCDIR)deflate_medium.c
+	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)deflate_medium.c
+
+match.o: $(SRCDIR)match.c
+	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)match.c
 
 adler32.lo: $(SRCDIR)adler32.c
 	-@mkdir objs 2>/dev/null || test -d objs
@@ -277,6 +278,35 @@ gzwrite.lo: $(SRCDIR)gzwrite.c
 	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/gzwrite.o $(SRCDIR)gzwrite.c
 	-@mv objs/gzwrite.o $@
 
+x86.lo: $(SRCDIR)x86.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/x86.o $(SRCDIR)x86.c
+	-@mv objs/x86.o $@
+
+slide_sse.lo: $(SRCDIR)slide_sse.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -msse2 -DPIC -c -o objs/slide_sse.o $(SRCDIR)slide_sse.c
+	-@mv objs/slide_sse.o $@
+
+crc_folding.lo: $(SRCDIR)crc_folding.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -mpclmul -msse4 -DPIC -c -o objs/crc_folding.o $(SRCDIR)crc_folding.c
+	-@mv objs/crc_folding.o $@
+
+deflate_quick.lo: $(SRCDIR)deflate_quick.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -msse4 -DPIC -c -o objs/deflate_quick.o $(SRCDIR)deflate_quick.c
+	-@mv objs/deflate_quick.o $@
+
+deflate_medium.lo: $(SRCDIR)deflate_medium.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/deflate_medium.o $(SRCDIR)deflate_medium.c
+	-@mv objs/deflate_medium.o $@
+
+match.lo: $(SRCDIR)match.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/match.o $(SRCDIR)match.c
+	-@mv objs/match.o $@
 
 placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
 	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
@@ -292,10 +322,10 @@ minigzip$(EXE): minigzip.o $(STATICLIB)
 	$(CC) $(CFLAGS) -o $@ minigzip.o $(TEST_LDFLAGS)
 
 examplesh$(EXE): example.o $(SHAREDLIBV)
-	$(CC) $(CFLAGS) -o $@ example.o -L. $(SHAREDLIBV)
+	$(CC) $(CFLAGS) -o $@ example.o $(LDFLAGS) -L. $(SHAREDLIBV)
 
 minigzipsh$(EXE): minigzip.o $(SHAREDLIBV)
-	$(CC) $(CFLAGS) -o $@ minigzip.o -L. $(SHAREDLIBV)
+	$(CC) $(CFLAGS) -o $@ minigzip.o $(LDFLAGS) -L. $(SHAREDLIBV)
 
 example64$(EXE): example64.o $(STATICLIB)
 	$(CC) $(CFLAGS) -o $@ example64.o $(TEST_LDFLAGS)
@@ -376,15 +406,13 @@ clean:
 	rm -f contrib/infback9/*.gcda contrib/infback9/*.gcno contrib/infback9/*.gcov
 
 maintainer-clean: distclean
-distclean: clean zconf zconf.h.cmakein docs
+distclean: clean zconf zconf.h.cmakein
 	rm -f Makefile zlib.pc configure.log
 	-@rm -f .DS_Store
 	@if [ -f Makefile.in ]; then \
 	printf 'all:\n\t-@echo "Please use ./configure first.  Thank you."\n' > Makefile ; \
 	printf '\ndistclean:\n\tmake -f Makefile.in distclean\n' >> Makefile ; \
 	touch -r $(SRCDIR)Makefile.in Makefile ; fi
-	@if [ ! -f zconf.h.in ]; then rm -f zconf.h zconf.h.cmakein ; fi
-	@if [ ! -f zlib.3 ]; then rm -f zlib.3.pdf ; fi
 
 tags:
 	etags $(SRCDIR)*.[ch]
@@ -398,6 +426,7 @@ infback.o inflate.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.
 inffast.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h $(SRCDIR)inflate.h $(SRCDIR)inffast.h
 inftrees.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h
 trees.o: $(SRCDIR)deflate.h $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)trees.h
+x86.o: $(SRCDIR)x86.h
 
 adler32.lo zutil.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h
 gzclose.lo gzlib.lo gzread.lo gzwrite.lo: $(SRCDIR)zlib.h zconf.h $(SRCDIR)gzguts.h
@@ -408,3 +437,4 @@ infback.lo inflate.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftree
 inffast.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h $(SRCDIR)inflate.h $(SRCDIR)inffast.h
 inftrees.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h
 trees.lo: $(SRCDIR)deflate.h $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)trees.h
+x86.lo: $(SRCDIR)x86.h
