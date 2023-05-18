@@ -22,8 +22,8 @@ dependencies {
     compile 'commons-io:commons-io:2.7'
     compile 'org.broadinstitute:gatk-native-bindings:1.0.0'
     compile 'commons-logging:commons-logging:1.2'
-    compile 'com.github.samtools:htsjdk:2.21.1'
-    testCompile 'org.testng:testng:7.4.0'
+    compile 'com.github.samtools:htsjdk:3.0.5'
+    testCompile 'org.testng:testng:7.5.1'
 }
 
  wrapper {

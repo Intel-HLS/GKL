@@ -174,8 +174,6 @@ public final class IntelInflater extends Inflater implements NativeLibrary {
         }
 
         int bytesWritten = inflateNative(b, off, len);
-        if(bytesWritten == 0)
-            logger.warn(String.format("Zero Bytes Written : %d", bytesWritten));
         return bytesWritten;
     }
 
