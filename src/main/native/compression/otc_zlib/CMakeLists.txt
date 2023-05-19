@@ -3,10 +3,7 @@ set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 
 project(zlib C)
 
-set(VERSION "1.2.11")
-
-option(ASM686 "Enable building i686 assembly implementation")
-option(AMD64 "Enable building amd64 assembly implementation")
+set(VERSION "1.2.13")
 
 set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
@@ -103,63 +100,43 @@ set(ZLIB_PRIVATE_HDRS
     inflate.h
     inftrees.h
     trees.h
+    x86.h
     zutil.h
 )
 set(ZLIB_SRCS
     adler32.c
     compress.c
     crc32.c
+    crc_folding.c
     deflate.c
+    deflate_medium.c
+    deflate_quick.c
     gzclose.c
     gzlib.c
     gzread.c
     gzwrite.c
-    inflate.c
     infback.c
-    inftrees.c
     inffast.c
+    inflate.c
+    inftrees.c
+    match.c
+    slide_sse.c
     trees.c
     uncompr.c
+    x86.c
     zutil.c
 )
+
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    set_source_files_properties(crc_folding.c PROPERTIES COMPILE_OPTIONS "-mpclmul;-msse4")
+    set_source_files_properties(slide_sse.c PROPERTIES COMPILE_OPTIONS -msse2)
+    set_source_files_properties(deflate_quick.c PROPERTIES COMPILE_OPTIONS -msse4)
+endif()
 
 if(NOT MINGW)
     set(ZLIB_DLL_SRCS
         win32/zlib1.rc # If present will override custom build rule below.
     )
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCC)
-    if(ASM686)
-        set(ZLIB_ASMS contrib/asm686/match.S)
-    elseif (AMD64)
-        set(ZLIB_ASMS contrib/amd64/amd64-match.S)
-    endif ()
-
-	if(ZLIB_ASMS)
-		add_definitions(-DASMV)
-		set_source_files_properties(${ZLIB_ASMS} PROPERTIES LANGUAGE C COMPILE_FLAGS -DNO_UNDERLINE)
-	endif()
-endif()
-
-if(MSVC)
-    if(ASM686)
-		ENABLE_LANGUAGE(ASM_MASM)
-        set(ZLIB_ASMS
-			contrib/masmx86/inffas32.asm
-			contrib/masmx86/match686.asm
-		)
-    elseif (AMD64)
-		ENABLE_LANGUAGE(ASM_MASM)
-        set(ZLIB_ASMS
-			contrib/masmx64/gvmat64.asm
-			contrib/masmx64/inffasx64.asm
-		)
-    endif()
-
-	if(ZLIB_ASMS)
-		add_definitions(-DASMV -DASMINF)
-	endif()
 endif()
 
 # parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
@@ -183,8 +160,8 @@ if(MINGW)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif(MINGW)
 
-add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 set_target_properties(zlib PROPERTIES SOVERSION 1)
 
