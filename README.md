@@ -52,6 +52,10 @@ cd GKL
 ```
 For more details check `build.sh`
 
+# Known issues
+* When compressing using ISA-L library (compression levels 1, 2) outputted compressed data size can differ by small amount of bytes (up to 100) for the same input.
+  This does not affect original uncompressed contents. Investigation of this issue is ongoing.
+
 # License
 All code is licensed under the [MIT License](https://opensource.org/licenses/MIT), except:
 * PairHMM code from GATK is licensed under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).

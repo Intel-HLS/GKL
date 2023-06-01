@@ -108,9 +108,14 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
               env->SetLongField(obj, FID_lz_stream, (jlong)lz_stream);
         }
         else {
+          uint8_t *saved_level_buf = lz_stream->level_buf;
+          uint32_t saved_level_buf_size = lz_stream->level_buf_size;
 
           isal_deflate_stateless_init(lz_stream);
 
+          lz_stream->level = (uint32_t) level;
+          lz_stream->level_buf = saved_level_buf;
+          lz_stream->level_buf_size = saved_level_buf_size;
         }
 
         lz_stream->end_of_stream = 0;
