@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'maven'
+    id 'maven-publish'
     id 'signing'
     id 'com.palantir.git-version' version '0.5.2'
 }
@@ -19,15 +19,15 @@ repositories {
 }
 
 dependencies {
-    compile 'commons-io:commons-io:2.7'
-    compile 'org.broadinstitute:gatk-native-bindings:1.0.0'
-    compile 'commons-logging:commons-logging:1.2'
-    compile 'com.github.samtools:htsjdk:3.0.5'
-    testCompile 'org.testng:testng:7.5.1'
+    implementation 'commons-io:commons-io:2.7'
+    implementation 'org.broadinstitute:gatk-native-bindings:1.0.0'
+    implementation 'commons-logging:commons-logging:1.2'
+    implementation 'com.github.samtools:htsjdk:3.0.5'
+    testImplementation 'org.testng:testng:7.5.1'
 }
 
  wrapper {
-    gradleVersion = '5.6'
+    gradleVersion = '8.0.2'
 }
 
 //===================================================================
@@ -41,7 +41,7 @@ task cmakeConfig(type: Exec) {
     doFirst {mkdir nativeBuildDir}
     workingDir nativeBuildDir
     commandLine 'cmake', '-Wno-dev', projectDir
-    inputs.files fileTree(projectDir) {include '**/CMakeLists.txt'}
+    inputs.files fileTree(projectDir) {include '**/CMakeLists.txt'}.files
     outputs.files "$nativeBuildDir/Makefile"
 }
 
@@ -65,14 +65,20 @@ task buildOnMac(type: Exec) {
     String mac_host = project.ext.properties.mac_host ? project.ext.properties.mac_host : "gkl-mac"
     workingDir '.'
     commandLine 'scripts/buildOnMac.sh', mac_host
-    onlyIf {project.hasProperty('mac') || project.hasProperty('mac_host') || gradle.taskGraph.hasTask(uploadArchives)}
+    // TODO: restore running buildOnMac task always when uploading to Maven - needs also fixes and updates in scripts/buildOnMac.sh before enabling.
+    onlyIf {project.hasProperty('mac') || project.hasProperty('mac_host')}
 }
 
 compileJava.finalizedBy copyNativeLib
 copyNativeLib.finalizedBy buildOnMac
 copyNativeLib.dependsOn cmakeBuild
+jar.dependsOn copyNativeLib
+javadoc.dependsOn copyNativeLib
+// TODO: clean up dependencies using Gradle 7+ dependency mechanism
+compileTestJava.dependsOn copyNativeLib
 cmakeBuild.dependsOn cmakeConfig
 test.dependsOn copyNativeLib
+
 //===================================================================
 // test
 //===================================================================
@@ -119,22 +125,20 @@ test {
 final isRelease = project.hasProperty("release")
 version = (isRelease ? gitVersion() : gitVersion() + "-SNAPSHOT").replaceAll(".dirty", "")
 
-group = "com.intel.gkl"
-
 jar {
-    baseName = "gkl"
+    archiveBaseName = "gkl"
     // include LICENSE file in jar
     from "LICENSE"
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from 'build/docs/javadoc'
 }
 
 task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
-    classifier = 'sources'
+    archiveClassifier = 'sources'
 }
 
 artifacts {
@@ -143,73 +147,82 @@ artifacts {
     archives sourcesJar
 }
 
-signing {
-    required { isRelease && gradle.taskGraph.hasTask(uploadArchives) }
-    sign configurations.archives
-}
+publishToMavenLocal.doFirst  { println "Version: $version" }
 
-install.doFirst { println "Version: $version" }
+publishing {
+    publications {
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+        mavenJava(MavenPublication) {
 
-//            repository(url: uri('testMaven'))
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
-                proxy(host: "proxy-us.intel.com", port: 912, type: 'https')
-            }
+            groupId = 'com.intel.gkl'
+            artifactId = 'gkl'
+            from components.java
 
-//            snapshotRepository(url: uri('testMavenSnapshot'))
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: project.findProperty("sonatypeUsername"), password: project.findProperty("sonatypePassword"))
-                proxy(host: "proxy-us.intel.com", port: 912, type: 'https')
-            }
+            artifact sourcesJar
+            artifact javadocJar
 
-            pom.project {
-                name 'Intel Genomics Kernel Library (GKL)'
-                packaging 'jar'
-                description 'Genomics compute kernels optimized for Intel Architecture'
-                url 'https://github.com/Intel-HLS/GKL'
-                scm {
-                    connection 'scm:git@github.com:Intel-HLS/GKL.git'
-                    developerConnection 'scm:git@github.com:Intel-HLS/GKL.git'
-                    url 'scm:git@github.com:Intel-HLS/GKL.git'
-                }
+            pom {
+                name = 'Intel Genomics Kernel Library (GKL)'
+                description = 'Genomics compute kernels optimized for Intel Architecture'
+                url = 'https://github.com/Intel-HLS/GKL'
                 licenses {
                     license {
-                        name 'MIT License'
-                        url 'https://opensource.org/licenses/MIT'
-                        distribution 'repo'
+                        name = 'Apache License 2.0'
+                        url = 'https://opensource.org/license/apache-2-0'
                     }
                     license {
-                        name 'BSD 3-Clause'
-                        url 'https://opensource.org/licenses/BSD-3-Clause'
-                        distribution 'repo'
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
                     }
                     license {
-                        name 'Zlib License'
-                        url 'https://opensource.org/licenses/Zlib'
-                        distribution 'repo'
+                        name = 'BSD 3-Clause'
+                        url = 'https://opensource.org/licenses/BSD-3-Clause'
                     }
-
+                    license {
+                        name = 'Zlib License'
+                        url = 'https://opensource.org/licenses/Zlib'
+                    }
                 }
                 developers {
                     developer {
-                        name = "Keith Mannthey"
-                        email = "keith.mannthey@intel.com"
+                        name = "Venkata Kranthi Kumar Dhanala"
+                        email = "venkata.kranthi.kumar.dhanala@intel.com"
+                    }
+                    developer {
+                        name = "Urszula Golowicz"
+                        email = "urszula.golowicz@intel.com"
+                    }
+                    developer {
+                        name = "Mateusz S. Nowak"
+                        email = "mateusz.s.nowak@intel.com"
                     }
                     developer {
                         name = "Priya Vaidya"
                         email = "priya.n.vaidya@intel.com"
                     }
-                    developer {
-                        name = "Marissa Powers"
-                        email = "marissa.e.powers@intel.com"
-                    }
+                }
+                scm {
+                    connection = 'scm:git@github.com:Intel-HLS/GKL.git'
+                    developerConnection = 'scm:git@github.com:Intel-HLS/GKL.git'
+                    url = 'scm:git@github.com:Intel-HLS/GKL.git'
                 }
             }
         }
     }
+
+    repositories {
+        maven {
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username = project.properties["sonatypeUsername"]
+                password = project.properties["sonatypePassword"]
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }
