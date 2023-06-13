@@ -1,0 +1,13 @@
+Following zlib subdirectories are not used by GKL so have been removed:
+
+amiga
+contrib
+msdos
+nintendods
+old
+os400
+qnx
+watcom
+win32
+
+When updating to future Intel zlib versions make sure to not include unused subdirs.
