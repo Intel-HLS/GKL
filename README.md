@@ -1,6 +1,6 @@
-The Intel Genomics Kernel Libary version 0.8.10 does not include the latest functional and security updates. Intel Genomics Kernel Libary Version 0.8.11 will be released in June 29 2023 and includes important security updates and bug fixes. Customers should update to the latest version when available.
+The Intel Genomics Kernel Library version 0.8.10 does not include the latest functional and security updates. Intel Genomics Kernel Library Version 0.8.11 will be released on June 29, 2023, and includes important security updates and bug fixes. Customers should update to the latest version when available.
 
-Intel has aditional testing under way on the v0.8.11 release we expect to finish in June 2023.  
+Intel has additional testing under way on the v0.8.11 release we expect to finish in June 2023.  
 
 
 [![Build Status](https://travis-ci.org/Intel-HLS/GKL.svg?branch=master)](https://travis-ci.org/Intel-HLS/GKL)
@@ -22,7 +22,7 @@ Kernels included:
   * Performance optimized Level 3 through 9 compression from Intel's [Open Source Technology Center](https://01.org/) [zlib](https://github.com/jtkukunas/zlib) library.
 
 # Building GKL
-GKL release binaries are built on CentOS 7, to enable running on most Linux distributions (see [holy-build-box](https://github.com/phusion/holy-build-box#problem-introduction) for a good discription of portability issues).
+GKL release binaries are built on CentOS 7, to enable running on most Linux distributions (see [holy-build-box](https://github.com/phusion/holy-build-box#problem-introduction) for a good description of portability issues).
 
 ## Requirements
 * Java JDK 8
@@ -36,7 +36,7 @@ GKL release binaries are built on CentOS 7, to enable running on most Linux dist
 * zlib-devel >= 1.2.7
 
 ## Setup
-Run these commands to setup the build environment on CentOS:
+Run these commands to set up the build environment on CentOS:
 ```
 sudo yum install -y java-1.8.0-openjdk-devel git cmake patch libtool automake yasm zlib-devel centos-release-scl help2man
 sudo yum install -y devtoolset-7-gcc-c++
