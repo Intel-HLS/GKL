@@ -1,4 +1,6 @@
-The Intel Genomics Kernel Library version 0.8.10 does not include the latest functional and security updates. Intel Genomics Kernel Library Version 0.8.11 will be released on June 29, 2023, and includes important security updates and bug fixes. Customers should update to the latest version when available.
+The Intel Genomics Kernel Library version 0.8.10 does not include the latest functional and security updates.
+Intel Genomics Kernel Library Version 0.8.11 will be released on June 29, 2023, and includes important security updates and bug fixes.
+Customers should update to the latest version when available.
 
 Intel has additional testing under way on the v0.8.11 release we expect to finish in June 2023.  
 
@@ -8,8 +10,8 @@ Intel has additional testing under way on the v0.8.11 release we expect to finis
 
 # Genomics Kernel Library (GKL)
 This repository contains optimized versions of compute kernels used in genomics applications like
-[GATK](https://github.com/broadinstitute/gatk) and [HTSJDK](https://github.com/samtools/htsjdk). These kernels are
-optimized to run on Intel Architecture (AVX, AVX2, AVX-512, and multicore) under 64-bit Linux and Mac OSX.
+[GATK](https://github.com/broadinstitute/gatk) and [HTSJDK](https://github.com/samtools/htsjdk).
+These kernels are optimized to run on Intel Architecture (AVX, AVX2, AVX-512, and multicore) under 64-bit Linux and Mac OSX.
 
 Kernels included:
 * **PairHMM**
@@ -44,7 +46,7 @@ source scl_source enable devtoolset-7
 ```
 
 ## Build and Test
-After build requirements are met, clone, and build :
+After build requirements are met, clone, and build:
 ```
 git clone https://github.com/Intel-HLS/GKL.git
 cd GKL
