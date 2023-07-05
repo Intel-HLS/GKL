@@ -1,10 +1,3 @@
-The Intel Genomics Kernel Library version 0.8.10 does not include the latest functional and security updates.
-Intel Genomics Kernel Library Version 0.8.11 will be released on June 29, 2023, and includes important security updates and bug fixes.
-Customers should update to the latest version when available.
-
-Intel has additional testing under way on the v0.8.11 release we expect to finish in June 2023.  
-
-
 [![Build Status](https://travis-ci.org/Intel-HLS/GKL.svg?branch=master)](https://travis-ci.org/Intel-HLS/GKL)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.intel.gkl/gkl/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.intel.gkl/gkl)
 
