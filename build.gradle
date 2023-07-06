@@ -65,7 +65,7 @@ task buildOnMac(type: Exec) {
     String mac_host = project.ext.properties.mac_host ? project.ext.properties.mac_host : "gkl-mac"
     workingDir '.'
     commandLine 'scripts/buildOnMac.sh', mac_host
-    // TODO: restore running buildOnMac task always when uploading to Maven - needs also fixes and updates in scripts/buildOnMac.sh before enabling.
+    // TODO: restore running buildOnMac task always when uploading to Maven
     onlyIf {project.hasProperty('mac') || project.hasProperty('mac_host')}
 }
 
