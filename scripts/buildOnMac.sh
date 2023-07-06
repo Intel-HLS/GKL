@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 mac=$1
-linux=$(hostname | xargs echo)
+linux=$(whoami)@$(hostname | xargs echo)
 dir=$(pwd)
-native='build/classes/main/com/intel/gkl/native'
+native='build/classes/java/main/com/intel/gkl/native'
 
 # run bash script on mac
 # requires password-less ssh
