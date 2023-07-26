@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'maven-publish'
     id 'signing'
     id 'com.palantir.git-version' version '0.5.2'
@@ -20,9 +20,9 @@ repositories {
 
 dependencies {
     implementation 'commons-io:commons-io:2.7'
-    implementation 'org.broadinstitute:gatk-native-bindings:1.0.0'
     implementation 'commons-logging:commons-logging:1.2'
-    implementation 'com.github.samtools:htsjdk:3.0.5'
+    api 'org.broadinstitute:gatk-native-bindings:1.0.0'
+    api 'com.github.samtools:htsjdk:3.0.5'
     testImplementation 'org.testng:testng:7.5.1'
 }
 
