@@ -48,6 +48,13 @@ cd GKL
 For more details check `build.sh`
 
 # Known issues
+* (Version 0.8.11 only): Some GKL dependencies are declared incorrectly as `implementation` which makes them not accessible by projects depending on GKL unless the project itself also uses those dependencies.
+  Workaround for this issue is to include following dependencies manually in affected projects:
+  ```
+  implementation 'org.broadinstitute:gatk-native-bindings:1.0.0'
+  implementation 'com.github.samtools:htsjdk:3.0.5'
+  ```
+  Fix for this issue is present in master branch.
 * When compressing using ISA-L library (compression levels 1, 2) outputted compressed data size can differ by small amount of bytes (up to 100) for the same input.
   This does not affect original uncompressed contents. Investigation of this issue is ongoing.
 
