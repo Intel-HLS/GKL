@@ -100,7 +100,7 @@ test {
     if (project.hasProperty('debug')) {
         jvmArgs('-verbose:jni', '-Xcheck:jni', '-XX:+RestoreMXCSROnJNICalls', *additionalJvmArgs)
     }
-	else {
+    else {
         jvmArgs('-Xcheck:jni', '-XX:+RestoreMXCSROnJNICalls', *additionalJvmArgs)
     }
 
