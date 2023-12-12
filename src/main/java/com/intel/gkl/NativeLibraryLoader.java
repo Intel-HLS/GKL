@@ -59,7 +59,7 @@ public final class NativeLibraryLoader {
     }
     // Check libraryName is as expected
     private static boolean checkLibraryName(String libName){
-        // Check boundaries for input
+       // Check boundaries for input
         if(libName == null || libName.length() == 0 || libName.length() > MAX_PATH) {
             logger.warn(" Unexpected library name");
             return false;
@@ -75,18 +75,14 @@ public final class NativeLibraryLoader {
         return false;
     }
 
-    /**
-     * Tries to load the native library from the classpath, usually from a jar file.
-     * <p>
+     /**
+     * Tries to load the native library from the classpath, usually from a jar file. <p>
      *
-     * If the USE_LIBRARY_PATH environment variable is defined, the native library
-     * will be loaded from the
+     * If the USE_LIBRARY_PATH environment variable is defined, the native library will be loaded from the
      * java.library.path instead of the classpath.
      *
-     * @param tempDir     directory where the native library is extracted or null to
-     *                    use the system temp directory
-     * @param libraryName name of the shared library without system dependent
-     *                    modifications
+     * @param tempDir  directory where the native library is extracted or null to use the system temp directory
+     * @param libraryName  name of the shared library without system dependent modifications
      * @return true if the library was loaded successfully, false otherwise
      */
     public static synchronized boolean load(File tempDir, String libraryName) {
