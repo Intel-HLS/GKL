@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.apache.commons:commons-lang3:3.13.0'
     implementation 'commons-io:commons-io:2.7'
     implementation 'commons-logging:commons-logging:1.2'
     api 'org.broadinstitute:gatk-native-bindings:1.0.0'
@@ -26,7 +27,7 @@ dependencies {
     testImplementation 'org.testng:testng:7.5.1'
 }
 
- wrapper {
+wrapper {
     gradleVersion = '8.0.2'
 }
 
@@ -99,7 +100,7 @@ test {
     if (project.hasProperty('debug')) {
         jvmArgs('-verbose:jni', '-Xcheck:jni', '-XX:+RestoreMXCSROnJNICalls', *additionalJvmArgs)
     }
-    else {
+	else {
         jvmArgs('-Xcheck:jni', '-XX:+RestoreMXCSROnJNICalls', *additionalJvmArgs)
     }
 
