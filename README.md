@@ -15,6 +15,9 @@ Kernels included:
 * **DEFLATE Compression/Decompression**:
   * Performance optimized Level 1 and 2 compression and decompression from Intel's [ISA-L](https://github.com/01org/isa-l) library.
   * Performance optimized Level 3 through 9 compression from Intel's [Open Source Technology Center](https://01.org) [zlib](https://github.com/intel/zlib) library.
+* **PDHMM**
+  * AVX2 and AVX-512 optimized versions of PDHMM used in GATK. 
+  * Serial Implementation for CPU's with no AVX. 
 
 # Building GKL
 GKL release binaries are built on CentOS 7, to enable running on most Linux distributions (see [holy-build-box](https://github.com/phusion/holy-build-box#problem-introduction) for a good description of portability issues).
