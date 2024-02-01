@@ -4,10 +4,10 @@
 */
 
 #include "MathUtils.h"
-#include <iostream>
+#include <cmath>
+#include <cstdio>
 #include <immintrin.h>
 #include <unistd.h>
-#include <stdio.h>
 
 using namespace std;
 double INITIAL_CONDITION = pow(2, 1020);
@@ -20,75 +20,52 @@ double *JacobianLogTable::cache = NULL;
 const double LN10 = log(10);
 const double INV_LN10 = 1.0 / LN10;
 
-int8_t PartiallyDeterminedHaplotype::SNP = 1;
-int8_t PartiallyDeterminedHaplotype::DEL_START = 2;
-int8_t PartiallyDeterminedHaplotype::DEL_END = 4;
-int8_t PartiallyDeterminedHaplotype::A = 8;
-int8_t PartiallyDeterminedHaplotype::C = 16;
-int8_t PartiallyDeterminedHaplotype::G = 32;
-int8_t PartiallyDeterminedHaplotype::T = 64;
-int8_t PartiallyDeterminedHaplotype::N = (int8_t)128;
-
-int64_t getFreq()
-{
-	int64_t startTick, endTick;
-	startTick = __rdtsc();
-	sleep(1);
-	endTick = __rdtsc();
-	return (endTick - startTick);
-}
-
 int32_t fastRound(double d)
 {
-	return (d > 0.0) ? (int32_t)(d + 0.5) : (int32_t)(d - 0.5);
+    return (d > 0.0) ? (int32_t)(d + 0.5) : (int32_t)(d - 0.5);
 }
 
-bool isSame(double a, double b, double epsilon)
-{
-	return fabs(a - b) < epsilon;
-}
-bool isValidLog10Probability(double result)
-{
-	return result <= 0.0;
-}
+bool isValidLog10Probability(double result) { return result <= 0.0; }
 double JacobianLogTable::get(double difference)
 {
-	int index = fastRound(difference * INV_STEP);
-	return cache[index];
+    int index = fastRound(difference * INV_STEP);
+    return cache[index];
 }
 
 void JacobianLogTable::initCache()
 {
-	int from = 0;
-	int to = (int)(MAX_TOLERANCE / TABLE_STEP) + 1;
-	double *result = (double *)_mm_malloc((to - from) * sizeof(double), 64);
-	for (int i = from; i < to; i++)
-	{
-		result[i - from] = cacheIntToDouble(i);
-	}
-	cache = result;
+    int from = 0;
+    int to = (int)(MAX_TOLERANCE / TABLE_STEP) + 1;
+    double *result = (double *)_mm_malloc((to - from) * sizeof(double), 64);
+    for (int i = from; i < to; i++)
+    {
+        result[i - from] = cacheIntToDouble(i);
+    }
+    cache = result;
 }
 
 double JacobianLogTable::cacheIntToDouble(int k)
 {
-	return log10(1.0 + pow(10.0, -k * TABLE_STEP));
+    return log10(1.0 + pow(10.0, -k * TABLE_STEP));
 }
 
 double approximateLog10SumLog10(double a, double b)
 {
-	// this code works only when a <= b so we flip them if the order is opposite
-	if (a > b)
-	{
-		return approximateLog10SumLog10(b, a);
-	}
-	else if (a == neg_infinity)
-	{
-		return b;
-	}
+    // this code works only when a <= b so we flip them if the order is opposite
+    if (a > b)
+    {
+        return approximateLog10SumLog10(b, a);
+    }
+    else if (a == neg_infinity)
+    {
+        return b;
+    }
 
-	// if |b-a| < tol we need to compute log(e^a + e^b) = log(e^b(1 + e^(a-b))) = b + log(1 + e^(-(b-a)))
-	// we compute the second term as a table lookup with integer quantization
-	// we have pre-stored correction for 0,0.1,0.2,... 10.0
-	double diff = b - a;
-	return b + (diff < JacobianLogTable::MAX_TOLERANCE ? JacobianLogTable::get(diff) : 0.0);
+    // if |b-a| < tol we need to compute log(e^a + e^b) = log(e^b(1 + e^(a-b))) =
+    // b + log(1 + e^(-(b-a))) we compute the second term as a table lookup with
+    // integer quantization we have pre-stored correction for 0,0.1,0.2,... 10.0
+    double diff = b - a;
+    return b + (diff < JacobianLogTable::MAX_TOLERANCE
+                    ? JacobianLogTable::get(diff)
+                    : 0.0);
 }

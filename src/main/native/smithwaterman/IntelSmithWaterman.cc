@@ -28,7 +28,7 @@
 #include "smithwaterman_common.h"
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <stdint.h>
 #include <string.h>
 #include <immintrin.h>
@@ -36,68 +36,69 @@
 #include <debug.h>
 #include "avx2_impl.h"
 #ifndef __APPLE__
-  #include "avx512_impl.h"
+#include "avx512_impl.h"
 #endif
-
 
 static jfieldID FID_reflength;
 static jfieldID FID_altlength;
 
-int32_t (*g_runSWOnePairBT)(int32_t match, int32_t mismatch, int32_t open, int32_t extend,uint8_t *seq1, uint8_t *seq2, int16_t len1, int16_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, uint32_t *cigarCount, int32_t *offset);
+int32_t (*g_runSWOnePairBT)(int32_t match, int32_t mismatch, int32_t open, int32_t extend, uint8_t *seq1, uint8_t *seq2, int16_t len1, int16_t len2, int8_t overhangStrategy, char *cigarArray, int32_t cigarLen, uint32_t *cigarCount, int32_t *offset);
 
-JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initNative
-  (JNIEnv * env, jclass obj )
+JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_initNative(JNIEnv *env, jclass obj)
 {
 
-if(is_avx512_supported())
-      {
-    #ifndef __APPLE__
+    if (is_avx512_supported())
+    {
+#ifndef __APPLE__
         DBG("Using CPU-supported AVX-512 instructions");
         g_runSWOnePairBT = runSWOnePairBT_fp_avx512;
 
-    #else
+#else
         assert(false);
-    #endif
-      }
-      else
-      {
+#endif
+    }
+    else
+    {
         g_runSWOnePairBT = runSWOnePairBT_fp_avx2;
-      }
-      return;
+    }
+    return;
 }
 /*
  * Class:     com_intel_gkl_smithwaterman_IntelSmithWaterman
  * Method:    alignNative
  */
-JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignNative
-  (JNIEnv * env, jclass obj, jbyteArray ref, jbyteArray alt, jbyteArray cigar, jint match, jint mismatch, jint open, jint extend, jbyte strategy)
+JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_alignNative(JNIEnv *env, jclass obj, jbyteArray ref, jbyteArray alt, jbyteArray cigar, jint match, jint mismatch, jint open, jint extend, jbyte strategy)
 {
     jint refLength = env->GetArrayLength(ref);
     jint altLength = env->GetArrayLength(alt);
     jint cigarLength = env->GetArrayLength(cigar);
 
-    jbyte* reference = (jbyte*)env->GetPrimitiveArrayCritical(ref, 0);
-    jbyte* alternate = (jbyte*)env->GetPrimitiveArrayCritical(alt, 0);
-    jbyte* cigarArray = (jbyte*)env->GetPrimitiveArrayCritical(cigar, 0);
+    jbyte *reference = (jbyte *)env->GetPrimitiveArrayCritical(ref, 0);
+    jbyte *alternate = (jbyte *)env->GetPrimitiveArrayCritical(alt, 0);
+    jbyte *cigarArray = (jbyte *)env->GetPrimitiveArrayCritical(cigar, 0);
 
-    if (reference == NULL || alternate == NULL || cigarArray == NULL) {
-         DBG("GetPrimitiveArrayCritical failed from JAVA unable to continue.");
-         if(env->ExceptionCheck())
-             env->ExceptionClear();
-         env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "Arrays aren't valid.");
+    if (reference == NULL || alternate == NULL || cigarArray == NULL)
+    {
+        DBG("GetPrimitiveArrayCritical failed from JAVA unable to continue.");
+        if (env->ExceptionCheck())
+            env->ExceptionClear();
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "Arrays aren't valid.");
 
-         if (reference != NULL) {
-           env->ReleasePrimitiveArrayCritical(ref, reference, 0);
-         }
+        if (reference != NULL)
+        {
+            env->ReleasePrimitiveArrayCritical(ref, reference, 0);
+        }
 
-         if (alternate != NULL) {
-           env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
-         }
+        if (alternate != NULL)
+        {
+            env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
+        }
 
-         if (cigarArray != NULL) {
-           env->ReleasePrimitiveArrayCritical(cigar, cigarArray, 0);
-         }
-         return -1;
+        if (cigarArray != NULL)
+        {
+            env->ReleasePrimitiveArrayCritical(cigar, cigarArray, 0);
+        }
+        return -1;
     }
 
     uint32_t count = 0;
@@ -105,14 +106,15 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
 
     // call the low level routine
     // Sequence length should fit in 16 bytes. This is validated earlier at the Java layer.
-    int32_t result = g_runSWOnePairBT(match, mismatch, open, extend,(uint8_t*) reference, (uint8_t*) alternate, (int16_t)refLength, (int16_t)altLength, strategy, (char *) cigarArray, cigarLength, &count, &offset);
+    int32_t result = g_runSWOnePairBT(match, mismatch, open, extend, (uint8_t *)reference, (uint8_t *)alternate, (int16_t)refLength, (int16_t)altLength, strategy, (char *)cigarArray, cigarLength, &count, &offset);
 
     // release buffers
     env->ReleasePrimitiveArrayCritical(ref, reference, 0);
     env->ReleasePrimitiveArrayCritical(alt, alternate, 0);
     env->ReleasePrimitiveArrayCritical(cigar, cigarArray, 0);
 
-    if(result == SW_MEMORY_ALLOCATION_FAILED) {
+    if (result == SW_MEMORY_ALLOCATION_FAILED)
+    {
         env->ExceptionClear();
         env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"), "Memory allocation issue");
         return -1;
@@ -126,8 +128,6 @@ JNIEXPORT jint JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_align
  * Method:    doneNative
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_doneNative
-  (JNIEnv *, jclass)
+JNIEXPORT void JNICALL Java_com_intel_gkl_smithwaterman_IntelSmithWaterman_doneNative(JNIEnv *, jclass)
 {
-
 }
