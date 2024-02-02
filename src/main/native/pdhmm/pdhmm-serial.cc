@@ -290,10 +290,6 @@ double subComputeReadLikelihoodGivenHaplotypeLog10(const int8_t *hap_bases, cons
                 branchMatchMatrix[j] = std::max(bmmLeft, mmLeft);
                 branchDeletionMatrix[j] = std::max(bdmLeft, dmLeft);
                 branchInsertionMatrix[j] = std::max(bimLeft, imLeft);
-            }
-
-            if (currentState == AFTER_DEL)
-            {
                 mmDiag = std::max(mmDiag, bmmDiag);
                 imDiag = std::max(imDiag, bimDiag);
                 dmDiag = std::max(dmDiag, bdmDiag);
@@ -369,13 +365,16 @@ double computeReadLikelihoodGivenHaplotypeLog10(const int8_t *hap_bases, const i
     int32_t paddedReadLength = (int32_t)read_bases_length + 1;
     int32_t paddedHaplotypeLength = (int32_t)hap_bases_length + 1;
 
+    // The following ternary operator always executes the false case similar to PDHMM implementation in GATK.
+    // We have intentionally kept this instruction to ensure that any performance gains achieved in PDHMM GKL are not merely due to the absence
+    // of this ternary operator but are a result of our optimizations.
     hapStartIndex = (recacheReadValues) ? 0 : hapStartIndex;
 
     // Pre-compute the difference between the current haplotype and the next one to be run
     // Looking ahead is necessary for the ArrayLoglessPairHMM implementation
     // TODO this optimization is very dangerous if we have undetermined haps that could have the same bases but mean different things
     // final int nextHapStartIndex =  (nextHaplotypeBases == null || haplotypeBases.length != nextHaplotypeBases.length) ? 0 : findFirstPositionWhereHaplotypesDiffer(haplotypeBases, haplotypePDBases, nextHaplotypeBases, nextHaplotypePDBases);
-    int32_t nextHapStartIndex = 0; // disable the optimization for now until its confirmed to be correct
+    int32_t nextHapStartIndex = 0; // disable the optimization for now until it's confirmed to be correct
 
     double result = subComputeReadLikelihoodGivenHaplotypeLog10(hap_bases, hap_pdbases, read_bases, read_qual, read_ins_qual, read_del_qual, gcp, (int32_t)hap_bases_length, (int32_t)read_bases_length, hapStartIndex, recacheReadValues, prev_hap_bases_length, paddedHaplotypeLength, paddedReadLength, matchMatrix, insertionMatrix, deletionMatrix, branchMatchMatrix, branchInsertionMatrix, branchDeletionMatrix, constantsAreInitialized, transition, prior, matchToMatchProb, qualToErrorProbCache, status, maxHaplotypeLength);
 
@@ -394,8 +393,11 @@ double computeReadLikelihoodGivenHaplotypeLog10(const int8_t *hap_bases, const i
     // Warning: This assumes no downstream modification of the haplotype bases (saves us from copying the array). It is okay for the haplotype caller.
     prev_hap_bases_length = (int32_t)hap_bases_length;
 
-    // For the next iteration, the hapStartIndex for the next haploytpe becomes the index for the current haplotype
+    // For the next iteration, the hapStartIndex for the next haplotype becomes the index for the current haplotype
     // The array implementation has to look ahead to the next haplotype to store caching info. It cannot do this if nextHapStart is before hapStart
+    // The following ternary operator always executes the false case similar to PDHMM implementation in GATK.
+    // We have intentionally kept this instruction to ensure that any performance gains achieved in PDHMM GKL are not merely due to the absence
+    // of this ternary operator but are a result of our optimizations.
     hapStartIndex = (nextHapStartIndex < hapStartIndex) ? 0 : nextHapStartIndex;
 
     return result;

@@ -33,7 +33,7 @@ double approximateLog10SumLog10(double a, double b);
 
 int32_t fastRound(double d);
 
-bool isValidLog10Probability(const double result);
+bool isValidLog10Probability(double result);
 
 enum PartiallyDeterminedHaplotype
 {

@@ -55,7 +55,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pdhmm_IntelPDHMM_initNative(JNIEnv *en
         INFO("Using Serial Implementation.");
         g_computePDHMM = computePDHMM_serial;
     }
-    return;
 }
 
 /*

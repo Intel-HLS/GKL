@@ -217,49 +217,7 @@ inline int32_t initializeProbabilitiesVec(double *dest, const INT_TYPE *insertio
     return qualToTransProbsVec(dest, insertionGOP, deletionGOP, overallGCP, read_bases_length, matchToMatchProb, qualToErrorProbCache);
 }
 
-inline VEC_MASK_TYPE isBasePDMatching(VEC_INT_TYPE x, VEC_INT_TYPE hapPDBases)
-{
-    VEC_INT_TYPE SNPvec = VEC_SET1_INT(PartiallyDeterminedHaplotype::SNP);
-    SNPvec = VEC_AND_INT(hapPDBases, SNPvec);
-    VEC_INT_TYPE zeroVec = VEC_SET0_INT();
-    VEC_MASK_TYPE mask1 = VEC_CMP_NE_INT(SNPvec, zeroVec);
-
-    VEC_MASK_TYPE mask2 = VEC_CMP_EQ_INT(x, VEC_SET1_INT('A'));
-    mask2 = VEC_OR_MASK(mask2, VEC_CMP_EQ_INT(x, VEC_SET1_INT('a')));
-    SNPvec = VEC_SET1_INT(PartiallyDeterminedHaplotype::A);
-    SNPvec = VEC_AND_INT(hapPDBases, SNPvec);
-    VEC_MASK_TYPE ansA = VEC_CMP_NE_INT(SNPvec, zeroVec);
-    ansA = VEC_AND_MASK(ansA, mask2);
-
-    mask2 = VEC_CMP_EQ_INT(x, VEC_SET1_INT('C'));
-    mask2 = VEC_OR_MASK(mask2, VEC_CMP_EQ_INT(x, VEC_SET1_INT('c')));
-    SNPvec = VEC_SET1_INT(PartiallyDeterminedHaplotype::C);
-    SNPvec = VEC_AND_INT(hapPDBases, SNPvec);
-    VEC_MASK_TYPE ansC = VEC_CMP_NE_INT(SNPvec, zeroVec);
-    ansC = VEC_AND_MASK(ansC, mask2);
-
-    mask2 = VEC_CMP_EQ_INT(x, VEC_SET1_INT('T'));
-    mask2 = VEC_OR_MASK(mask2, VEC_CMP_EQ_INT(x, VEC_SET1_INT('t')));
-    SNPvec = VEC_SET1_INT(PartiallyDeterminedHaplotype::T);
-    SNPvec = VEC_AND_INT(hapPDBases, SNPvec);
-    VEC_MASK_TYPE ansT = VEC_CMP_NE_INT(SNPvec, zeroVec);
-    ansT = VEC_AND_MASK(ansT, mask2);
-
-    mask2 = VEC_CMP_EQ_INT(x, VEC_SET1_INT('G'));
-    mask2 = VEC_OR_MASK(mask2, VEC_CMP_EQ_INT(x, VEC_SET1_INT('g')));
-    SNPvec = VEC_SET1_INT(PartiallyDeterminedHaplotype::G);
-    SNPvec = VEC_AND_INT(hapPDBases, SNPvec);
-    VEC_MASK_TYPE ansG = VEC_CMP_NE_INT(SNPvec, zeroVec);
-    ansG = VEC_AND_MASK(ansG, mask2);
-
-    VEC_MASK_TYPE res = VEC_OR_MASK(ansA, ansC);
-    res = VEC_OR_MASK(res, ansT);
-    res = VEC_OR_MASK(res, ansG);
-    res = VEC_AND_MASK(res, mask1);
-    return res;
-}
-
-inline VEC_MASK_TYPE isBasePDMatchingPrime(VEC_INT_TYPE xPrime, VEC_INT_TYPE hapPDBases)
+inline VEC_MASK_TYPE isBasePDMatching(VEC_INT_TYPE xPrime, VEC_INT_TYPE hapPDBases)
 {
     VEC_INT_TYPE temp = VEC_AND_INT(hapPDBases, SNPVec);
     VEC_INT_TYPE zeroVec = VEC_SET0_INT();
@@ -349,7 +307,7 @@ inline void initializePriorsVec(const INT_TYPE *haplotypeBases, const INT_TYPE *
             VEC_MASK_TYPE mask1 = VEC_CMP_EQ_INT(x1, y);
             mask1 = VEC_OR_MASK(mask1, maskx1);
             mask1 = VEC_OR_MASK(mask1, maskY);
-            mask1 = VEC_OR_MASK(mask1, isBasePDMatchingPrime(x1Prime, hapPDBase));
+            mask1 = VEC_OR_MASK(mask1, isBasePDMatching(x1Prime, hapPDBase));
             VEC_DOUBLE_TYPE priorValue = VEC_BLEND_PD(falseVal1, trueVal1, mask1);
             index = (i + 1) * paddedMaxHaplotypeLength * SIMD_WIDTH_DOUBLE + (j + 1) * SIMD_WIDTH_DOUBLE;
             VEC_STORE_PD(priorVec + index, priorValue);
@@ -357,7 +315,7 @@ inline void initializePriorsVec(const INT_TYPE *haplotypeBases, const INT_TYPE *
             mask1 = VEC_CMP_EQ_INT(x2, y);
             mask1 = VEC_OR_MASK(mask1, maskx2);
             mask1 = VEC_OR_MASK(mask1, maskY);
-            mask1 = VEC_OR_MASK(mask1, isBasePDMatchingPrime(x2Prime, hapPDBase));
+            mask1 = VEC_OR_MASK(mask1, isBasePDMatching(x2Prime, hapPDBase));
             priorValue = VEC_BLEND_PD(falseVal2, trueVal2, mask1);
             index = (i + 2) * paddedMaxHaplotypeLength * SIMD_WIDTH_DOUBLE + (j + 1) * SIMD_WIDTH_DOUBLE;
             VEC_STORE_PD(priorVec + index, priorValue);
@@ -365,7 +323,7 @@ inline void initializePriorsVec(const INT_TYPE *haplotypeBases, const INT_TYPE *
             mask1 = VEC_CMP_EQ_INT(x3, y);
             mask1 = VEC_OR_MASK(mask1, maskx3);
             mask1 = VEC_OR_MASK(mask1, maskY);
-            mask1 = VEC_OR_MASK(mask1, isBasePDMatchingPrime(x3Prime, hapPDBase));
+            mask1 = VEC_OR_MASK(mask1, isBasePDMatching(x3Prime, hapPDBase));
             priorValue = VEC_BLEND_PD(falseVal3, trueVal3, mask1);
             index = (i + 3) * paddedMaxHaplotypeLength * SIMD_WIDTH_DOUBLE + (j + 1) * SIMD_WIDTH_DOUBLE;
             VEC_STORE_PD(priorVec + index, priorValue);
@@ -373,7 +331,7 @@ inline void initializePriorsVec(const INT_TYPE *haplotypeBases, const INT_TYPE *
             mask1 = VEC_CMP_EQ_INT(x4, y);
             mask1 = VEC_OR_MASK(mask1, maskx4);
             mask1 = VEC_OR_MASK(mask1, maskY);
-            mask1 = VEC_OR_MASK(mask1, isBasePDMatchingPrime(x4Prime, hapPDBase));
+            mask1 = VEC_OR_MASK(mask1, isBasePDMatching(x4Prime, hapPDBase));
             priorValue = VEC_BLEND_PD(falseVal4, trueVal4, mask1);
             index = (i + 4) * paddedMaxHaplotypeLength * SIMD_WIDTH_DOUBLE + (j + 1) * SIMD_WIDTH_DOUBLE;
             VEC_STORE_PD(priorVec + index, priorValue);
@@ -401,7 +359,7 @@ inline void initializePriorsVec(const INT_TYPE *haplotypeBases, const INT_TYPE *
             VEC_MASK_TYPE mask1 = VEC_CMP_EQ_INT(x1, y);
             mask1 = VEC_OR_MASK(mask1, maskx1);
             mask1 = VEC_OR_MASK(mask1, VEC_CMP_EQ_INT(y, nVec));
-            mask1 = VEC_OR_MASK(mask1, isBasePDMatchingPrime(x1Prime, hapPDBase));
+            mask1 = VEC_OR_MASK(mask1, isBasePDMatching(x1Prime, hapPDBase));
             VEC_DOUBLE_TYPE priorValue = VEC_BLEND_PD(falseVal1, trueVal1, mask1);
             index = (i + 1) * paddedMaxHaplotypeLength * SIMD_WIDTH_DOUBLE + (j + 1) * SIMD_WIDTH_DOUBLE;
             VEC_STORE_PD(priorVec + index, priorValue);
@@ -959,7 +917,7 @@ int32_t computeReadLikelihoodGivenHaplotypeLog10Vec(const int8_t *hap_bases, con
     {
         prev_hap_bases_length[i] = hap_bases_length[i];
 
-        // For the next iteration, the hapStartIndex for the next haploytpe becomes the index for the current haplotype
+        // For the next iteration, the hapStartIndex for the next haplotype becomes the index for the current haplotype
         // The array implementation has to look ahead to the next haplotype to store caching info. It cannot do this if nextHapStart is before hapStart
         hapStartIndex[i] = (nextHapStartIndex[i] < hapStartIndex[i]) ? 0 : nextHapStartIndex[i];
     }
@@ -974,7 +932,7 @@ int32_t computeReadLikelihoodGivenHaplotypeLog10Vec(const int8_t *hap_bases, con
 
 int32_t CONCAT(computePDHMM_, SIMD_ENGINE)(const int8_t *hap_bases, const int8_t *hap_pdbases, const int8_t *read_bases, const int8_t *read_qual, const int8_t *read_ins_qual, const int8_t *read_del_qual, const int8_t *gcp, double *result, int64_t t, const int64_t *hap_lengths, const int64_t *read_lengths, int32_t maxReadLength, int32_t maxHaplotypeLength)
 {
-    int32_t totalThreads = 1;
+    int32_t totalThreads;
 #pragma omp parallel
     {
         totalThreads = omp_get_num_threads();
