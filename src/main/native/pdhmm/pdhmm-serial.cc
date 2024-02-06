@@ -273,6 +273,7 @@ double subComputeReadLikelihoodGivenHaplotypeLog10(const int8_t *hap_bases, cons
             imTop = insertionMatrix[j];
             dmTop = deletionMatrix[j];
 
+            // the following nested ifs are not replaced with switch case for performance reasons. Using switch case increases the number of instructions in the assembly code.
             if (currentState == NORMAL)
             {
                 branchMatchMatrix[j] = mmLeft;
