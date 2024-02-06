@@ -286,7 +286,7 @@ double subComputeReadLikelihoodGivenHaplotypeLog10(const int8_t *hap_bases, cons
                 branchDeletionMatrix[j] = bdmLeft;
                 branchInsertionMatrix[j] = bimLeft;
             }
-            else if (currentState == AFTER_DEL)
+            else // currentState == AFTER_DEL
             {
                 branchMatchMatrix[j] = std::max(bmmLeft, mmLeft);
                 branchDeletionMatrix[j] = std::max(bdmLeft, dmLeft);
