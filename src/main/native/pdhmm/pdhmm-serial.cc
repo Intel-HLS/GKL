@@ -371,11 +371,7 @@ double computeReadLikelihoodGivenHaplotypeLog10(const int8_t *hap_bases, const i
     // of this ternary operator but are a result of our optimizations.
     hapStartIndex = (recacheReadValues) ? 0 : hapStartIndex;
 
-    // Pre-compute the difference between the current haplotype and the next one to be run
-    // Looking ahead is necessary for the ArrayLoglessPairHMM implementation
-    // TODO this optimization is very dangerous if we have undetermined haps that could have the same bases but mean different things
-    // final int nextHapStartIndex =  (nextHaplotypeBases == null || haplotypeBases.length != nextHaplotypeBases.length) ? 0 : findFirstPositionWhereHaplotypesDiffer(haplotypeBases, haplotypePDBases, nextHaplotypeBases, nextHaplotypePDBases);
-    int32_t nextHapStartIndex = 0; // disable the optimization for now until it's confirmed to be correct
+    int32_t nextHapStartIndex = 0;
 
     double result = subComputeReadLikelihoodGivenHaplotypeLog10(hap_bases, hap_pdbases, read_bases, read_qual, read_ins_qual, read_del_qual, gcp, (int32_t)hap_bases_length, (int32_t)read_bases_length, hapStartIndex, recacheReadValues, prev_hap_bases_length, paddedHaplotypeLength, paddedReadLength, matchMatrix, insertionMatrix, deletionMatrix, branchMatchMatrix, branchInsertionMatrix, branchDeletionMatrix, constantsAreInitialized, transition, prior, matchToMatchProb, qualToErrorProbCache, status, maxHaplotypeLength);
 

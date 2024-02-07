@@ -117,7 +117,7 @@ JNIEXPORT jdoubleArray JNICALL Java_com_intel_gkl_pdhmm_IntelPDHMM_computePDHMMN
         env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"), "Memory allocation issue.");
         return NULL;
     }
-    int32_t status = g_computePDHMM(hap_bases, hap_pdbases, read_bases, read_qual, read_ins_qual, read_del_qual, gcp, result, testcase, hap_lengths, read_lengths, maxReadLength, maxHapLength);
+    int32_t status = g_computePDHMM(hap_bases, hap_pdbases, read_bases, read_qual, read_ins_qual, read_del_qual, gcp, result, testcase, (int64_t *)hap_lengths, (int64_t *)read_lengths, maxReadLength, maxHapLength);
 
     // release buffers
     env->ReleasePrimitiveArrayCritical(jhap_bases, hap_bases, 0);
