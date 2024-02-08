@@ -4,8 +4,10 @@
 */
 
 #include <cstdio>
-#include <omp.h>
 #include "pdhmm-serial.h"
+#ifdef linux
+#include <omp.h>
+#endif
 
 inline int32_t allocateVec(double *&matchMatrixVec, double *&insertionMatrixVec, double *&deletionMatrixVec, double *&branchMatchMatrixVec, double *&branchInsertionMatrixVec, double *&branchDeletionMatrixVec, double *&transitionVec, double *&priorVec, bool *&constantsAreInitialized, bool *&initialized, INT_TYPE *&prev_hap_bases_length, const int32_t maxReadLength, const int32_t maxHaplotypeLength, const int32_t totalThreads)
 {
@@ -932,11 +934,13 @@ int32_t computeReadLikelihoodGivenHaplotypeLog10Vec(const int8_t *hap_bases, con
 
 int32_t CONCAT(computePDHMM_, SIMD_ENGINE)(const int8_t *hap_bases, const int8_t *hap_pdbases, const int8_t *read_bases, const int8_t *read_qual, const int8_t *read_ins_qual, const int8_t *read_del_qual, const int8_t *gcp, double *result, int64_t t, const int64_t *hap_lengths, const int64_t *read_lengths, int32_t maxReadLength, int32_t maxHaplotypeLength)
 {
-    int32_t totalThreads;
+    int32_t totalThreads = 1;
+#ifdef _OPENMP
 #pragma omp parallel
     {
         totalThreads = omp_get_num_threads();
     }
+#endif
     double *matchToMatchLog10, *matchToMatchProb, *qualToErrorProbCache, *qualToProbLog10Cache;
     INT_TYPE testcase, roundedTestcase;
 
@@ -1004,10 +1008,14 @@ int32_t CONCAT(computePDHMM_, SIMD_ENGINE)(const int8_t *hap_bases, const int8_t
     }
 
     roundedTestcase = (testcase / SIMD_WIDTH_DOUBLE) * SIMD_WIDTH_DOUBLE;
-
+#ifdef _OPENMP
 #pragma omp parallel
+#endif
     {
-        int32_t tid = omp_get_thread_num();
+        int32_t tid = 0;
+#ifdef _OPENMP
+        tid = omp_get_thread_num();
+#endif
 
         double *matchMatrixVec, *insertionMatrixVec, *deletionMatrixVec, *branchMatchMatrixVec, *branchInsertionMatrixVec, *branchDeletionMatrixVec, *transitionVec, *priorVec;
 
@@ -1026,8 +1034,9 @@ int32_t CONCAT(computePDHMM_, SIMD_ENGINE)(const int8_t *hap_bases, const int8_t
         initialized = g_initialized + tid;
 
         INT_TYPE *prev_hap_bases_length = g_prev_hap_bases_length + (SIMD_WIDTH_DOUBLE * tid);
-
+#ifdef _OPENMP
 #pragma omp for
+#endif
         for (int32_t i = 0; i < roundedTestcase; i += SIMD_WIDTH_DOUBLE)
         {
             initializeVec(matchMatrixVec, insertionMatrixVec, deletionMatrixVec, branchMatchMatrixVec, branchInsertionMatrixVec, branchDeletionMatrixVec, *constantsAreInitialized, *initialized, maxHaplotypeLength); // array allocation
