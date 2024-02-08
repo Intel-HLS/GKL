@@ -11,6 +11,9 @@
 #include "avx512_impl.h"
 #endif
 #include <avx.h>
+#ifdef __APPLE__
+#include <cassert>
+#endif
 
 int32_t (*g_computePDHMM)(const int8_t *hap_bases, const int8_t *hap_pdbases, const int8_t *read_bases, const int8_t *read_qual, const int8_t *read_ins_qual, const int8_t *read_del_qual, const int8_t *gcp, double *result, int64_t t, const int64_t *hap_lengths, const int64_t *read_lengths, int32_t maxReadLength, int32_t maxHaplotypeLength);
 
