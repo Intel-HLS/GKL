@@ -1,0 +1,153 @@
+/*
+#Copyright(C) 2023 Intel Corporation
+#SPDX - License - Identifier : MIT License
+*/
+
+#ifndef _AVX2_FUNCTIONS_H
+#define _AVX2_FUNCTIONS_H
+
+#define VEC_DOUBLE_TYPE __m256d
+#define VEC_INT_TYPE __m128i
+#define INT_TYPE int32_t
+#define IS_INT32 1
+#define VEC_LONG_TYPE __m256i
+#define VEC_MASK_TYPE __m128i
+#define VEC_DOUBLE_MASK_TYPE __m256d
+#define SIMD_WIDTH_DOUBLE 4
+
+#define VEC_ADD_INT(__v1, __v2) \
+    _mm_add_epi32(__v1, __v2)
+
+#define VEC_ADD_PD(__v1, __v2) \
+    _mm256_add_pd(__v1, __v2)
+
+#define VEC_AND_INT(__v1, __v2) \
+    _mm_and_si128(__v1, __v2)
+
+#define VEC_AND_MASK(__v1, __v2) \
+    _mm_and_si128(__v1, __v2)
+
+#define VEC_AND_NOT_INT(__v1, __v2) \
+    _mm_andnot_si128(__v1, __v2)
+
+#define VEC_BLEND_INT(__v1, __v2, __mask) \
+    _mm_blendv_epi8(__v1, __v2, __mask)
+
+#define VEC_BLEND_LONG_DOUBLE_MASK(__v1, __v2, __mask) \
+    _mm256_blendv_epi8(__v1, __v2, VEC_CAST_PD_LONG(__mask))
+
+#define VEC_BLEND_PD(__v1, __v2, __mask) \
+    _mm256_blendv_pd(__v1, __v2, VEC_CAST_INT_PD(VEC_CVT_INT_LONG(__mask)))
+
+#define VEC_BLEND_PD_DOUBLE_MASK(__v1, __v2, __mask) \
+    _mm256_blendv_pd(__v1, __v2, __mask)
+
+#define VEC_CAST_INT_PD(__v1) \
+    _mm256_castsi256_pd(__v1)
+
+#define VEC_CAST_PD_LONG(__v1) \
+    _mm256_castpd_si256(__v1)
+
+#define VEC_CMP_EQ_INT(__v1, __v2) \
+    _mm_cmpeq_epi32(__v1, __v2)
+
+#define VEC_CMP_EQ_PD(__v1, __v2) \
+    _mm256_cmp_pd(__v1, __v2, _CMP_EQ_OQ)
+
+#define VEC_CMP_GT_PD(__v1, __v2) \
+    _mm256_cmp_pd(__v1, __v2, _CMP_GT_OQ)
+
+#define VEC_CMP_LE_INT(__v1, __v2) \
+    VEC_OR_MASK(VEC_CMP_LT_INT(__v1, __v2), VEC_CMP_EQ_INT(__v1, __v2))
+
+#define VEC_CMP_NE_INT(__v1, __v2) \
+    VEC_AND_NOT_INT(VEC_CMP_EQ_INT(__v1, __v2), VEC_SET1_INT(0xFFFFFFFF))
+
+#define VEC_CMP_LT_INT(__v1, __v2) \
+    _mm_cmplt_epi32(__v1, __v2)
+
+#define VEC_CMP_LT_PD(__v1, __v2) \
+    _mm256_cmp_pd(__v1, __v2, _CMP_LT_OS)
+
+#define VEC_CMP_NE_MASK(__mask, __value) \
+    (_mm_movemask_epi8(__mask) != (__value))
+
+#define VEC_CMP_NE_DOUBLE_MASK(__mask, __value) \
+    (_mm256_movemask_pd(__mask) != (__value))
+
+#define VEC_CVT_INT_LONG(__v1) \
+    _mm256_cvtepi32_epi64(__v1)
+
+#define VEC_CVT_INT_PD(__v1) \
+    _mm256_cvtepi32_pd(__v1)
+
+#define VEC_CVT_PD_INT(__v1) \
+    _mm256_cvtpd_epi32(__v1)
+
+#define VEC_CVT_ROUND_PD_LONG(__v1) \
+    VEC_CVT_INT_LONG(VEC_CVT_PD_INT(_mm256_round_pd(__v1, (_MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC))))
+
+#define VEC_DIV_PD(__v1, __v2) \
+    _mm256_div_pd(__v1, __v2)
+
+#define VEC_GATHER_PD(__index, __array, __scale) \
+    _mm256_i32gather_pd(__array, __index, __scale)
+
+#define VEC_GATHER_PD_LONG_INDEX(__index, __array, __scale) \
+    _mm256_i64gather_pd(__array, __index, __scale)
+
+#define VEC_LOAD_INT(__v1) \
+    _mm_load_si128((VEC_INT_TYPE *)(__v1))
+
+#define VEC_LOAD_PD(__v1) \
+    _mm256_load_pd(__v1)
+
+#define VEC_LOADU_INT(__v1) \
+    _mm_loadu_si128((VEC_INT_TYPE *)(__v1))
+
+#define VEC_MAX_INT(__v1, __v2) \
+    _mm_max_epi32(__v1, __v2)
+
+#define VEC_MAX_PD(__v1, __v2) \
+    _mm256_max_pd(__v1, __v2)
+
+#define VEC_MIN_INT(__v1, __v2) \
+    _mm_min_epi32(__v1, __v2)
+
+#define VEC_MIN_PD(__v1, __v2) \
+    _mm256_min_pd(__v1, __v2)
+
+#define VEC_MUL_PD(__v1, __v2) \
+    _mm256_mul_pd(__v1, __v2)
+
+#define VEC_MULLO_INT(__v1, __v2) \
+    _mm_mullo_epi32(__v1, __v2)
+
+#define VEC_OR_MASK(__v1, __v2) \
+    _mm_or_si128(__v1, __v2)
+
+#define VEC_SET0_INT() \
+    _mm_setzero_si128()
+
+#define VEC_SET0_PD() \
+    _mm256_setzero_pd()
+
+#define VEC_SET1_INT(__v1) \
+    _mm_set1_epi32(__v1)
+
+#define VEC_SET1_PD(__v1) \
+    _mm256_set1_pd(__v1)
+
+#define VEC_SRLI_INT(__v1, __v2) \
+    _mm_srli_epi32(__v1, __v2)
+
+#define VEC_STORE_PD(__v1, __v2) \
+    _mm256_store_pd(__v1, __v2)
+
+#define VEC_SUB_INT(__v1, __v2) \
+    _mm_sub_epi32(__v1, __v2)
+
+#define VEC_SUB_PD(__v1, __v2) \
+    _mm256_sub_pd(__v1, __v2)
+
+#endif

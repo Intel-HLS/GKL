@@ -42,7 +42,7 @@ public final class NativeLibraryLoader {
     private static final Set<String> loadedLibraries = new HashSet<>();
     private static final int MAX_PATH;
 
-    private static enum NATIVE_LIB {gkl_compression, gkl_pairhmm, gkl_pairhmm_omp, gkl_smithwaterman, gkl_utils}
+    private static enum NATIVE_LIB {gkl_compression, gkl_pairhmm, gkl_pairhmm_omp, gkl_smithwaterman, gkl_utils, gkl_pdhmm}
 
     static {
         logger = LogFactory.getLog(NativeLibraryLoader.class);
@@ -60,7 +60,7 @@ public final class NativeLibraryLoader {
     // Check libraryName is as expected
     private static boolean checkLibraryName(String libName){
        // Check boundaries for input
-       if(libName == null || libName.length() == 0 || libName.length() > MAX_PATH) {
+        if(libName == null || libName.length() == 0 || libName.length() > MAX_PATH) {
             logger.warn(" Unexpected library name");
             return false;
         }
@@ -75,7 +75,7 @@ public final class NativeLibraryLoader {
         return false;
     }
 
-    /**
+     /**
      * Tries to load the native library from the classpath, usually from a jar file. <p>
      *
      * If the USE_LIBRARY_PATH environment variable is defined, the native library will be loaded from the
