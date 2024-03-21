@@ -13,8 +13,8 @@ ExternalProject_Add(
    URL ${CMAKE_CURRENT_SOURCE_DIR}/otc_zlib
    PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/otc_zlib.patch
    CONFIGURE_COMMAND <SOURCE_DIR>/configure --static --prefix=<INSTALL_DIR>
-   BUILD_COMMAND make
-   INSTALL_COMMAND make install
+   BUILD_COMMAND $(MAKE)
+   INSTALL_COMMAND $(MAKE) install
 )
 
 add_library(zlibstatic STATIC IMPORTED GLOBAL)
@@ -36,8 +36,8 @@ ExternalProject_Add(
    UPDATE_COMMAND <SOURCE_DIR>/autogen.sh
    PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/isa-l.patch
    CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ${CONFIG_OPT}
-   BUILD_COMMAND make
-   INSTALL_COMMAND make install
+   BUILD_COMMAND $(MAKE)
+   INSTALL_COMMAND $(MAKE) install
 )
 
 add_library(isal STATIC IMPORTED GLOBAL)

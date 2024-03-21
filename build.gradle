@@ -50,7 +50,7 @@ task cmakeBuild(type: Exec) {
     // hide stdout, but print stderr
     standardOutput = new ByteArrayOutputStream()
     workingDir nativeBuildDir
-    commandLine 'make', 'install'
+    commandLine 'make', 'install', '-j', Runtime.runtime.availableProcessors()
     // always run this task
     outputs.upToDateWhen {false}
 }
