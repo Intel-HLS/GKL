@@ -767,10 +767,16 @@ int32_t initializeStep1(const int8_t *read_ins_qual, const int8_t *read_del_qual
     {
         INT_TYPE index;
         const int8_t *read_ins_qual_i = read_ins_qual + i * maxReadLength;
-        for (INT_TYPE j = 0; j < read_bases_length[i]; j++)
+        INT_TYPE read_bases_length_i = read_bases_length[i];
+        for (INT_TYPE j = 0; j < read_bases_length_i; j++)
         {
             index = j * SIMD_WIDTH_DOUBLE + i;
             read_ins_qual_vec[index] = read_ins_qual_i[j];
+        }
+        for (INT_TYPE j = read_bases_length_i; j < maxReadLength; j++) // todo : can we do this loop only till currMaxReadLength
+        {
+            index = j * SIMD_WIDTH_DOUBLE + i;
+            read_ins_qual_vec[index] = 0;
         }
     }
 
@@ -778,10 +784,16 @@ int32_t initializeStep1(const int8_t *read_ins_qual, const int8_t *read_del_qual
     {
         INT_TYPE index;
         const int8_t *read_del_qual_i = read_del_qual + i * maxReadLength;
-        for (INT_TYPE j = 0; j < read_bases_length[i]; j++)
+        INT_TYPE read_bases_length_i = read_bases_length[i];
+        for (INT_TYPE j = 0; j < read_bases_length_i; j++)
         {
             index = j * SIMD_WIDTH_DOUBLE + i;
             read_del_qual_vec[index] = read_del_qual_i[j];
+        }
+        for (INT_TYPE j = read_bases_length_i; j < maxReadLength; j++)
+        {
+            index = j * SIMD_WIDTH_DOUBLE + i;
+            read_del_qual_vec[index] = 0;
         }
     }
 
@@ -789,10 +801,16 @@ int32_t initializeStep1(const int8_t *read_ins_qual, const int8_t *read_del_qual
     {
         INT_TYPE index;
         const int8_t *gcp_i = gcp + i * maxReadLength;
-        for (INT_TYPE j = 0; j < read_bases_length[i]; j++)
+        INT_TYPE read_bases_length_i = read_bases_length[i];
+        for (INT_TYPE j = 0; j < read_bases_length_i; j++)
         {
             index = j * SIMD_WIDTH_DOUBLE + i;
             gcp_vec[index] = gcp_i[j];
+        }
+        for (INT_TYPE j = read_bases_length_i; j < maxReadLength; j++)
+        {
+            index = j * SIMD_WIDTH_DOUBLE + i;
+            gcp_vec[index] = 0;
         }
     }
 
@@ -823,10 +841,16 @@ int32_t initializeStep2(const int8_t *hap_bases, const int8_t *hap_pdbases, cons
     {
         INT_TYPE index;
         const int8_t *hap_bases_i = hap_bases + i * maxHaplotypeLength;
-        for (INT_TYPE j = 0; j < hap_bases_length[i]; j++)
+        INT_TYPE hap_bases_length_i = hap_bases_length[i];
+        for (INT_TYPE j = 0; j < hap_bases_length_i; j++)
         {
             index = j * SIMD_WIDTH_DOUBLE + i;
             hap_bases_vec[index] = hap_bases_i[j];
+        }
+        for (INT_TYPE j = hap_bases_length_i; j < maxHaplotypeLength; j++)
+        {
+            index = j * SIMD_WIDTH_DOUBLE + i;
+            hap_bases_vec[index] = 0;
         }
     }
 
@@ -834,10 +858,16 @@ int32_t initializeStep2(const int8_t *hap_bases, const int8_t *hap_pdbases, cons
     {
         INT_TYPE index;
         const int8_t *hap_pdbases_i = hap_pdbases + i * maxHaplotypeLength;
-        for (INT_TYPE j = 0; j < hap_bases_length[i]; j++)
+        INT_TYPE hap_bases_length_i = hap_bases_length[i];
+        for (INT_TYPE j = 0; j < hap_bases_length_i; j++)
         {
             index = j * SIMD_WIDTH_DOUBLE + i;
             hap_pdbases_vec[index] = hap_pdbases_i[j];
+        }
+        for (INT_TYPE j = hap_bases_length_i; j < maxHaplotypeLength; j++)
+        {
+            index = j * SIMD_WIDTH_DOUBLE + i;
+            hap_pdbases_vec[index] = 0;
         }
     }
 
@@ -845,10 +875,16 @@ int32_t initializeStep2(const int8_t *hap_bases, const int8_t *hap_pdbases, cons
     {
         INT_TYPE index;
         const int8_t *read_bases_i = read_bases + i * maxReadLength;
-        for (INT_TYPE j = 0; j < read_bases_length[i]; j++)
+        INT_TYPE read_bases_length_i = read_bases_length[i];
+        for (INT_TYPE j = 0; j < read_bases_length_i; j++)
         {
             index = j * SIMD_WIDTH_DOUBLE + i;
             read_bases_vec[index] = read_bases_i[j];
+        }
+        for (INT_TYPE j = read_bases_length_i; j < maxReadLength; j++)
+        {
+            index = j * SIMD_WIDTH_DOUBLE + i;
+            read_bases_vec[index] = 0;
         }
     }
 
@@ -856,10 +892,16 @@ int32_t initializeStep2(const int8_t *hap_bases, const int8_t *hap_pdbases, cons
     {
         INT_TYPE index;
         const int8_t *read_qual_i = read_qual + i * maxReadLength;
-        for (INT_TYPE j = 0; j < read_bases_length[i]; j++)
+        INT_TYPE read_bases_length_i = read_bases_length[i];
+        for (INT_TYPE j = 0; j < read_bases_length_i; j++)
         {
             index = j * SIMD_WIDTH_DOUBLE + i;
             read_qual_vec[index] = read_qual_i[j];
+        }
+        for (INT_TYPE j = read_bases_length_i; j < maxReadLength; j++)
+        {
+            index = j * SIMD_WIDTH_DOUBLE + i;
+            read_qual_vec[index] = 0;
         }
     }
 
