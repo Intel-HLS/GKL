@@ -162,6 +162,9 @@
 #define VEC_STORE_PD(__v1, __v2) \
     _mm256_store_pd(__v1, __v2)
 
+#define VEC_STORE_INT(__v1, __v2) \
+    _mm_store_si128((VEC_INT_TYPE *)__v1, __v2)
+
 #define VEC_SUB_INT(__v1, __v2) \
     _mm_sub_epi32(__v1, __v2)
 
@@ -169,3 +172,12 @@
     _mm256_sub_pd(__v1, __v2)
 
 #endif
+
+inline void print_mask(VEC_MASK_TYPE mask)
+{
+    INT_TYPE *temp = new INT_TYPE[SIMD_WIDTH_DOUBLE];
+    VEC_STORE_INT(temp, mask);
+    for (int i = 0; i < SIMD_WIDTH_DOUBLE; i++)
+        printf("%d ", temp[i]);
+    printf("\n");
+}

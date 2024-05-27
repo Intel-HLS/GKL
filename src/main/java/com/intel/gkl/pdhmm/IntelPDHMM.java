@@ -56,26 +56,26 @@ public class IntelPDHMM implements NativeLibrary {
             byte[] read_ins_qual, byte[] read_del_qual, byte[] gcp, long[] hap_lengths, long[] read_lengths,
             int testcase, int maxHapLength, int maxReadLength)
             throws RuntimeException, OutOfMemoryError {
-        if (hap_bases == null)
-            throw new NullPointerException("hap_bases array is null.");
-        if (hap_pdbases == null)
-            throw new NullPointerException("hap_pdbases array is null.");
-        if (read_bases == null)
-            throw new NullPointerException("read_bases array is null.");
-        if (read_qual == null)
-            throw new NullPointerException("read_qual array is null.");
-        if (read_ins_qual == null)
-            throw new NullPointerException("read_ins_qual array is null.");
-        if (read_del_qual == null)
-            throw new NullPointerException("read_del_qual array is null.");
-        if (gcp == null)
-            throw new NullPointerException("gcp array is null.");
-        if (hap_lengths == null)
-            throw new NullPointerException("hap_lengths array is null.");
-        if (read_lengths == null)
-            throw new NullPointerException("read_lengths array is null.");
+        if (hap_bases == null || hap_bases.length != maxHapLength * testcase)
+            throw new IllegalArgumentException("hap_bases array is null or of wrong size.");
+        if (hap_pdbases == null || hap_pdbases.length != maxHapLength * testcase)
+            throw new IllegalArgumentException("hap_pdbases array is null or of wrong size.");
+        if (read_bases == null || read_bases.length != maxReadLength * testcase)
+            throw new IllegalArgumentException("read_bases array is null or of wrong size.");
+        if (read_qual == null || read_qual.length != maxReadLength * testcase)
+            throw new IllegalArgumentException("read_qual array is null or of wrong size.");
+        if (read_ins_qual == null || read_ins_qual.length != maxReadLength * testcase)
+            throw new IllegalArgumentException("read_ins_qual array is null or of wrong size.");
+        if (read_del_qual == null || read_del_qual.length != maxReadLength * testcase)
+            throw new IllegalArgumentException("read_del_qual array is null or of wrong size.");
+        if (gcp == null || gcp.length != maxReadLength * testcase)
+            throw new IllegalArgumentException("gcp array is null or of wrong size.");
+        if (hap_lengths == null || hap_lengths.length != testcase)
+            throw new IllegalArgumentException("hap_lengths array is null or of wrong size.");
+        if (read_lengths == null || read_lengths.length != testcase)
+            throw new IllegalArgumentException("read_lengths array is null or of wrong size.");
         if (testcase <= 0)
-            throw new IllegalArgumentException("Invalid number of testcase.");
+            throw new IllegalArgumentException("Invalid number of testcases.");
         if (maxHapLength <= 0 || maxReadLength <= 0)
             throw new IllegalArgumentException("Cannot perform pdhmm on empty sequences");
 
