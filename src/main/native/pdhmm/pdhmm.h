@@ -543,7 +543,6 @@ inline int32_t computationStep(const INT_TYPE *paddedReadLengths, const INT_TYPE
     }
 
     INT_TYPE i = 1;
-    // INT_TYPE endLoop = i + (((currMaxPaddedReadLength - i) / ROW_UNROLL) * ROW_UNROLL); // <= currMax - 4 // <= currMax - 4
     INT_TYPE endLoop = currMaxPaddedReadLength - 4;
     for (; i <= endLoop; i += ROW_UNROLL)
     {
@@ -987,15 +986,15 @@ int32_t initializeStep1(const int8_t *read_ins_qual, const int8_t *read_del_qual
     INT_TYPE qual_size = maxReadLength * SIMD_WIDTH_DOUBLE;
     INT_TYPE transition_vec_size = TRANS_PROB_ARRAY_LENGTH * (maxReadLength + 1) * SIMD_WIDTH_DOUBLE;
 
-    initializeProbabilitiesVec(transitionVec, read_ins_qual_vec, read_del_qual_vec, gcp_vec, currMaxReadLength, matchToMatchProb, qualToErrorProbCache, qual_size, transition_vec_size);
+    int32_t status = initializeProbabilitiesVec(transitionVec, read_ins_qual_vec, read_del_qual_vec, gcp_vec, currMaxReadLength, matchToMatchProb, qualToErrorProbCache, qual_size, transition_vec_size);
 
     _mm_free(read_ins_qual_vec);
     _mm_free(read_del_qual_vec);
     _mm_free(gcp_vec);
-    return PDHMM_SUCCESS;
+    return status;
 }
 
-INT_TYPE initializeStep2(const int8_t *hap_bases, const int8_t *hap_pdbases, const int8_t *read_bases, const int8_t *read_qual, const INT_TYPE *hap_bases_length, const INT_TYPE *read_bases_length, INT_TYPE *&hap_pdbases_vec, INT_TYPE currMaxPaddedHaplotypeLength, INT_TYPE currMaxPaddedReadLength, bool &constantsAreInitialized, double *priorVec, const double *qualToErrorProbCache, int32_t maxReadLength, int32_t maxHaplotypeLength)
+int32_t initializeStep2(const int8_t *hap_bases, const int8_t *hap_pdbases, const int8_t *read_bases, const int8_t *read_qual, const INT_TYPE *hap_bases_length, const INT_TYPE *read_bases_length, INT_TYPE *&hap_pdbases_vec, INT_TYPE currMaxPaddedHaplotypeLength, INT_TYPE currMaxPaddedReadLength, bool &constantsAreInitialized, double *priorVec, const double *qualToErrorProbCache, int32_t maxReadLength, int32_t maxHaplotypeLength)
 {
     INT_TYPE *hap_bases_vec = (INT_TYPE *)_mm_malloc(maxHaplotypeLength * SIMD_WIDTH_DOUBLE * sizeof(INT_TYPE), ALIGN_SIZE);
     hap_pdbases_vec = (INT_TYPE *)_mm_malloc(maxHaplotypeLength * SIMD_WIDTH_DOUBLE * sizeof(INT_TYPE), ALIGN_SIZE);
