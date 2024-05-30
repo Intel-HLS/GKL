@@ -172,12 +172,3 @@
     _mm256_sub_pd(__v1, __v2)
 
 #endif
-
-inline void print_mask(VEC_MASK_TYPE mask)
-{
-    INT_TYPE *temp = new INT_TYPE[SIMD_WIDTH_DOUBLE];
-    VEC_STORE_INT(temp, mask);
-    for (int i = 0; i < SIMD_WIDTH_DOUBLE; i++)
-        printf("%d ", temp[i]);
-    printf("\n");
-}

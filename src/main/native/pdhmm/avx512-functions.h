@@ -157,8 +157,3 @@
     _mm512_sub_pd(__v1, __v2)
 
 #endif
-
-inline void print_mask(VEC_MASK_TYPE mask)
-{
-    printf("%d\n", mask);
-}
