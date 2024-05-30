@@ -129,6 +129,7 @@ public class IntelPDHMMUnitTest {
                 e.printStackTrace();
             }
         }
+        intelPDHMM.done();
     }
 
     @Test(enabled = true)
@@ -266,7 +267,7 @@ public class IntelPDHMMUnitTest {
             Assert.fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
         }
-
+        intelPDHMM.done();
     }
 
     /**
@@ -278,9 +279,7 @@ public class IntelPDHMMUnitTest {
         final boolean isloaded = new IntelPDHMM().load(null);
 
         Assert.assertTrue(isloaded);
-        final IntelPDHMM intelPDHMM = new IntelPDHMM(); // todo round 2: make the class include new constructor
-                                                        // accepting
-                                                        // #testcase and sizes. Add addRead and addHap funcitons.
+        final IntelPDHMM intelPDHMM = new IntelPDHMM();
         for (int repeat = 0; repeat < 10; repeat++) {
             for (String pdhmmData : pdhmmDataFiles) {
                 try {
@@ -377,6 +376,7 @@ public class IntelPDHMMUnitTest {
                 }
             }
         }
+        intelPDHMM.done();
 
     }
 

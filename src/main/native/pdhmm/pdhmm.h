@@ -173,8 +173,8 @@ inline VEC_DOUBLE_TYPE matchToMatchProbFun(VEC_INT_TYPE insQual, VEC_INT_TYPE de
         VEC_INT_TYPE vindex = VEC_ADD_INT(maxQual, VEC_SET1_INT(1));
         vindex = VEC_SRLI_INT(VEC_MULLO_INT(maxQual, vindex), 1);
         vindex = VEC_ADD_INT(vindex, minQual);
-        VEC_DOUBLE_TYPE falseVal = VEC_GATHER_PD(vindex, matchToMatchProb, 8);
-        return falseVal;
+        VEC_DOUBLE_TYPE result = VEC_GATHER_PD(vindex, matchToMatchProb, 8);
+        return result;
     }
 }
 
@@ -1094,7 +1094,6 @@ int32_t initializeStep2(const int8_t *hap_bases, const int8_t *hap_pdbases, cons
 
 int32_t computeReadLikelihoodGivenHaplotypeLog10Vec(const int8_t *hap_bases, const int8_t *hap_pdbases, const int8_t *read_bases, const int8_t *read_qual, const int8_t *read_ins_qual, const int8_t *read_del_qual, const int8_t *gcp, const INT_TYPE *hap_bases_lengths, const INT_TYPE *read_bases_lengths, double *matchMatrixVec, double *insertionMatrixVec, double *deletionMatrixVec, double *branchMatchMatrixVec, double *branchInsertionMatrixVec, double *branchDeletionMatrixVec, double *transitionVec, double *priorVec, bool &constantsAreInitialized, INT_TYPE *prev_hap_bases_lengths, double *result, const double *matchToMatchProb, const double *qualToErrorProbCache, int32_t maxReadLength, int32_t maxHaplotypeLength)
 {
-    // todo : Round 2: Can make small arrays using static allocation
     bool *recacheReadValues;
     recacheReadValues = (bool *)_mm_malloc(SIMD_WIDTH_DOUBLE * sizeof(bool), ALIGN_SIZE);
     INT_TYPE *hapStartIndex;
@@ -1177,7 +1176,7 @@ int32_t computeReadLikelihoodGivenHaplotypeLog10Vec(const int8_t *hap_bases, con
 int32_t CONCAT(computePDHMM_, SIMD_ENGINE)(const int8_t *hap_bases, const int8_t *hap_pdbases, const int8_t *read_bases, const int8_t *read_qual, const int8_t *read_ins_qual, const int8_t *read_del_qual, const int8_t *gcp, double *result, int64_t t, const int64_t *hap_lengths, const int64_t *read_lengths, int32_t maxReadLength, int32_t maxHaplotypeLength)
 {
     int32_t totalThreads = 1;
-#ifdef _OPENMP // todo: Add openmp block in initNative
+#ifdef _OPENMP
 #pragma omp parallel
     {
         totalThreads = omp_get_num_threads();
@@ -1207,7 +1206,6 @@ int32_t CONCAT(computePDHMM_, SIMD_ENGINE)(const int8_t *hap_bases, const int8_t
     const INT_TYPE *hap_bases_lengths = hap_lengths;
     const INT_TYPE *read_bases_lengths = read_lengths;
 #endif
-    // todo: Move into initialize
     int32_t initStatus = init(matchToMatchLog10, matchToMatchProb, qualToErrorProbCache, qualToProbLog10Cache);
     initVec();
 
@@ -1299,7 +1297,6 @@ int32_t CONCAT(computePDHMM_, SIMD_ENGINE)(const int8_t *hap_bases, const int8_t
     }
 
     /* remaining sequences */
-    // todo Round 2: Handle the last batch also using vector function with input padding
 
     int32_t hapIndexOffset = (int32_t)roundedBatchSize * maxHaplotypeLength;
     int32_t readIndexOffset = (int32_t)roundedBatchSize * maxReadLength;

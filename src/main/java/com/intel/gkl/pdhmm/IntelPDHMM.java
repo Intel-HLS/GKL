@@ -95,10 +95,16 @@ public class IntelPDHMM implements NativeLibrary {
         }
     }
 
+    public void done() {
+        doneNative();
+    }
+
     private native static void initNative();
 
     private native double[] computePDHMMNative(byte[] hap_bases, byte[] hap_pdbases, byte[] read_bases,
             byte[] read_qual,
             byte[] read_ins_qual, byte[] read_del_qual, byte[] gcp, long[] hap_lengths, long[] read_lengths,
             int testcase, int maxHapLength, int maxReadLength);
+
+    private native static void doneNative();
 }
