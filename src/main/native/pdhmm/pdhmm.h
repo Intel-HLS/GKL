@@ -143,7 +143,7 @@ inline VEC_DOUBLE_TYPE matchToMatchProbFun(VEC_INT_TYPE insQual, VEC_INT_TYPE de
     VEC_MASK_TYPE ltMaxQual = VEC_CMP_LT_INT(VEC_SET1_INT(MAX_QUAL), maxQual);
     if (VEC_CMP_NE_MASK(ltMaxQual, 0)) // there are some qual values which cannot be fetched from the matchToMatchProb cache.
     {
-        double *resultScalar = (double *)_mm_malloc(SIMD_WIDTH_DOUBLE * sizeof(double), 64);
+
         VEC_DOUBLE_TYPE result;
         // step 1: Gather values for maxQual which are less than or equal to MAX_QUAL
         VEC_INT_TYPE clippedMaxQual = VEC_MIN_INT(maxQual, VEC_SET1_INT(MAX_QUAL));
@@ -151,13 +151,22 @@ inline VEC_DOUBLE_TYPE matchToMatchProbFun(VEC_INT_TYPE insQual, VEC_INT_TYPE de
         vindex = VEC_SRLI_INT(VEC_MULLO_INT(clippedMaxQual, vindex), 1);
         vindex = VEC_ADD_INT(vindex, minQual);
         result = VEC_GATHER_PD(vindex, matchToMatchProb, 8);
-        VEC_STORE_PD(resultScalar, result);
 
         // Step 2: For remaining maxQuals, calculate as per the scalar code.
-        INT_TYPE *maxQualScalar = (INT_TYPE *)_mm_malloc(SIMD_WIDTH_DOUBLE * sizeof(INT_TYPE), 64);
-        VEC_STORE_INT(maxQualScalar, maxQual);
+        double *resultScalar = (double *)_mm_malloc(SIMD_WIDTH_DOUBLE * sizeof(double), 64);
         INT_TYPE *minQualScalar = (INT_TYPE *)_mm_malloc(SIMD_WIDTH_DOUBLE * sizeof(INT_TYPE), 64);
+        INT_TYPE *maxQualScalar = (INT_TYPE *)_mm_malloc(SIMD_WIDTH_DOUBLE * sizeof(INT_TYPE), 64);
+        if (resultScalar == NULL || minQualScalar == NULL || maxQualScalar == NULL)
+        {
+            _mm_free(resultScalar);
+            _mm_free(minQualScalar);
+            _mm_free(maxQualScalar);
+            status = PDHMM_MEMORY_ALLOCATION_FAILED;
+            return VEC_SET1_PD(-1.0);
+        }
+        VEC_STORE_PD(resultScalar, result);
         VEC_STORE_INT(minQualScalar, minQual);
+        VEC_STORE_INT(maxQualScalar, maxQual);
         for (int i = 0; i < SIMD_WIDTH_DOUBLE; i++)
         {
             if (maxQualScalar[i] <= MAX_QUAL)
@@ -166,6 +175,9 @@ inline VEC_DOUBLE_TYPE matchToMatchProbFun(VEC_INT_TYPE insQual, VEC_INT_TYPE de
         }
 
         result = VEC_LOAD_PD(resultScalar);
+        _mm_free(resultScalar);
+        _mm_free(minQualScalar);
+        _mm_free(maxQualScalar);
         return result;
     }
     else
@@ -1127,7 +1139,6 @@ int32_t computeReadLikelihoodGivenHaplotypeLog10Vec(const int8_t *hap_bases, con
 
     if (status != PDHMM_SUCCESS)
     {
-        _mm_free(hap_pdbases_vec);
         _mm_free(paddedReadLengths);
         _mm_free(paddedHaplotypeLengths);
         _mm_free(recacheReadValues);
