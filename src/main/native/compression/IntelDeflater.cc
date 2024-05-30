@@ -156,69 +156,6 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_resetNative
   }
 }
 
-
-/**
-* Generate Dynamic Huffman tables
-* This function will be called only if we are implementing the fully dynamic huffman implementation which is not set as default in current implementation
-* current implementation we use semi-dynamic huffman with tables generated using only first 64k block of stream
-*/
-
-JNIEXPORT void JNICALL Java_com_intel_gkl_compression_IntelDeflater_generateHuffman
-(JNIEnv * env, jobject obj) {
-      jint level = env->GetIntField(obj, FID_level);
-
-      if(level == 1) {
-          isal_zstream* lz_stream = (isal_zstream*)env->GetLongField(obj, FID_lz_stream);
-          if (lz_stream == NULL) {
-            if(env->ExceptionCheck())
-                env->ExceptionClear();
-            env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "lz_stream is NULL.");
-            return;
-          }
-
-          jbyteArray inputBuffer = (jbyteArray)env->GetObjectField(obj, FID_inputBuffer);
-          jbyte* input = (jbyte*)env->GetPrimitiveArrayCritical(inputBuffer, 0);
-
-          if (input == NULL) {
-            if (env->ExceptionCheck())
-              env->ExceptionClear();
-            env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "inputBuffer is null.");
-            env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
-            return;
-          }
-
-          struct isal_huff_histogram *histogram = (struct isal_huff_histogram *) malloc(sizeof(*histogram));
-          struct isal_hufftables *hufftables_custom;
-
-          if (histogram == NULL) {
-            DBG ("Malloc failed out of memory");
-            if(env->ExceptionCheck())
-                env->ExceptionClear();
-            env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"),"Memory allocation error");
-            env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
-            return;
-          }
-
-          memset(histogram, 0, sizeof(isal_huff_histogram));
-          isal_update_histogram((unsigned char*)input, 64*1024, histogram);
-
-          if (isal_create_hufftables(hufftables_custom, histogram) != 0) {
-            env->ExceptionClear();
-            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "Invalid huffman code was created.");
-            env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
-            free(histogram);
-            return;
-          }
-
-          lz_stream->hufftables = hufftables_custom;
-
-          env->ReleasePrimitiveArrayCritical(inputBuffer, input, 0);
-
-          free(histogram);
-      }
-
-}
-
 /**
  *  Deflate the data.
  *  isa-l check isalExternal/igzip/igzip_rand_test.c

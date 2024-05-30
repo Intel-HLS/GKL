@@ -248,14 +248,6 @@ class BitMaskVec_double512 {
         return combined_ ;
     }
 
-    inline const _256_TYPE getLowVec() {
-        return low_.vecf;
-    }
-
-     inline const _256_TYPE getHighVec() {
-        return high_.vecf;
-    }
-
     inline void shift_left_1bit() {
         VEC_SHIFT_LEFT_1BIT(low_.vec) ;
         VEC_SHIFT_LEFT_1BIT(high_.vec) ;
