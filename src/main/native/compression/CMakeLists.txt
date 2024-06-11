@@ -34,8 +34,7 @@ ExternalProject_Add(
    isalExternal
    URL ${CMAKE_CURRENT_SOURCE_DIR}/isa-l-master
    UPDATE_COMMAND <SOURCE_DIR>/autogen.sh
-   PATCH_COMMAND patch < ${CMAKE_CURRENT_SOURCE_DIR}/isa-l.patch
-   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ${CONFIG_OPT}
+   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --with-pic=yes ${CONFIG_OPT}
    BUILD_COMMAND $(MAKE)
    INSTALL_COMMAND $(MAKE) install
 )
