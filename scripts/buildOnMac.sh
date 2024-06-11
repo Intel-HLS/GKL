@@ -3,6 +3,7 @@
 mac=$1
 linux=$(whoami)@$(hostname | xargs echo)
 dir=$(pwd)
+repo_dir_name=$(basename "$dir")
 native='build/classes/java/main/com/intel/gkl/native'
 
 # run bash script on mac
@@ -26,7 +27,7 @@ cd \$work
 
 # clone repo from linux
 git clone ssh://$linux/$dir
-cd GKL
+cd $repo_dir_name
 
 # build and test
 ./gradlew test
