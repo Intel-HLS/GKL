@@ -28,6 +28,8 @@
 #include <omp.h>
 #endif
 
+inline INT_TYPE roundDownToNearestMultipleOf(INT_TYPE val, INT_TYPE mul) { return (val / mul) * mul; }
+
 inline int32_t allocateVec(double *&matchMatrixVec, double *&insertionMatrixVec, double *&deletionMatrixVec, double *&branchMatchMatrixVec, double *&branchInsertionMatrixVec, double *&branchDeletionMatrixVec, double *&transitionVec, double *&priorVec, bool *&constantsAreInitialized, bool *&initialized, INT_TYPE *&prev_hap_bases_lengths, const int32_t maxReadLength, const int32_t maxHaplotypeLength, const int32_t totalThreads)
 {
     const int32_t paddedMaxReadLength = maxReadLength + 1;
@@ -100,7 +102,7 @@ inline void freeVec(double *matchMatrixVec, double *insertionMatrixVec, double *
 inline void initializeVec(double *matchMatrixVec, double *insertionMatrixVec, double *deletionMatrixVec, double *branchMatchMatrixVec, double *branchInsertionMatrixVec, double *branchDeletionMatrixVec, bool &constantsAreInitialized, bool &initialized, const int32_t maxHaplotypeLength)
 {
     const int32_t paddedMaxHaplotypeLength = maxHaplotypeLength + 1;
-    INT_TYPE sizeOfTables = paddedMaxHaplotypeLength * SIMD_WIDTH_DOUBLE * sizeof(double);
+    size_t sizeOfTables = paddedMaxHaplotypeLength * SIMD_WIDTH_DOUBLE * sizeof(double);
 
     memset(matchMatrixVec, 0, sizeOfTables);
     memset(insertionMatrixVec, 0, sizeOfTables);
@@ -317,8 +319,8 @@ inline int32_t initializePriorsVec(const INT_TYPE *haplotypeBases, const INT_TYP
     }
 
     // manual unroll rows
-    INT_TYPE n = (currMaxReadLength / 4) * 4;
-    for (int32_t i = 0; i < n; i += 4)
+    INT_TYPE n = roundDownToNearestMultipleOf(currMaxReadLength, ROW_UNROLL);
+    for (int32_t i = 0; i < n; i += ROW_UNROLL)
     {
         INT_TYPE index = i * SIMD_WIDTH_DOUBLE;
         VEC_INT_TYPE x1 = VEC_LOAD_INT(readBases + index);
@@ -555,7 +557,7 @@ inline int32_t computationStep(const INT_TYPE *paddedReadLengths, const INT_TYPE
     }
 
     INT_TYPE i = 1;
-    INT_TYPE endLoop = currMaxPaddedReadLength - 4;
+    INT_TYPE endLoop = currMaxPaddedReadLength - ROW_UNROLL;
     for (; i <= endLoop; i += ROW_UNROLL)
     {
         //  assumption made: current state can be set to normal at start of each row.
