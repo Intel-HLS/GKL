@@ -133,11 +133,13 @@ jar {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveBaseName = "gkl"
     archiveClassifier = 'javadoc'
     from 'build/docs/javadoc'
 }
 
 task sourcesJar(type: Jar) {
+    archiveBaseName = "gkl"
     from sourceSets.main.allSource
     archiveClassifier = 'sources'
 }
