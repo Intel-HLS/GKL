@@ -54,8 +54,7 @@ public class IntelPDHMM implements NativeLibrary {
         return true;
     }
 
-    private static void checkArraySize(Object array, int expectedSize, String arrayName)
-            throws NullPointerException, IllegalArgumentException {
+    private static void checkArraySize(Object array, int expectedSize, String arrayName) {
         Objects.requireNonNull(array, arrayName + " must not be null.");
         if (!array.getClass().isArray()) {
             throw new IllegalArgumentException(arrayName + " is not an array.");
@@ -70,8 +69,7 @@ public class IntelPDHMM implements NativeLibrary {
 
     public double[] computePDHMM(byte[] hap_bases, byte[] hap_pdbases, byte[] read_bases, byte[] read_qual,
             byte[] read_ins_qual, byte[] read_del_qual, byte[] gcp, long[] hap_lengths, long[] read_lengths,
-            int batchSize, int maxHapLength, int maxReadLength)
-            throws RuntimeException, OutOfMemoryError {
+            int batchSize, int maxHapLength, int maxReadLength) {
         int hapArrayLength = maxHapLength * batchSize;
         int readArrayLength = maxReadLength * batchSize;
 

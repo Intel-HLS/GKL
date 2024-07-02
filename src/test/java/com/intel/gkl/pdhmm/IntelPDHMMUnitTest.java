@@ -23,9 +23,9 @@ public class IntelPDHMMUnitTest {
             IntelGKLUtils.pathToTestResource("pdhmm_syn_1412_129_223.txt"),
             IntelGKLUtils.pathToTestResource("pdhmm_syn_990_1_2.txt") };
 
-    static final double DOUBLE_ASSERTION_DELTA = 0.0001;
-    public static final int READ_MAX_LENGTH = 200;
-    public static final int HAPLOTYPE_MAX_LENGTH = 500;
+    private static final double DOUBLE_ASSERTION_DELTA = 0.0001;
+    private static final int READ_MAX_LENGTH = 200;
+    private static final int HAPLOTYPE_MAX_LENGTH = 500;
 
     @Test(enabled = true)
     public void pdhmmPerformanceTest() {
