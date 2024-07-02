@@ -162,6 +162,9 @@
 #define VEC_STORE_PD(__v1, __v2) \
     _mm256_store_pd(__v1, __v2)
 
+#define VEC_STORE_INT(__v1, __v2) \
+    _mm_store_si128((VEC_INT_TYPE *)__v1, __v2)
+
 #define VEC_SUB_INT(__v1, __v2) \
     _mm_sub_epi32(__v1, __v2)
 

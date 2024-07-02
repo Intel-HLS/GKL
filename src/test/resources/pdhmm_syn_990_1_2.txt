@@ -1,0 +1,991 @@
+# hap-bases	hap-pd-bases	read-bases	read-qual	read-ins-qual	read-del-qual	gcp	expected-result
+T	[-68]	ca	ry	qX	C7	1u	-1.408817e+01
+TT	[-86, 16]	tgGG	82F4	>XMX	2mCc	ngo3	-1.145527e+01
+G	[99]	ga	]S	%4	Bx	/6	-1.917644e+00
+T	[-93]	cAg	%9Z	SyV	j5#	he>	-1.257712e+01
+AA	[74, 92]	gTA	@4_	t)U	cr|	u3J	-4.678117e+00
+CT	[44, 62]	aC	55	em	MN	V:	-5.255282e+00
+T	[51]	cCG	]@H	\fy	]Z+	G[?	-9.900069e+00
+GA	[-54, -44]	gGAT	H|O7	J367	p(6&	N,#r	-8.915221e+00
+CC	[92, -43]	gAGC	Il&;	$1>%	gBNj	*7rV	-7.813708e+00
+G	[-8]	CTTG	7Cw\	~j8Z	3>kM	59:2	-1.418149e+01
+GG	[-104, 37]	GA	n5	/r	VU	c`	-2.778152e+00
+TC	[78, 66]	GCAC	U\:H	<od:	i,@T	5oq>	-1.561836e+01
+TT	[-48, -41]	TGA	(,'	$6%	LoT	1hD	-2.362349e+00
+A	[-35]	CGG	|B@	)P8	Y's	LsZ	-1.040002e+01
+G	[69]	AG	~p	+|	DT	'H	-1.900275e+01
+C	[33]	AG	r?	@t	V=	D&	-1.687726e+01
+G	[29]	TA	'[	NI	42	+#	-5.122879e+00
+A	[-71]	TT	/Y	X3	A$	IE	-3.677165e+00
+C	[108]	AGC	lu#	"jX	D4i	t0v	-2.377712e+01
+CA	[-125, 107]	TAT	l/e	GZg	,Z-	(NI	-1.009763e+01
+CC	[73, 115]	AC	(B	5N	pG	ak	-3.979685e-01
+TC	[31, 26]	CA	-X	DA	D=	ME	-3.227960e+00
+TC	[-84, 114]	AA	Ew	GM	.2	K5	-8.477144e+00
+C	[-72]	GTG	l]F	g+J	_6(	meV	-1.427712e+01
+TG	[88, -21]	TA	v~	3a	>u	(v	-3.976827e-01
+G	[113]	TAC	dW@	VlX	b$+	~_|	-1.660000e+01
+GA	[18, -5]	CA	[L	qx	|}	Nf	-6.576550e+00
+CC	[56, -50]	CAGA	72zM	fX5}	Y%>/	mrIH	-8.601376e+00
+C	[-25]	GTG	%L8	m]C	LUO	a-Z	-1.192048e+01
+TT	[-29, -20]	AGG	(GH	4DU	D;&	n\6	-6.775956e+00
+A	[86]	TCCT	C2S;	WUuI	'P|6	mYns	-2.497712e+01
+GG	[77, 71]	AGT	Db'	0,K	82J	pvQ	-1.526369e+00
+C	[20]	AACC	=)T;	Nn|[	JEnd	;WqR	-2.387821e+01
+C	[45]	TGT	[.K	6^*	]UM	d\3	-1.417712e+01
+C	[-94]	CGG	ykm	&Ck	PN~	{zb	-9.900000e+00
+CA	[-28, 86]	ACAT	X;U6	EYLi	c=hA	/i'2	-8.218674e+00
+T	[95]	GT	?M	7j	Ud	6B	-1.078058e+01
+GA	[-75, -100]	ATA	xPE	Ct`	O2}	L5s	-1.675751e+01
+TA	[17, 4]	CTA	Dd"	qih	IF.	WDb	-8.187993e+00
+GC	[-80, 91]	ACAC	@,xk	.MUi	;pxT	N#^Q	-1.377069e+01
+CT	[-98, -42]	TG	WA	sv	bz	Q`	-8.764306e+00
+T	[-7]	CGCG	dW$]	L,If	k\MF	3q%I	-5.506938e+00
+AG	[-96, -69]	CC	CL	CS	Rk	]K	-4.146632e+00
+GT	[74, 93]	GA	[#	m5	"*	.*	-8.063074e-01
+G	[54]	TAGT	mOs\	+wL*	e4m}	`Lz.	-2.687712e+01
+G	[-21]	TGGT	t3j&	ImYh	|r&r	[~Fo	-1.910000e+01
+GT	[49, 8]	ACG	sLd	M2R	n$D	~a~	-1.781746e+01
+CA	[75, -14]	CG	WL	@]	=j	YA	-5.052907e+00
+C	[118]	CGC	:/j	`:o	.{&	aj{	-1.150138e+01
+AC	[-2, 82]	AT	n9	6y	yo	|.	-3.178151e+00
+AC	[-15, 23]	TCA	,@z	u2|	NYd	"D,	-3.522770e+00
+C	[112]	CTCC	(x6D	jvRT	oJK<	h;jy	-2.469665e+01
+A	[-42]	GG	)/	BS	>|	>M	-6.277668e+00
+C	[-64]	AAGT	n'P:	b^hm	>|zb	#7RL	-2.391004e+01
+G	[54]	AT	th	H2	ov	5d	-1.048149e+01
+CC	[-50, -83]	TTC	#-'	ima	0i_	TS&	-8.408537e+00
+G	[124]	ATT	jRs	IX&	3us	'CM	-1.780275e+01
+G	[53]	CC	Zb	fw	5H	J`	-8.600035e+00
+CA	[-87, 61]	GCG	9cu	\J(	t;%	@Po	-1.004061e+00
+G	[-19]	TG	LG	-1	\_	N6	-1.600036e+00
+G	[67]	CATG	e*,^	XIuv	?)},	R3ek	-2.547713e+01
+GT	[-8, 81]	TT	z6	+<	.!	c<	-3.001030e+00
+C	[58]	TAAG	ron_	4dFh	?KCG	$(,$	-1.697918e+01
+T	[-71]	GAAT	ADSn	wK$$	ql_A	0Fd5	-1.291423e+01
+CA	[4, -76]	CTTG	tCIK	E\q`	P.-,	A.tx	-1.697564e+01
+TA	[-61, 16]	ACG	K3b	&s#	>TC	ak.	-7.453322e+00
+G	[114]	TA	a)	.s	##	TZ	-1.507712e+01
+CC	[-12, 100]	TTC	f|(	Aw6	b!|	5-l	-1.637917e+01
+CG	[-22, 41]	CTTC	459g	sFTL	j^';	<:G\	-1.118216e+01
+AA	[106, 6]	CCT	Y?`	-.k	6:8	Fbn	-1.436181e+01
+GG	[66, -25]	GAT	t.v	WBa	e5:	c_d	-3.601024e+00
+T	[-103]	CTAC	J2>k	gCBH	Jlxm	O3a`	-1.610005e+01
+GG	[-6, -86]	TG	5o	I9	|9	Fv	-2.778238e+00
+A	[81]	CT	,&	.V	yh	CV	-5.336117e+00
+T	[124]	GCA	H@Y	,6u	Xs2	4{K	-1.068262e+01
+A	[4]	ATT	XO,	KeT	T-,	Yj"	-6.900002e+00
+GA	[-88, -1]	TCC	"U^	oU[	5y<	aE|	-5.980830e+00
+CC	[13, -99]	TA	\)	E7	'S	`9	-6.749340e+00
+C	[109]	TTT	A_4	JcY	S,d	b>*	-7.500274e+00
+CT	[-60, 108]	TAC	gU]	pt[	X%)	nu0	-1.010103e+01
+A	[6]	CAT	<xR	f'+	*{o	JHL	-8.077156e+00
+CT	[113, -60]	CGA	q*g	n'b	U5.	)R3	-2.474939e+00
+A	[-50]	CTTG	Xd;O	)Gg^	#YZ`	X3br	-2.437712e+01
+TT	[22, -62]	CAG	&z`	Tsc	4I5	Kl`	-1.540404e+01
+CG	[114, -64]	TTT	2m:	Rm'	A1_	*1W	-1.121914e+01
+GT	[-52, -121]	GCC	\Qu	=*g	3.d	&$4	-2.965089e+00
+TG	[95, -62]	AG	j9	qR	'/	m.	-3.204056e-01
+C	[103]	GGT	k'w	2$P	6)B	1=x	-9.011048e+00
+GG	[45, 105]	AC	Rz	!#	BK	^'	-2.000058e-01
+C	[62]	ATA	=&&	]4e	w)(	azB	-8.477121e+00
+GA	[54, 21]	AG	9D	@O	MF	fJ	-4.899767e+00
+C	[125]	TGTT	RBy=	'3IJ	DbLO	^;-;	-5.600006e+00
+T	[-32]	AGAC	CZCb	Yw>8	.?YQ	rn3G	-1.807712e+01
+TC	[85, 76]	GG	5U	TW	";	*g	-7.833987e+00
+GC	[83, 78]	CCG	Z-M	hfE	6o[	nj?	-3.929335e+00
+CC	[-116, 21]	CTTA	"M.f	-RCc	+2@>	X@+Y	-1.217911e+01
+TT	[-118, -28]	GAA	1.]	|$v	P2;	4S-	-3.582622e+00
+TG	[10, 96]	ATAA	<P@Y	.i]9	Vp~C	PzT.	-1.582487e+01
+AA	[-25, 73]	AC	"i	^V	x]	"j	-6.672740e+00
+A	[83]	TA	qY	LU	^W	>A	-5.200547e+00
+G	[-13]	AG	.D	Z)	4r	%/	-2.797602e+00
+C	[-79]	ATCT	gIkP	iji}	U]3i	VvZa	-2.687712e+01
+CT	[47, 114]	TAAA	18L9	Rg"L	4rs7	"N[%	-6.342098e+00
+GC	[-24, 110]	AAA	MP\	"'Z	!rh	'`i	-1.216669e+01
+GA	[-54, 11]	TCG	M#J	`Dk	Lv+	;Qc	-1.295130e+01
+C	[86]	AG	8=	Mr	vT	%W	-1.109760e+01
+T	[3]	CAG	[r~	h_^	XD$	i_p	-2.037712e+01
+T	[-75]	AGT	tP}	txi	2c*	V1U	-2.267712e+01
+G	[97]	AT	<%	,L	mC	N/	-7.477135e+00
+CA	[-17, 4]	ATA	<[y	j2;	X7G	P`{	-2.001906e+00
+A	[66]	AGCC	yT)s	bg1U	K1*[	~>`f	-2.020000e+01
+T	[-15]	AC	M4	~l	8(	OV	-1.237713e+01
+G	[87]	TGC	}Lf	fjV	s6a	Jt}	-1.650003e+01
+GT	[122, 118]	CAT	?3K	KS}	X1}	\`e	-8.778179e+00
+G	[-31]	GG	6\	j*	}Z	3R	-9.104017e-01
+AC	[-47, 40]	AGC	&_E	N2=	vp8	[BS	-2.166228e+00
+C	[114]	CACG	_HLE	u95D	w*fz	CdN"	-7.000173e+00
+T	[18]	TA	z/	J+	Gm	v]	-1.000000e+00
+GA	[-106, 43]	AGT	7U;	v<?	sx/	"kW	-6.663490e+00
+CC	[-100, -115]	GAA	R<m	"qG	sI{	d.$	-9.479021e+00
+CT	[65, -102]	GTC	(z@	35r	0{N	T6G	-6.712859e+00
+AT	[10, 13]	AG	`E	|0	{H	$Q	-1.801506e+00
+G	[-107]	AA	T[	nR	1x	2r	-1.048587e+01
+GT	[25, 126]	GC	`i	Hc	RO	?m	-6.582624e+00
+CC	[46, 126]	AAA	*b?	eep	CUP	J2~	-1.195529e+01
+TG	[-18, 80]	CAC	bdQ	7*X	6-T	.&S	-1.279765e+01
+C	[-63]	CT	c]	Rx	@0	E^	-8.700109e+00
+A	[81]	AC	/,	Za	+b	;2	-6.418735e+00
+GT	[-74, 94]	CA	xa	>b	!1	CE	-1.559647e+01
+T	[-58]	TTAA	gA&3	t0+V	{4i|	6e7[	-9.503464e+00
+AG	[-34, 66]	TG	v0	,9	Az	a<	-9.290269e+00
+T	[38]	TG	}~	'\	A#	(F	-5.996653e+00
+G	[-61]	AT	#"	5u	8-	fP	-9.077121e+00
+GA	[15, -104]	AATG	;mwd	oJbM	b)-X	JbaR	-1.177703e+01
+GC	[-61, -37]	ACC	]Hb	?Oy	Zln	4ML	-9.203654e+00
+GC	[-33, -84]	CGAC	[POw	^>({	{vEC	+&k`	-1.064107e+01
+CG	[29, 77]	TCT	m8p	`+t	nsa	U)$	-1.601033e+00
+TG	[75, 9]	CA	KW	8!	QD	6=	-4.680585e+00
+CA	[3, -62]	AAC	5&e	0}@	{_&	`ui	-6.043240e+00
+TC	[6, -87]	AA	(=	CO	6h	RZ	-1.478714e+00
+GT	[-104, -98]	AGGT	\L];	_nf0	"K&S	Mvul	-2.221634e+01
+C	[-67]	GCC	T0Z	w_w	\kX	sa4	-8.100003e+00
+TG	[-13, -44]	GTC	QRC	B^5	:++	p`|	-7.722706e+00
+CT	[68, -51]	CCA	qw`	uCN	M"}	r6J	-3.700996e+00
+CA	[120, 55]	GCG	ai|	Mei	Jr7	BjR	-1.199489e+01
+C	[63]	GAAT	|EaW	[Ni1	AYVU	D1>%	-7.800137e+00
+AA	[125, -41]	CA	)3	{@	SK	"h	-1.069405e+00
+G	[-9]	CCC	B0V	mIY	nh'	(*L	-8.396871e+00
+CG	[75, -53]	TTC	l*h	&e*	EK\	[!U	-1.259493e+00
+GT	[22, 24]	TCCG	lF;2	1g<M	\k/T	37&t	-1.610194e+01
+G	[-107]	AG	pG	DM	VO	kE	-1.277712e+01
+C	[94]	GCGG	8Ej1	3H$]	]WL1	FB&4	-9.077208e+00
+CC	[-33, 29]	CAA	3$m	+>8	%/@	maa	-2.744934e+00
+A	[-87]	TAT	~s_	X=n	:`R	|R3	-1.437712e+01
+T	[-90]	TCG	@dZ	iyB	er0	'>m	-1.652597e+01
+A	[53]	AGGT	3S<_	ZH/L	1ET,	T++;	-7.506942e+00
+G	[116]	TA	7r	mf	A!	NA	-9.577135e+00
+AG	[116, -94]	GCC	'xv	ar4	g%;	?wF	-1.206055e+01
+CA	[107, 84]	CT	tZ	N\	>@	{S	-6.016941e+00
+AC	[-13, 62]	CC	3?	)<	su	z-	-3.075353e-01
+TT	[84, -85]	GT	7F	g.	u5	|f	-1.585994e+00
+T	[20]	TGTC	J:y=	beHe	\sx3	D&u}	-2.440017e+01
+T	[102]	TGCG	?i|~	r<Vx	O|{\	1:eT	-1.461148e+01
+C	[102]	GC	RN	yO	@w	hd	-9.977121e+00
+G	[-88]	CA	XF	}[	@g	7[	-1.177987e+01
+AT	[48, -49]	AAG	QaL	31t	i[&	6R(	-2.303456e+00
+C	[-68]	AGC	>5h	!~K	#@t	h`f	-1.957712e+01
+GT	[-4, 34]	TGCT	czQI	_{F3	%TZf	UhkZ	-2.234780e+01
+G	[116]	TCGT	_[7/	|{[3	<2=P	OuG8	-2.177713e+01
+A	[105]	GG	V2	I2	MK	xw	-1.700002e+00
+CA	[104, 32]	TAA	W;:	|GT	Y93	>`\	-9.958907e+00
+GC	[-88, 30]	TGT	T{>	?y*	uy#	Q)6	-1.604691e+01
+CT	[-77, 43]	CAC	M@5	/Wo	NDT	xk=	-7.752165e+00
+G	[109]	ATT	[zz	P@)	WKI	4gT	-8.205503e+00
+AG	[-83, -97]	AAGG	'J:&	uIf^	8M^8	f@b~	-1.042318e+01
+A	[-63]	GAA	-kx	\"9	qLS	wwq	-9.777121e+00
+TT	[-19, 22]	GC	^r	K&	#u	Bg	-5.002181e-01
+A	[13]	TCA	ZtH	}cU	vif	dW}	-2.197712e+01
+C	[94]	TA	x7	Zt	6L	-#	-1.750543e+01
+TG	[30, 70]	TTCT	D8~+	bEK?	Gj2B	jn(Y	-6.078224e+00
+GG	[90, -114]	GCAC	Rtvf	Z.&}	F"GP	nFTz	-1.405285e+01
+A	[-91]	CAC	CfL	3OX	+cA	guC	-1.187712e+01
+A	[-79]	ACCT	Ll"c	[@^z	;*8~	;91>	-7.601114e+00
+GT	[-53, -120]	GA	f@	bM	<A	-,	-3.845877e+00
+T	[86]	CCA	N>*	W/2	?/}	6.u	-1.478058e+01
+AA	[-53, -121]	TAG	:Xu	pc0	Sb3	u6s	-1.802407e+00
+GC	[-119, -39]	TCT	_N[	pD;	2hT	6KT	-8.812221e+00
+TT	[1, -64]	AG	v0	CG	.G	@:	-1.124288e+01
+AA	[-26, -23]	TA	q6	~#	9d	)0	-5.759704e-01
+CG	[101, 56]	TGTC	aK@5	b@Hp	,j1M	K2P^	-1.011705e+01
+GA	[90, -76]	AGG	Ho:	;wx	GSh	?rK	-1.310120e+01
+TC	[-5, 52]	GG	Tl	wU	6%	^Z	-5.500596e+00
+G	[69]	CAC	6B)	IT?	}(5	=Mp	-1.557781e+01
+TG	[-51, 6]	CGA	W9,	v"~	=Lc	v3:	-7.763359e+00
+G	[106]	TTTT	4f12	w|2)	9lrg	2hJT	-2.068587e+01
+G	[116]	ATGT	T6<=	R/S@	afa5	bWsU	-2.037712e+01
+T	[107]	GGC	L6!	yJ(	^T-	g;S	-9.100022e+00
+C	[-29]	TAC	=XX	~mu	%_c	Qzz	-1.650070e+01
+AG	[50, 90]	CCA	JHW	mzy	I&1	h,L	-1.763926e+01
+G	[-125]	GCAA	to:?	+u]G	SrLe	"wU<	-1.698683e+01
+AT	[6, 45]	AT	x|	lc	SJ	f@	-3.010644e-01
+AC	[49, 48]	TT	O6	G7	.j	;I	-7.195968e+00
+T	[-5]	CA	?s	^+	R'	hS	-1.000435e+00
+A	[-51]	CTGT	Kgj_	;3Mu	$zVB	r!e<	-1.597712e+01
+GA	[15, -8]	ATCA	-c]v	5&^t	G[2;	[*6F	-2.929249e+00
+TA	[-119, 56]	TT	qr	.g	LV	Bf	-7.289898e+00
+A	[54]	GTT	=Tp	2\2	-~:	Z5e	-1.597712e+01
+CG	[-105, 117]	TTG	Mn,	SXY	rs3	Hji	-1.044277e+01
+C	[-113]	TGG	hn%	3#=	ftm	.*2	-9.499452e+00
+C	[29]	TC	B^	bE	!=	zg	-7.377121e+00
+G	[62]	GT	%s	HL	59	]*	-4.520481e+00
+C	[14]	TTA	4y$	r;*	}qG	Mt4	-6.877139e+00
+AA	[-93, 87]	CG	Yg	kZ	|u	d{	-6.001031e+00
+G	[-93]	ATG	9r#	x?6	[c2	Qvr	-1.397713e+01
+A	[-63]	TGT	9wy	k:=	X5S	yjm	-1.010173e+01
+G	[123]	AGT	i`K	I:;	]1s	;Cn	-1.020109e+01
+GG	[-106, 77]	CT	FG	^y	xF	/X	-4.495950e+00
+GT	[16, -112]	AAG	))n	@ED	|q>	Xx%	-5.242290e+00
+GC	[96, 93]	AA	o?	rT	Nv	t7	-5.400742e+00
+GC	[75, 26]	AA	}Z	xS	O+	P9	-5.275791e+00
+AC	[9, 104]	CA	R%	=5	!T	2m	-2.309763e+00
+T	[-128]	TCG	X61	d}<	HFw	YA\	-1.510000e+01
+GG	[42, 71]	CGCC	q$a^	+:4p	dJ1@	?.17	-1.317117e+01
+A	[-71]	TT	N]	IL	TJ	28	-9.285874e+00
+TT	[-89, 109]	ACG	)Hu	NHS	JS/	$!N	-5.779994e+00
+C	[14]	CTT	r_T	!"m	ZZt	F!.	-1.400087e+00
+G	[124]	CCAA	FvVc	i#JN	MSI*	1Sku	-2.018817e+01
+G	[16]	CTCC	Kjd|	E2Xc	7>P!	wB{I	-1.937712e+01
+T	[-50]	AAAG	3@-.	1WLQ	=v_P	$Rv:	-1.897918e+01
+T	[101]	TCAA	AC/U	\Zk,	9@0&	ptpa	-2.000027e+01
+AC	[41, 18]	CC	7E	n<	1I	oy	-2.689824e+00
+G	[1]	CC	9l	"Q	zq	R4	-7.677127e+00
+T	[-104]	CAGC	"7^Z	zle`	%5$t	/}''	-9.294764e+00
+CG	[-60, 57]	AACT	!0ej	*J5P	Y#,u	hZUW	-8.579245e+00
+AC	[118, -97]	TCG	kTn	`"p	|3X	O(u	-1.603212e+01
+AA	[-120, 7]	CCCG	S}iC	3Ah9	,8?e	e*,8	-1.207144e+01
+C	[-99]	CA	'e	@E	N4	p4	-3.725628e+00
+G	[40]	TT	3K	cs	$y	y"	-1.047712e+01
+GG	[-51, -74]	GC	)?	vv	)r	{K	-3.853083e+00
+AT	[0, -21]	CGA	Buz	Egz	mL|	c<P	-1.107271e+01
+G	[95]	CT	/7	`=	G>	0d	-2.831599e+00
+G	[46]	TA	[i	SL	|0	<Q	-1.057799e+01
+G	[31]	GAC	Kc"	},.	oB^	e,"	-1.200027e+00
+G	[-124]	GAAA	mYe^	:]?^	[rOY	2)7u	-1.660875e+01
+CG	[-23, -34]	AC	0K	R7	~I	Fx	-2.213324e+00
+T	[99]	CA	d3	21	Cz	d.	-8.777121e+00
+A	[28]	CT	:a	:R	_y	YU	-7.877122e+00
+T	[-57]	ATCC	iP/n	=..=	x@7}	=x9|	-2.047781e+01
+CG	[0, -61]	GAGC	1Wp&	z&_m	p<dC	.Xnk	-1.046556e+01
+G	[-95]	CG	>;	.N	u-	Rk	-7.877127e+00
+T	[85]	GT	$w	9L	}5	r3	-5.077121e+00
+A	[-58]	CGAT	o&/*	W6ow	'C|U	/E^7	-1.869476e+01
+CT	[-128, -115]	AGG	R*0	2<T	Lvb	2^d	-9.621578e+00
+T	[127]	CGG	U",	Dlx	Ck3	Pa)	-8.300011e+00
+T	[-70]	AATA	4XSX	8`p>	a[W~	#,sg	-2.431004e+01
+A	[-15]	CC	SO	^L	&_	-\	-4.328309e+00
+A	[92]	CCGA	Tm?Q	/O=s	9dqA	?Ea$	-1.687756e+01
+G	[-70]	AGG	M(a	9)2	p;r	3a+	-6.684059e+00
+GT	[-1, -29]	AAG	{<f	dia	e:4	7BR	-7.501966e+00
+A	[-96]	GCTA	$4cm	snML	xbQ^	d:n:	-1.867712e+01
+T	[-118]	CT	E!	a|	{3	QA	-1.317713e+01
+TG	[-47, -63]	GA	91	1N	3/	bL	-4.675643e+00
+G	[-93]	AGT	Tbf	>`C	!Ne	W|B	-1.517712e+01
+CC	[-26, 58]	CGCC	F75+	OJ3l	SL4n	T*ec	-1.095498e+01
+TT	[124, 88]	CCT	OUw	]0^	?jn	+`{	-6.923909e+00
+T	[-63]	GA	#k	su	Po	We	-9.077123e+00
+A	[-14]	AATT	++$S	q\e!	a9_^	cu61	-9.645758e+00
+TG	[-29, -49]	ACC	Q#g	M>z	uw"	cLm	-1.080101e+01
+C	[-19]	CTTC	#qH5	AAtq	"U1+	DD-:	-7.333061e+00
+CT	[13, 96]	GA	//	$p	>P	@A	-4.055625e+00
+AG	[-45, 99]	TA	9;	p>	v`	A!	-2.777462e+00
+GT	[89, 83]	CA	wD	3L	}6	&4	-4.154780e+00
+AC	[106, 96]	TCG	M^+	AdW	E"-	xL;	-1.126095e+01
+C	[-112]	ACGC	a5C=	(Zoe	[<^b	iR>t	-2.377712e+01
+AT	[-21, 10]	GTAG	+vUI	I*Sj	U~M8	(Q>_	-8.711674e+00
+AT	[-35, -113]	GAC	.?R	D6.	szs	{oG	-3.382027e+00
+C	[-106]	ACT	V!E	Z8&	_HL	;U@	-1.117821e+01
+TA	[48, 87]	CG	8L	W4	J2	Xm	-2.202484e+00
+G	[63]	GAAT	9u<#	<UPg	G=?@	Bhs2	-1.510195e+01
+T	[12]	GCT	AX*	Ca^	N!U	yNR	-1.497712e+01
+C	[29]	ACC	ILO	%A'	]rR	2{5	-5.208796e+00
+AA	[25, 104]	TCT	Q`e	eL`	m:D	A\2	-1.127739e+01
+CC	[-7, -77]	ATG	r5H	\CL	ozr	CO.	-3.701073e+00
+C	[-80]	AGAC	U<$y	Z11o	1Q!g	=I>0	-1.167781e+01
+AG	[-45, -48]	ACG	OO1	,vw	3{Q	~~t	-8.812086e+00
+TG	[-94, 51]	GTT	J!~	4j!	_`i	|s;	-5.355267e+00
+GT	[-72, 18]	CCTC	/gd=	.etZ	-V5W	n:>A	-1.435016e+01
+A	[105]	AAT	;>u	>Sa	><X	lo%	-5.401092e+00
+A	[-68]	CC	D[	pI	g<	Qz	-7.977128e+00
+C	[-50]	GAT	oAR	5BL	T&o	{lq	-1.957712e+01
+AT	[92, 74]	ACTC	qpD_	&h6"	4ugV	}r-%	-7.514957e+00
+AC	[64, 117]	AGTG	'R@=	52j]	v%52	-Ac;	-8.056561e+00
+C	[124]	CGCC	wzlW	'-SX	N'7A	8xq$	-9.502182e+00
+CC	[46, 75]	ATGT	kKwe	BytR	s#X(	~7zK	-2.107715e+01
+AT	[30, 10]	AG	GI	$E	][	N>	-3.846989e+00
+A	[112]	CA	x?	~(	+-	ad	-9.877121e+00
+AT	[81, -76]	CAC	p!)	`T~	]eY	-P6	-6.594801e+00
+G	[93]	TAT	^t.	u(o	E0y	grq	-8.700000e+00
+A	[-78]	TATC	i~+|	}(/o	h$$5	7g-Z	-1.527987e+01
+A	[-44]	GGGG	U4X_	45e0	%qpO	ZT|t	-2.507712e+01
+T	[-101]	CAG	'e&	ZW>	abX	@#C	-8.925973e+00
+CT	[42, 4]	ATG	fLG	BeM	x@t	O;S	-1.207853e+01
+CG	[-94, 58]	TGT	#+!	fVN	O?I	vzO	-5.499545e+00
+C	[-56]	GGCA	z`5y	Mv~G	8(F&	jf=f	-2.757712e+01
+AA	[-23, 49]	GC	te	|>	{g	W.	-3.004854e-01
+T	[114]	GAC	jY2	@wI	6]N	m+`	-2.267712e+01
+AG	[-21, 78]	CGG	3jY	+no	?+5	?IH	-1.004432e+01
+C	[104]	TTCG	]rl}	(?6b	9TY[	WCqc	-2.407712e+01
+G	[2]	CTCC	k3hj	c<;e	*)o>	K/%J	-1.507715e+01
+CT	[-31, -32]	GCG	bN#	XP~	!*%	[Ng	-5.678152e+00
+C	[21]	CC	?1	"~	vq	Wv	-9.300436e+00
+AA	[-31, -26]	ACGA	$>-.	'/UK	Bk&Z	P~@]	-5.124669e+00
+C	[-126]	TAA	CR{	0}'	qQU	\2$	-1.337712e+01
+AT	[-70, -49]	AA	$5	W3	9-	(O	-7.249838e-01
+TA	[-92, -119]	AAA	Twl	:er	+??	K:^	-1.254782e+01
+AG	[-45, 119]	TG	K2	J"	n|	H2	-4.820457e-02
+CC	[-84, -3]	TTA	*wN	j[`	i!2	.),	-7.076492e+00
+AT	[89, -16]	CGC	~3M	C<k	2bK	xV>	-5.896446e+00
+G	[-103]	AA	X=	03	$W	n-	-1.800001e+00
+TA	[-113, 15]	AAT	1!N	:51	9R?	^9^	-7.228233e+00
+GT	[-88, 125]	CG	I:	up	6*	;+	-4.838866e+00
+G	[26]	TGC	U$I	I8+	M*.	)jY	-1.365206e+01
+T	[60]	CTCC	(cC{	C;Mh	DiPP	?iyJ	-1.667756e+01
+GG	[-2, 42]	CTA	<7b	`6K	W5$	Vz%	-5.677114e+00
+GA	[91, -67]	ATTT	Bfv&	@cBY	8!r}	BE[D	-1.367613e+01
+GC	[106, 119]	CA	r'	#p	V6	N;	-8.193522e+00
+A	[-110]	TG	fH	/@	hw	\v	-1.047712e+01
+GC	[-99, -9]	AG	4t	aF	F1	X2	-3.174930e-01
+TG	[34, -83]	CACG	p~b&	0Xw{	1cf#	;2.-	-1.559398e+01
+CA	[-55, -65]	CAAG	'z:z	C|@A	@4|N	7EyK	-7.734904e+00
+GC	[48, 19]	TGTG	5Iif	\{>Z	a,b1	Y8'i	-1.738376e+01
+CT	[-31, -50]	GG	]R	G\	%^	CB	-5.474205e+00
+A	[40]	CTC	[P8	m)m	i+)	E3.	-8.377230e+00
+T	[-14]	TTCG	eY63	)|X%	]sy`	X}Sr	-2.220000e+01
+TC	[-42, 25]	CC	B6	j#	\T	Vl	-5.011352e-01
+C	[-58]	ACCG	|Nsr	XT@_	1%rC	{1/@	-1.917712e+01
+TG	[-114, -78]	TCAA	*;YR	Q]Dr	2IO8	'Qvq	-1.506225e+01
+A	[118]	GGGC	.Q?B	nFX`	!O[l	#70&	-7.910045e+00
+T	[105]	GCC	*'\	>P)	O@Z	X!0	-6.258437e+00
+G	[-104]	TGTC	7a8h	u|NE	^xAn	6&?/	-1.618058e+01
+CG	[-45, -35]	CGTT	"<Rl	T])!	Iq,E	wncm	-6.986139e+00
+G	[15]	AC	BK	%0	W.	xI	-1.500218e+00
+AA	[112, -121]	TA	%t	6>	B\	f'	-1.177605e+00
+A	[-17]	ATCG	72ss	}bR*	>|"x	EGB$	-1.010286e+01
+A	[-96]	TTGG	+I>)	5&y2	+(/C	SX""	-2.177126e+00
+AG	[-18, 12]	TCC	Ba\	e<a	?A.	rBX	-1.194922e+01
+T	[103]	TGTC	ab)L	I,eG	~l'x	b#5I	-7.100000e+00
+C	[-50]	AT	nN	5e	K;	y:	-1.497712e+01
+C	[102]	GC	Ht	i;	Cl	pR	-6.977121e+00
+A	[6]	AA	6U	v5	P=	Jh	-2.003498e+00
+CA	[113, -97]	CG	'O	w{	n1	9S	-5.516453e+00
+G	[-108]	TGA	^Vx	%ZO	ALy	OF;	-1.487713e+01
+AG	[89, -86]	ACG	5G~	ji6	l?}	wL#	-6.621941e+00
+CG	[2, -56]	CCG	Sa$	KIb	u;g	TBX	-4.603099e+00
+TC	[-76, -72]	GGTC	o74&	[m.Z	m9v*	0"9%	-1.297096e+01
+C	[-27]	AACC	)4*.	ORda	%:h&	$<Y2	-1.377918e+01
+AA	[-39, -73]	AG	'S	)n	,|	*=	-4.850971e-01
+CT	[-77, -109]	TAT	z<A	dfD	uu5	,zz	-1.586051e+01
+G	[58]	ATA	h3E	^Ih	'rN	0qu	-1.999108e+01
+TT	[57, 120]	TCG	ZAQ	w]O	D3(	i.o	-8.584647e+00
+T	[-118]	CT	\s	5*	0B	,o	-7.313066e+00
+GA	[-4, 53]	GG	ur	x^	9"	rA	-9.878537e-01
+A	[-88]	TA	)b	}r	e#	)b	-9.452062e+00
+A	[-108]	GGG	fa^	)NW	t%?	2{}	-2.108587e+01
+AT	[-15, -111]	AACG	>T<b	QeD#	{'~~	N&'I	-7.428062e+00
+C	[-123]	CTCG	gu@f	z.jc	=\v0	dNA:	-7.000000e+00
+C	[108]	AC	?u	5*	YR	g`	-4.377121e+00
+TG	[-7, -13]	TTC	0al	USQ	'6f	/!=	-4.922042e+00
+G	[-47]	AAG	Yd}	)}-	0TT	t=:	-1.777712e+01
+AT	[-58, -116]	ACC	Zfd	xjb	#QT	"D@	-1.108674e+01
+CT	[39, -122]	CT	2M	Z\	N?	[#	-3.102349e-01
+C	[-23]	ATAC	-h1i	*(8{	>yy|	<BHx	-1.332917e+01
+T	[-124]	TAT	`/5	(6J	WgK	/Fr	-1.021764e+01
+AG	[18, -40]	TTTC	$S__	/@Ny	v:?B	oVO<	-1.117596e+01
+A	[-125]	CC	}x	zr	q&	5%	-1.778149e+01
+A	[-21]	TAG	9!(	@{&	UW/	=bn	-1.670242e+01
+AT	[102, -69]	GAAC	weur	Z*mx	'v3(	@+B2	-6.201375e+00
+CC	[-76, 0]	GG	4G	SW	u!	7+	-7.779870e+00
+C	[-32]	CAGG	xoOr	+r!t	O0=&	f0ti	-2.360000e+01
+TC	[25, 113]	ATTT	!UD"	Xet)	~\]p	2G{{	-2.558690e+01
+AG	[121, -75]	GTGT	yrWG	>.ip	,6dG	@#ML	-9.329944e+00
+T	[-107]	CAA	9xL	hc{	6&u	8W+	-7.603915e+00
+CT	[-127, 120]	AG	n{	c/	~j	q;	-9.577121e+00
+AA	[113, -41]	ACTT	''L"	WO4&	v>ZA	xp/y	-5.532765e+00
+GC	[-98, 77]	GGC	SE|	Fbe	4Q1	8^]	-6.803198e+00
+C	[60]	AGG	2"c	K41	0$Y	%i{	-1.329760e+01
+C	[-111]	TAGG	8qum	bdIt	|^qM	`A.K	-1.497712e+01
+C	[-105]	CCA	df;	4kg	2v.	\`o	-1.520000e+01
+A	[36]	AG	^H	_6	cR	o/	-2.100000e+00
+C	[-73]	CA	y\	^o	Q4	6a	-7.803463e+00
+A	[-48]	TT	o|	}o	W1	v-	-1.607712e+01
+CC	[-122, -32]	ACTC	b@Tp	{lF~	*"\o	OVQt	-1.942893e+01
+GC	[71, 18]	AA	Yl	P!	{&	+,	-6.122879e+00
+CG	[86, 30]	TGAT	[O-K	[}.k	uGe9	99o]	-1.387996e+01
+AG	[-127, 97]	CAAG	d.X[	J,!(	pZ%^	Wh<$	-9.578016e+00
+CA	[45, -101]	AA	..	r}	xo	^7	-3.456917e-01
+GG	[-12, 90]	CCCA	(}\}	OSST	*JXA	BSBZ	-1.517659e+01
+CC	[19, -17]	GGCG	SRgL	L6JR	:u+F	VP\(	-8.989698e+00
+T	[-76]	CA	j*	MN	c"	j1	-1.227712e+01
+GG	[-83, -118]	GGTC	:W6x	-.3F	A+3|	T<ao	-7.876043e+00
+AG	[-24, -103]	GT	QA	\"	Q;	6A	-4.044981e-01
+T	[-4]	CCT	Lbl	ff<	IL>	_;j	-1.897712e+01
+G	[-97]	GA	GK	|o	B1	[9	-7.800070e+00
+G	[-35]	CA	=P	E1	Y(	xP	-1.600689e+00
+C	[108]	CAGG	pwS&	bxio	WD|e	m\3(	-1.120000e+01
+TC	[-28, 12]	CCAC	>/^3	w'Zn	J?I&	kXVQ	-9.568747e+00
+GG	[-125, 47]	CGA	v|B	{%J	+O+	@@o	-9.678662e+00
+T	[79]	TGTG	[8_I	B+8Y	aj^a	g/{4	-1.190000e+01
+C	[-92]	AC	y$	Nr	|S	q{	-1.737712e+01
+C	[93]	GA	wi	4l	W)	in	-1.657712e+01
+T	[-45]	GG	8-	F"	MN	[Y	-2.877122e+00
+T	[-18]	CCC	$\0	iy;	QA3	kdG	-1.337712e+01
+CG	[-116, 45]	GCG	%\7	@>b	*Aa	ko;	-4.075942e+00
+GT	[-121, -2]	GAT	'7=	Bf)	yx+	/s,	-3.921245e+00
+A	[106]	GCCC	MEWG	4B!=	BEfv	UG9U	-1.577712e+01
+C	[-78]	GTGT	3M{^	~AAj	F8S^	E57|	-1.677723e+01
+GG	[106, 46]	GCAA	#2.H	-+4g	O-ZY	tR]-	-6.087144e+00
+C	[-119]	CT	~!	.z	(O	Uk	-8.900003e+00
+GT	[59, -48]	TGGC	_r[g	SdE(	8M&K	;4%d	-1.410212e+01
+AG	[-115, -116]	GT	R;	=m	SW	77	-7.846923e+00
+C	[-92]	CG	G)	MX	is	O=	-5.500080e+00
+GG	[59, -110]	AAT	PrF	/Ra	CgD	pN^	-9.373004e+00
+T	[41]	AGA	cQ1	g@}	&y\	*im	-1.075844e+01
+GT	[-77, -11]	ATAC	}@b[	*;1z	w(fD	b;d\	-1.756797e+01
+G	[18]	TAGC	wd|z	v=d@	]PMT	;F:N	-1.887821e+01
+G	[107]	CT	]b	'B	r*	6H	-9.780585e+00
+A	[9]	GCG	_tV	n<%	X8`	W)9	-1.177712e+01
+GT	[-25, 48]	GCTA	Sy%5	X?'F	e]c5	\6w@	-7.221515e+00
+GA	[-71, -123]	ATT	s>z	@4)	V"G	nV3	-3.686244e+00
+AT	[95, -14]	CCAC	cfQ(	:Bru	'.]a	f8gU	-1.177811e+01
+G	[-41]	CAA	L)^	1QY	b"t	,2>	-7.735966e+00
+GA	[-58, -21]	CA	W"	}9	Kl	'l	-6.975776e+00
+T	[-82]	TA	L(	VU	oP	T8	-5.200025e+00
+C	[65]	TATT	Tgg6	p+{]	:a47	_BSr	-1.410000e+01
+TG	[-121, -73]	AA	eH	YP	?q	n`	-1.166503e+01
+CG	[105, -3]	TGCA	T{m>	Rj.S	msgt	O}_>	-4.501044e+00
+GA	[-4, 36]	AACA	$+zn	gT;A	V`vS	v&PK	-7.923430e+00
+GG	[-64, -51]	CGC	u&V	bb,	Rup	Zys	-1.044324e+01
+A	[52]	ACA	$6N	![H	E!R	n,Q	-1.090206e+01
+GC	[-27, -90]	GC	G*	Yp	oy	IC	-3.595774e-01
+AG	[61, 126]	ACC	Rhe	{[~	K(c	Q"^	-1.188580e+01
+CC	[24, -84]	TCGG	/k!g	x@Y]	Ra'V	.e`6	-9.894961e+00
+A	[57]	GC	Dn	R"	E=	PC	-1.001460e-01
+A	[-14]	TTG	nhQ	k}%	eY@	(op	-2.537377e+01
+G	[123]	GTC	;f@	1"R	9mu	*Md	-6.859527e+00
+GG	[83, 64]	TA	f9	Td	'i	J|	-3.178121e+00
+CG	[100, 61]	GGAT	|34!	[X8P	<NFg	VL#A	-9.201032e+00
+T	[64]	GC	Oi	z|	&C	N[	-1.417713e+01
+T	[-47]	TAGA	c_P`	nuN;	F5x}	T{#/	-1.000000e+01
+G	[-63]	TTC	w>Z	CVg	;3Y	P>,	-6.400009e+00
+T	[-15]	AGT	*].	H{m	_h]	}i0	-1.187712e+01
+CC	[80, -79]	GGG	d=n	PFO	7Xz	VVN	-8.500005e+00
+AA	[118, 50]	CCC	""s	>91	tq(	no:	-3.055357e+00
+TA	[103, 105]	AA	cY	|V	I]	-m	-5.622139e+00
+TT	[99, -73]	ATC	_dQ	H%M	,OP	<tA	-7.378725e+00
+TG	[87, 89]	ACG	V+2	DX!	$.)	#]~	-6.579163e+00
+T	[17]	GCCC	IQi;	8cq[	s6W-	Ph/R	-1.737713e+01
+AA	[-15, -40]	TTAG	_2m+	RC?)	~LY>	t3Wq	-4.501032e+00
+T	[46]	TGT	7~5	>bz	,[u	IwP	-1.120279e+01
+TT	[-101, -110]	TG	];	wr	"x	'Z	-3.503771e+00
+T	[-61]	AAA	;!?	CN.	Qtx	7TP	-1.227987e+01
+TC	[-92, -79]	CCG	@*?	0:P	B0i	PLF	-6.133316e+00
+AC	[-106, -20]	TCGA	v,h4	G6zx	M'<\	CIZ(	-1.746214e+01
+TG	[-123, 108]	ACAC	rD}p	2FLH	O+&g	I'0B	-1.707700e+01
+C	[-97]	CCG	]D+	)Xx	B`?	f7Z	-1.120000e+01
+TT	[-126, 42]	GATC	p](4	7]G@	hd%,	$O!6	-1.667810e+01
+CG	[-2, -113]	CGC	Xk2	'+H	kO>	BL4	-2.784335e+00
+AT	[-65, -119]	GCCT	P6!(	WNOM	HC<@	Y{ua	-9.678029e+00
+C	[-62]	GC	kt	i-	2j	48	-9.082623e+00
+AA	[-93, -104]	GCAG	uIa.	=P5H	&8EP	^U,5	-7.622597e+00
+A	[74]	TA	pj	Pn	qW	?t	-1.607756e+01
+CT	[31, 22]	AG	n\	+z	&H	9=	-6.677340e+00
+C	[90]	TG	F3	dz	a6	s_	-1.307712e+01
+AA	[-101, 35]	TACA	I^!v	j<9v	}nGl	\uXn	-1.297259e+01
+A	[-12]	TA	z~	n&	M,	H?	-9.877176e+00
+GA	[1, -110]	ATGT	bcJ!	fG?h	lugt	3~oV	-1.720493e+01
+T	[76]	GC	ac	`*	h%	)z	-7.852062e+00
+T	[-36]	TTC	9S3	`O-	@h'	oLC	-8.001732e+00
+CC	[-18, 109]	AT	b_	A-	@E	=n	-1.501718e+00
+T	[45]	CG	Ay	V?	y#	,.	-6.713066e+00
+GG	[-103, 77]	CAT	#p0	(,R	!CW	gQG	-1.847770e+00
+TC	[34, 92]	CGTC	IZ^-	Y}HU	sEBY	l?>S	-1.678546e+01
+T	[-25]	AA	7k	@w	@?	D5	-1.127726e+01
+CG	[-79, 20]	TTG	GD?	noB	Ol[	Zs`	-1.174143e+01
+CA	[73, 9]	TG	<e	@!	q3	qA	-3.016081e-01
+CA	[-87, 87]	TTAG	<nZ%	j3jR	66|V	Lf(%	-3.201572e+00
+T	[17]	CAA	\L[	w`N	HGO	^=m	-1.390000e+01
+C	[70]	CG	>k	Eu	#g	}4	-8.400547e+00
+T	[-85]	AAG	S<I	mcJ	<i:	f%/	-8.000004e+00
+G	[-2]	ACAA	g@g)	PS|W	=wkM	5d@-	-1.678149e+01
+GA	[-112, -10]	AGA	93F	6/T	/O7	X5a	-4.578109e+00
+TC	[-53, 58]	GTG	s]f	sJN	H*_	ya;	-1.537711e+01
+A	[1]	GAT	Jxm	C)d	_27	*K@	-8.535556e+00
+A	[-33]	TCCC	M5%4	z*|&	5]5t	|%mu	-1.690002e+01
+A	[-91]	TCTG	SH%`	V+1|	.y07	YU_W	-1.807712e+01
+C	[-106]	GTAT	Y!X{	]71l	yVi'	{QH6	-1.427712e+01
+A	[-45]	AC	7r	'v	zE	VL	-8.502751e+00
+AA	[-60, 2]	AA	RG	})	*(	D#	-3.194170e-01
+C	[89]	TCA	Hld	-M[	gH^	3YS	-9.406993e+00
+T	[98]	TGAA	>C|M	/M~w	GSt?	V3GZ	-1.390055e+01
+GG	[39, 29]	TGT	N"K	Y#X	{a}	X6K	-9.309059e+00
+TC	[-3, 43]	TCCA	!rc+	p=7n	fd\K	JGjv	-1.937819e+01
+G	[-77]	ATT	W9K	%k"	+uN	3`(	-1.398406e+01
+CT	[-25, -92]	GCTT	x]z[	e6u=	&uLX	)W_b	-5.275798e+00
+C	[-89]	GCC	"]F	U}t	Y6e	;ZY	-1.548792e+01
+C	[-100]	GAA	CWs	Tb#	Wr+	p#M	-1.477712e+01
+C	[22]	ATAT	1GM0	AcnC	A1CT	4a>)	-1.238262e+01
+TT	[110, -21]	CC	ID	+y	o\	~U	-8.755260e+00
+C	[98]	TGC	YE3	I@o	Zh_	8}C	-1.257930e+01
+TA	[-24, -38]	ATT	(a>	v$k	'Fm	dP:	-3.158635e+00
+AA	[-29, -101]	CCAT	yD|i	<pGG	)PMg	yYl:	-1.587623e+01
+TA	[-114, 43]	AC	"Y	G`	]S	"%	-7.327487e+00
+T	[-5]	TCC	4b%	bKv	\Ji	A:u	-1.260578e+01
+T	[-91]	CCA	PJZ	]U=	TvT	igc	-1.697712e+01
+TG	[1, 125]	GCAG	ThF7	B%#,	[HNg	gg*s	-6.988524e+00
+AG	[-51, -115]	CGT	|gE	@gC	gw<	Az+	-1.327840e+01
+CA	[68, -94]	CG	5B	ao	5#	Am	-4.515602e+00
+T	[121]	ATT	9*h	Bc1	9}.	*;Q	-1.146017e+01
+GA	[-76, -4]	GC	E^	1i	{}	k?	-6.708998e+00
+AA	[-40, -126]	TAA	mvg	8`1	-~1	>h,	-9.978689e+00
+GA	[21, -33]	CT	;q	!L	J,	&`	-5.031317e-01
+T	[-1]	AAAT	s;("	od^5	Em$d	\Rd~	-2.270000e+01
+A	[-116]	CATC	6W(/	.0J^	(k{P	V=^f	-1.707712e+01
+C	[-60]	ATC	/`>	N)|	t,,	tlO	-7.277121e+00
+T	[-111]	ACTC	zsAh	]/N]	B}SN	SyN?	-1.827713e+01
+TG	[58, 126]	AA	6=	`X	cm	?,	-6.150540e+00
+TA	[-8, 106]	TAC	IFh	!#`	4c1	2PG	-4.308937e+00
+CA	[63, -126]	GACA	g%01	W5(V	#|j(	7S{B	-4.528621e+00
+T	[-45]	AA	`v	5l	vi	h*	-1.427712e+01
+G	[70]	GC	[=	s-	cz	5)	-1.204365e+00
+C	[81]	CG	ir	.[	Ur	'O	-5.925628e+00
+CG	[46, 41]	AAC	@-M	Z+E	)hm	:|w	-7.548949e+00
+GT	[-82, -50]	CGG	!lz	33F	/NU	wUJ	-6.377120e+00
+A	[15]	AGGT	PGTr	IEn.	B.c+	bWs@	-1.490001e+01
+AG	[43, -105]	TCA	~!'	qh>	@aB	,NR	-1.829109e+01
+C	[-36]	AG	e'	zw	lN	Y@	-1.587712e+01
+CC	[117, 93]	TT	zd	5v	)x	&"	-4.661186e-01
+T	[93]	AAGG	l$e1	]&^A	~Fw]	M43a	-8.700017e+00
+GG	[58, 8]	TCCC	rH{r	>g9\	x7"b	;^\2	-1.735911e+01
+AT	[-50, 95]	TCA	'p<	?dF	jgv	FC'	-5.076831e+00
+TC	[-74, -94]	ATAT	Gs`/	,W,X	5_wN	KzB`	-1.515527e+01
+AC	[47, 38]	TGA	+11	`.L	JsK	#EV	-5.587267e+00
+A	[-115]	AAA	/L-	AH(	yZO	:Pe	-1.071902e+01
+T	[-2]	ATGG	5SX$	A*k5	W6i,	{/=S	-1.117712e+01
+TG	[33, 40]	TACT	pt3Y	'hn^	U,jA	}_x:	-1.577737e+01
+AT	[86, 35]	TCGG	F,+g	YUI2	?P=1	b1!5	-7.498225e+00
+A	[-38]	TCG	)bD	:zR	b('	<Wg	-1.717799e+01
+GA	[108, 90]	GG	~3	^z	].	z(	-2.600482e+00
+TT	[97, 107]	GG	Rd	Iy	Qv	Jg	-3.010700e-01
+CC	[-66, -35]	GAA	Fuv	;8b	9I^	eb>	-6.777578e+00
+T	[93]	GCTC	fzVJ	AyW`	+yn^	1Zx-	-2.608817e+01
+GA	[89, 94]	TGGA	bW`H	L8}1	'\Q@	@Yst	-1.057997e+01
+TA	[60, 71]	GACT	X#eC	#P8&	!\;Y	/W7D	-1.244407e+01
+T	[122]	AT	^d	BX	F4	ww	-1.207712e+01
+C	[-91]	GCTA	c*bc	tj~3	Z}RO	{"pb	-2.170000e+01
+T	[113]	GG	<}	"x	X-	q2	-8.700867e+00
+CT	[-4, -119]	GG	xk	n(	Nq	hR	-9.877121e+00
+G	[-78]	GGT	hSp	p%'	d]S	)Ur	-8.574940e+00
+CG	[9, 110]	TC	ds	GP	MA	Qc	-1.187711e+01
+T	[-42]	AAA	[dq	v3L	>|b	WEf	-1.497712e+01
+C	[1]	TCCA	w_ic	kB=-	^{t-	yWRD	-2.077712e+01
+T	[-70]	ATGG	@Qhs	Ou&K	Mbaa	.}~#	-2.149945e+01
+AT	[119, -108]	GCAC	`tu0	@Bl*	^*AK	L<3G	-7.365372e+00
+T	[-101]	GGG	kuq	['-	[SG	Mia	-1.487714e+01
+C	[-88]	CCTT	(QPH	G!zn	_[`v	eO4C	-5.396653e+00
+T	[109]	ACA	<9h	zPB	*Y]	Ov&	-5.200878e+00
+GT	[-103, 45]	CTC	uRw	d,7	3F3	=sg	-2.537762e+00
+TA	[-83, -35]	GGC	;tT	C,-	A;g	@>$	-1.226034e+00
+CC	[73, 10]	AGGA	ypWs	qc08	RY;n	>9w[	-1.502720e+01
+A	[105]	GAG	h7J	A&*	xnb	U&Z	-6.200003e+00
+TG	[-24, 55]	GCGT	0D^G	V^$0	w}?o	't!f	-9.603564e+00
+G	[122]	TA	op	'4	&O	lz	-1.017712e+01
+TA	[-92, 81]	TT	tE	3X	#!	B?	-5.500218e+00
+AG	[-106, 14]	AAGG	t872	ap&(	j%IE	".{b	-9.573452e+00
+GT	[73, -75]	ATGT	IPD%	})1q	9ldy	XIbt	-7.797878e+00
+T	[107]	TG	Im	EE	8c	MU	-3.600061e+00
+A	[-82]	AGAG	Yq$Z	mOkJ	ZJ}@	Krr@	-1.580003e+01
+C	[116]	ATT	qr[	kXu	2)>	\%L	-1.827712e+01
+G	[9]	TCTG	YN-\	~#!b	ici0	mHnw	-2.257712e+01
+T	[-59]	AGGT	khb"	ok,X	u$>?	pK/)	-1.747712e+01
+TG	[-116, -47]	CGA	=SF	1Xu	4,w	[^a	-1.178188e+01
+A	[-63]	CAAG	_>b,	:gZ*	B!`z	vxMO	-2.267712e+01
+G	[99]	GC	F+	0/	Br	uZ	-1.400087e+00
+GG	[-97, 100]	ATAT	tQM{	Ua_D	Ft>*	Gz2-	-9.299977e+00
+AG	[-77, 16]	ATAA	;Yw=	Ew~L	2Jla	.B?e	-1.520144e+01
+GT	[12, 88]	AGAA	D9V}	<j*6	pUuG	gc}&	-8.555275e+00
+C	[-38]	AG	JW	~y	#x	sI	-1.337712e+01
+AG	[-53, -3]	ACCC	)Ay_	khp.	nj>w	\^j/	-8.724504e+00
+T	[48]	TCTT	\@C|	S0`Q	O)ZV	3<Rd	-1.310694e+01
+A	[-12]	TGA	HXo	DXP	;][	M6m	-1.747714e+01
+GC	[22, -118]	CA	q[	WM	C!	#1	-5.133953e+00
+AA	[73, 56]	ACA	q^M	'<!	B&)	+dw	-3.046765e+00
+T	[-69]	CACT	EJOM	x'r;	3E>k	i-0.	-3.400109e+00
+A	[65]	TC	Q8	Fc	K5	tQ	-6.600007e+00
+A	[-11]	ATA	J4o	rm7	rWO	yZ.	-8.900034e+00
+AA	[-128, 17]	AT	}^	_i	Ix	Y?	-6.708890e+00
+T	[-2]	GTA	y{T	`UH	Dj#	oDs	-2.267712e+01
+C	[-86]	TT	&N	}%	73	u/	-1.377121e+00
+T	[-24]	TT	0e	^\	i]	]m	-5.913956e+00
+T	[116]	AC	m_	Yo	Aj	b5	-1.587712e+01
+C	[104]	ACCC	x)#Q	Xx-w	Cy{p	M$N@	-2.547714e+01
+T	[-55]	TT	}B	|G	2"	?e	-3.800435e+00
+CC	[88, -127]	GCTG	hf;9	N]{>	bbNe	E:+q	-1.775228e+01
+TG	[9, -53]	TATC	{="1	{@w|	x@l1	)J}z	-1.324896e+01
+A	[-33]	GC	Rx	e-	YK	Y:	-6.577122e+00
+CC	[85, 68]	CT	4:	j]	\o	q"	-3.282831e+00
+CT	[121, -106]	CTGA	C15a	_HP;	x?mh	D:V.	-6.312380e+00
+G	[-23]	AAGA	nTm-	Kdx+	V'4?	~sjD	-1.750000e+01
+AT	[97, -91]	CCA	-D9	g>N	?5>	5]Q	-7.748556e+00
+AT	[-39, 77]	AGTT	mSsj	Vty`	;xO`	HN=>	-1.140040e+01
+CA	[-31, 71]	GAC	R?7	~8\	JT?	B/d	-5.229582e+00
+C	[116]	CAA	q&[	Vl;	l^,	/Yn	-1.521764e+01
+C	[-98]	TCTT	-7gZ	;PKc	I^~g	\2K@	-1.367712e+01
+AT	[-93, -7]	ACGA	$u5m	rP8/	@D/`	B}Y6	-4.994958e+00
+TG	[-97, -125]	TC	+|	:6	fD	(Z	-2.527646e+00
+CA	[32, 36]	AGT	H>o	Wnv	m8v	29K	-1.220980e+01
+A	[-76]	TCC	(+F	[L]	T3U	NdL	-9.777135e+00
+A	[-85]	GTA	7.5	.2)	vD.	'p{	-1.082838e+01
+GT	[115, -102]	CCTC	H>0#	bJNz	3yj`	pF,c	-6.178205e+00
+GT	[-67, 108]	CT	ek	Cw	%$	=2	-6.037814e-01
+TC	[46, 31]	TAA	'O,	L1z	}U|	X=^	-2.062603e+00
+TC	[-78, -69]	GC	Y%	HD	nq	oK	-3.800339e+00
+T	[3]	GA	U/	oB	,r	p8	-8.977121e+00
+CA	[-97, 93]	CCG	pmi	pc9	@#S	1+h	-3.145002e+00
+A	[109]	TC	C]	E$	4w	~8	-3.001729e-01
+A	[40]	CC	aH	`3	nB	"t	-9.363947e+00
+TA	[-33, 1]	ATC	2qQ	MdZ	:M.	2RR	-1.153431e+01
+AC	[99, 84]	TG	J~	?Z	fo	>q	-6.001564e+00
+TA	[-124, -7]	TTAA	lQ-|	\fI0	tGYM	8jyW	-8.687481e+00
+CT	[-106, 25]	TACG	`\#>	A+=6	zBJJ	FL"u	-9.780150e+00
+AC	[67, -1]	TC	;E	v%	,2	dB	-1.628705e-01
+GG	[-43, 30]	AAT	UY6	)"G	v==	L*A	-8.486218e+00
+A	[-13]	CCTA	T$^3	e`g%	ViA#	@C,U	-1.260035e+01
+G	[-109]	GCC	b(k	"<(	yv;	UBQ	-7.500003e+00
+CA	[69, 41]	AG	hs	L~	)X	os	-7.870009e+00
+T	[-110]	CCCT	o0Za	""+>	g9W_	gsAi	-1.877712e+01
+A	[-25]	TGCC	:}Xg	egU=	]xBX	lH~.	-1.760138e+01
+G	[-115]	TGA	K.z	GB8	`-B	*}(	-8.735556e+00
+TG	[-13, -37]	CATC	\[nA	+LFf	SA4=	D!e8	-6.301458e+00
+C	[89]	GAAG	%#[S	wt3#	{t{i	D[@-	-1.347726e+01
+AA	[-86, -111]	CT	@u	5_	',	z/	-6.501260e+00
+AC	[-49, 105]	GC	'\	wo	?R	iU	-1.378157e+00
+C	[-118]	CTAG	^$W\	3ZQj	2QeZ	hGtw	-2.260000e+01
+CG	[-59, -51]	GGC	T|a	*vi	f[M	9Nq	-1.307980e+01
+TG	[61, -56]	TTAA	,A^@	^SAN	;q#?	l0/P	-1.027167e+01
+A	[-116]	TTC	uSS	C$J	M}8	_0K	-1.337712e+01
+CT	[108, -20]	TC	"9	"A	tm	CN	-3.465343e+00
+TC	[-51, 7]	TCAT	4D}L	@`V5	J/gi	iheV	-1.092431e+01
+C	[102]	CAAC	~F5w	X,D|	(]"\	5{(D	-5.304365e+00
+AT	[-70, -46]	GG	q>	Y)	w1	/3	-9.294295e+00
+A	[-36]	TCT	!~3	s>E	9S0	)So	-1.125206e+01
+A	[50]	CTAA	sz%*	x#xw	&Y_;	tKEz	-2.137712e+01
+CA	[-51, -33]	TACG	D;);	P~')	l{zO	rl&#	-1.102260e+00
+G	[16]	GA	YU	p1	wX	;x	-1.601093e+00
+GT	[-87, 28]	GAT	%T2	Tf/	W{,	(c{	-7.258727e+00
+G	[-83]	GTCG	Q\'<	aqUS	XEPu	2D[_	-2.000876e+01
+C	[19]	TGG	0=-	&>?	R.c	Bph	-1.197734e+01
+AT	[-5, 43]	CTCC	2=O?	y45g	w@vD	\AEQ	-7.113262e+00
+GT	[98, 33]	CT	Z!	rd	cN	~J	-1.287712e+01
+CT	[-36, -18]	TT	Pg	pT	!R	1v	-5.147907e+00
+AT	[65, -95]	GGGA	6O%P	=Plr	_YYm	off5	-1.236527e+01
+AA	[-32, -64]	GT	r!	_a	V#	}=	-9.788194e+00
+G	[-48]	GG	t0	p[	]m	D0	-5.800137e+00
+CT	[18, 104]	CTG	p9-	3&]	bql	$}g	-2.780167e+00
+T	[-52]	CAG	L=B	'pf	GH`	'8,	-1.390275e+01
+C	[46]	GACC	g]55	(>jF	nl8^	\h|-	-2.067712e+01
+AT	[-121, 99]	CTTG	p,!_	w`[]	Vy(L	wU1n	-1.657815e+01
+AA	[51, 89]	AACG	KSk[	LZj|	87`G	Oh7X	-1.291131e+01
+TC	[-121, -56]	TCCC	v<Sw	/1WC	faX'	J+cE	-5.300753e+00
+T	[-70]	CG	r@	{D	_\	FB	-1.207721e+01
+G	[109]	AAG	5=`	Yu&	Uo%	:t9	-1.080574e+01
+A	[-45]	GTTT	;'l6	)#,O	2I1Q	%QTX	-1.409760e+01
+A	[62]	AA	C$	MN	=F	M@	-4.500190e+00
+AC	[-22, 68]	GAG	7D4	!Py	#7,	"kh	-1.074208e+01
+AA	[15, 25]	GG	/=	Kb	St	9B	-5.456485e+00
+AC	[-17, -59]	CC	a.	64	Na	Q<	-2.201033e+00
+C	[-126]	CAT	Ql'	fNF	E6<	r*1	-6.100007e+00
+A	[-78]	GC	y$	%G	XQ	q/	-1.307712e+01
+TA	[-44, -81]	CT	Ih	OO	46	bs	-9.076894e+00
+AT	[-42, -50]	TG	qe	+<	Q-	oe	-3.001030e+00
+GG	[-105, -1]	AA	a)	G=	f"	y\	-3.101024e+00
+CG	[126, 92]	TT	Of	gc	T,	47	-1.165045e+01
+CC	[2, 64]	CCG	Dc9	L&l	5m%	L7d	-3.678158e+00
+G	[4]	ACC	92>	e"r	pM&	W1Z	-8.677123e+00
+A	[-112]	CG	/W	a[	c-	'W	-7.802749e+00
+AC	[13, -12]	AC	*\	n`	{P	Pp	-3.594828e-01
+G	[-126]	AC	)4	7z	L9	eQ	-1.017712e+01
+A	[36]	AT	8'	,>	zW	n3	-2.902182e+00
+CA	[24, 102]	GA	5;	~j	J%	lG	-2.999724e+00
+AT	[-66, 109]	ATTC	<7Q,	P.t0	0'!.	Y~DG	-3.101926e+00
+AA	[62, 7]	GCT	o'A	ZWE	6Tu	PZ<	-1.325494e+01
+C	[-5]	TAC	~~&	g}H	!(5	`[I	-1.320000e+01
+G	[-112]	AA	qW	vL	d?	Nj	-1.277713e+01
+CC	[-2, 2]	TTTC	lo^+	,Muc	jEa=	>O^[	-1.882445e+01
+TG	[-22, 79]	GC	zH	fk	w-	Q$	-7.701037e+00
+G	[15]	CGT	^kd	mn`	7-:	?P'	-1.487756e+01
+G	[-83]	TACG	1Vb/	P}x:	/QYP	)DW1	-1.835206e+01
+T	[-45]	CCG	G=6	rL*	~3Z	1]|	-1.341112e+01
+CC	[93, 92]	GTAG	g\A0	)SGf	vE$!	$=.-	-1.524643e+01
+AG	[-67, -38]	GT	SV	r"	Qn	"p	-7.868296e-01
+T	[76]	TCT	m1O	72l	_1\	A{r	-9.800274e+00
+CT	[55, -68]	TTCT	D@E[	QyUo	{:G?	}v}1	-1.107987e+01
+TT	[-127, -59]	AAT	TV;	UtN	1zN	01{	-1.418863e+01
+TT	[-36, 113]	CTGA	"*CO	%@lW	;%=|	(~'}	-9.368653e+00
+A	[-126]	GAGG	e'lL	hA9:	Ehc$	Kt|Q	-2.437715e+01
+GA	[-75, -114]	TGCC	qbLL	}4^~	]TLf	}~4~	-1.735525e+01
+C	[-100]	ACA	n.+	>]X	-'o	,}m	-2.181307e+01
+TG	[-98, 41]	GGAA	Y_!@	Lq3c	^/7_	N4_q	-1.619579e+01
+T	[69]	GGTA	=?mx	`iw|	~@_U	'JQ[	-2.120275e+01
+C	[-7]	CATC	k)""	%38:	1:Y8	e<Y6	-9.500000e+00
+G	[73]	TTTA	q,!k	r6cb	ZNLC	t7k`	-1.580000e+01
+T	[94]	TA	)[	0c	7C	U2	-6.674943e+00
+GT	[-75, 119]	TA	x`	f0	,w	]C	-1.801030e+00
+CC	[-3, -110]	TG	b5	8y	LU	_t	-2.778154e+00
+T	[-43]	TCG	q]>	hHt	Z(;	pw{	-1.290000e+01
+A	[-41]	GAAT	4gOK	Zzuj	/oro	t|!K	-1.547712e+01
+G	[-108]	CAA	v"v	ntP	<8l	GKX	-2.277719e+01
+TC	[79, -21]	AAT	oUJ	"4:	v6&	YV>	-2.105092e+00
+TT	[-18, -71]	CA	Z9	z]	B;	&3	-6.245808e+00
+CA	[50, -90]	CC	-2	"p	ZE	~:	-2.506564e+00
+CG	[-128, -111]	CA	`{	V?	Ho	hE	-3.000000e+00
+CT	[21, 125]	AA	*l	lH	Pb	Of	-1.677025e+00
+TA	[57, 77]	GT	k+	i1	`-	-n	-3.893941e-01
+G	[85]	AC	tJ	~7	Rf	D,	-1.097726e+01
+TC	[-100, 88]	GT	t9	RD	b4	Y]	-1.178982e+01
+GA	[80, 63]	TTTG	iz@.	y3rE	|'LT	;6a]	-1.613121e+01
+CA	[-61, -14]	TTCG	C=IQ	%q=}	z`YI	PXjl	-1.387833e+01
+T	[46]	GGCA	AFXc	3wby	.N+7	.*9R	-1.959945e+01
+G	[-81]	AGAC	G+C&	#iO%	hP=)	Xt`>	-1.640007e+01
+GG	[-88, -116]	GGC	*xv	_xp	{Ii	7k<	-8.261983e+00
+GC	[-45, -40]	CCT	B$.	$u~	;-f	F68	-9.769466e+00
+CT	[63, -126]	AAAC	:)aU	VX"G	Dkho	whC;	-4.279528e+00
+T	[93]	GTC	.cU	EN2	ObN	[IM	-1.067712e+01
+A	[95]	CTTG	650a	kv"S	_08(	$,vL	-2.160553e+01
+AC	[-1, -48]	CAC	f@M	S:!	_Hu	TUH	-2.766188e+00
+G	[83]	GTGT	,FK$	\]}'	YURf	2(`y	-2.114470e+01
+AG	[116, -47]	TCTT	.rs=	fIHz	>ulw	/&3X	-7.896296e+00
+C	[45]	CTA	2"J	hHI	^&r	pe5	-5.908753e+00
+T	[44]	GATA	+{}#	voL$	P(,1	:0vJ	-2.187850e+01
+G	[86]	GTT	3eC	@WJ	@UJ	f;Y	-1.100694e+01
+CT	[40, 11]	CTT	3Q0	JaQ	q5[	oh&	-5.101672e+00
+G	[88]	TT	>|	,p	3u	Ov	-1.127713e+01
+GC	[79, -78]	GGG	BM[	ju.	6d&	lz3	-6.478328e+00
+T	[-104]	TC	%@	6V	n=	Do	-5.520618e+00
+AC	[-123, 66]	TA	h?	cH	m.	C5	-1.112369e+01
+G	[82]	TGCG	vg..	0~PY	Uj"M	Ws$1	-2.017712e+01
+T	[-103]	AAGT	dpWP	+/dT	0]*K	$sW4	-9.002063e+00
+CG	[-110, 106]	AGCA	~;ms	J6NQ	8ANE	UhaT	-1.968290e+01
+TA	[-47, 75]	AG	{G	u0	s8	<J	-1.801897e+00
+GG	[-3, -8]	AGGG	9/gQ	Jr_o	nz+*	XL4z	-1.030277e+01
+G	[110]	CG	{*	KJ	}L	f{	-1.357712e+01
+CC	[-98, 114]	GAC	;%9	+W~	%kf	[Y;	-8.778779e+00
+AT	[84, 37]	GGT	<T+	n&L	f;X	0hK	-3.994374e+00
+A	[-12]	AAAC	hr]=	p*^y	^Af,	O{@C	-7.400011e+00
+C	[-77]	CGAA	Yrxy	B!|"	Ws/z	6fzH	-1.280346e+01
+TC	[-23, 52]	AA	.D	(7	?x	+S	-2.264498e+00
+AA	[78, -122]	AA	)z	ad	SW	Jr	-3.760065e-01
+CA	[104, 39]	TGG	<0n	h*=	b0}	&QA	-4.538531e+00
+GG	[17, -8]	TG	$8	RD	`4	2Q	-1.094448e+00
+T	[111]	CTT	E}E	~u#	.hG	I8;	-1.507716e+01
+AT	[-65, 33]	ATT	)U+	3YI	-K;	G3>	-4.366359e+00
+AA	[102, -19]	AT	u_	`P	BS	n1	-3.010260e-01
+T	[47]	AC	tb	A'	S"	o[	-6.000000e-01
+AT	[122, 59]	CGGG	.Z1.	DC[K	0c%(	_fky	-9.688933e+00
+T	[-2]	TA	KD	w)	%(	A6	-8.003015e-01
+C	[-23]	CCGA	i]al	AYY7	-:/B	\..B	-1.020000e+01
+T	[87]	ATT	Fz/	qKn	)8N	Q7w	-1.697713e+01
+T	[-29]	CGTC	_<=2	^WbG	UOPZ	s8Zz	-2.667712e+01
+TA	[19, 110]	TT	6,	w=	I(	qV	-1.947669e+00
+CA	[66, -23]	CA	)s	gj	ox	i<	-3.759704e-01
+C	[-3]	GTA	m)h	~Gu	^?'	q;)	-4.600000e+00
+T	[71]	ATG	z^4	#d9	w&Q	BTd	-2.277734e+01
+C	[-11]	GT	q.	DD	fk	L_	-3.500022e+00
+TG	[-40, 38]	AAG	x;N	<i2	YfZ	i?3	-1.425361e+01
+G	[-64]	TG	7n	Qk	h\	UB	-1.007712e+01
+A	[-112]	GCCG	'0Wx	$snl	){ex	PlmW	-2.227713e+01
+TT	[-76, -45]	GTG	d4h	JYk	hO#	_G[	-1.488358e+01
+TG	[93, -41]	TAAT	IU2m	rR)m	kdPY	DHiH	-1.067017e+01
+GT	[114, -24]	CT	^6	Tp	wi	p%	-6.881615e+00
+A	[-71]	AAC	=Ue	Th0	-R7	Q_a	-1.350070e+01
+C	[-53]	AAAT	9y"{	Yt*-	A#:g	ig:p	-1.870173e+01
+GC	[-33, 46]	TAT	y!]	!y:	&?R	Bww	-3.278803e+00
+A	[34]	AGT	ww`	Nkg	~GM	)|q	-1.547494e+01
+GT	[-32, -101]	CAT	gf7	"li	yA.	?\2	-9.501462e+00
+GG	[5, 30]	CC	J:	&{	g/	)v	-7.947855e+00
+A	[40]	CGC	1IO	p%#	xCw	tT(	-3.177121e+00
+AT	[-62, -43]	ACTG	8%Rn	lz]*	t=]Q	^17\	-1.010389e+01
+A	[44]	TC	BJ	jD	9e	Yj	-7.277122e+00
+C	[12]	ATC	.[/	Om2	S@S	Re^	-1.547713e+01
+AT	[124, -60]	AGGT	TIN2	J[T~	FL;r	.pJC	-1.023157e+01
+TT	[77, 40]	GTCA	$q-#	~@U3	GR&L	=b&`	-5.354474e+00
+AA	[30, -87]	GAT	Iy\	Rt0	V9o	+xV	-6.325641e+00
+T	[-28]	CGA	[;#	m6>	V7\	dMy	-1.717712e+01
+G	[-65]	TAAA	ij(b	dkkN	9TYZ	x^w/	-2.507712e+01
+C	[-51]	AC	hf	_>	wU	>B	-2.900547e+00
+C	[-62]	ATAG	)nO#	L6h,	yH]A	Y)v=	-1.467712e+01
+GC	[-9, -118]	TGG	L@!	g#-	!{M	{*4	-9.673608e-01
+C	[49]	CG	D)	UD	_8	79	-3.502886e+00
+TA	[-105, 40]	TAC	1ts	sp}	+w;	wgL	-9.511641e+00
+T	[-65]	AC	=A	Bi	2U	^5	-7.200689e+00
+AG	[106, 123]	AT	0)	Xw	ah	n_	-3.899258e-01
+A	[106]	GGAC	z2C@	e|Xo	bgvL	TT(.	-2.047712e+01
+GT	[60, -116]	TTC	%D;	<K$	\@_	o%\	-1.478661e+00
+CA	[-98, -54]	GT	40	!P	Pc	S$	-4.653645e+00
+A	[-98]	TG	(!	YI	_o	@)	-5.177466e+00
+AT	[81, -96]	CTTT	1AMZ	A-@:	5J]D	e1=k	-3.836114e+00
+CA	[36, 54]	TT	x5	{a	{R	~o	-1.195517e+01
+G	[91]	TG	{0	>o	?~	e~	-7.800000e+00
+A	[-115]	TG	@\	2z	%7	oY	-1.247712e+01
+CT	[47, -105]	AGT	.XH	H;B	A3}	;Zg	-2.924507e+00
+AG	[17, 38]	CAG	-CQ	~,n	frG	*=f	-1.487777e+00
+CT	[-12, -26]	GG	-X	Zp	Mm	`g	-7.945021e+00
+TT	[11, -125]	TC	Q-	{'	V3	aa	-5.868810e-01
+GT	[-96, -97]	AAGG	gPjd	sg/!	,F$a	te1u	-1.711685e+01
+AT	[8, -48]	GGAA	a:x4	xdeg	UD<n	M?!^	-1.625513e+01
+TA	[4, 21]	GGC	F-N	1!g	JjK	><8	-4.476541e+00
+T	[-80]	GGAA	Tkrt	+MnT	!l-A	dDkX	-2.287712e+01
+T	[114]	CGG	w@Y	q=c	;dB	3bB	-1.518406e+01
+T	[-127]	CA	z$	Sb	+P	;h	-1.587821e+01
+CG	[26, -118]	TGT	8X:	9mJ	(':	1m[	-7.314828e+00
+AA	[-38, -47]	GA	]G	n7	*$	"Z	-7.761647e+00
+AT	[-7, -85]	GGGT	SR(\	r_N+	2\5"	[{H|	-7.597060e+00
+G	[68]	ATAT	,do^	dW.F	N){]	tPkg	-2.137712e+01
+T	[5]	TCC	,R,	\uT	V6/	(aJ	-1.263260e+01
+T	[-125]	ACTG	Wi-5	;J*F	YI@\	,{#;	-1.281307e+01
+G	[-53]	AC	=`	q$	'?	-O	-3.289936e-01
+TC	[-65, 87]	GTG	Vi8	.0Q	/jF	$$(	-2.500086e+00
+AC	[-118, 94]	CTG	p3)	U["	G|W	Yb!	-6.101026e+00
+T	[-81]	ACGG	/R';	r&u-	XHGr	V:Se	-1.231765e+01
+TA	[110, -29]	TAG	DI^	G,~	o9T	N)!	-1.100151e+00
+T	[-8]	AGG	E8g	hjs	.wQ	=p%	-1.177781e+01
+GG	[111, 29]	GC	u#	VI	*{	'a	-8.593891e-01
+T	[16]	CA	P8	#^	oY	jN	-1.127712e+01
+A	[-17]	GGC	p.&	]+a	x6k	sW@	-4.100000e+00
+GA	[-3, -71]	GAG	'#b	_+X	4o5	;Mg	-1.427745e+00
+T	[92]	TGG	8aG	i)'	~*(	t:3	-2.602182e+00
+CA	[-76, 26]	TA	>z	@&	"U	q$	-3.558822e+00
+AT	[67, 58]	CC	<i	HQ	4h	3?	-7.983771e+00
+AC	[-95, 96]	TGC	BqK	;S,	X7t	)Cq	-9.153108e+00
+CA	[77, 57]	TTCC	[Pxd	wTl]	u<Fc	Wn)n	-6.201030e+00
+TG	[4, -17]	GG	7q	Ls	mP	EV	-2.978268e+00
+AT	[48, -110]	CT	?q	Vp	yl	X~	-3.778153e+00
+GG	[-102, -21]	CCAG	Ce^S	0%J4	&j;h	m"k`	-6.478150e+00
+C	[-10]	GA	B8	9^	Og	RU	-9.877127e+00
+A	[81]	TTAC	xvkE	?R+.	+\,n	4lrJ	-1.710550e+01
+T	[25]	CT	[r	7c	C=	T0	-6.600004e+00
+TA	[-34, -34]	GG	~}	7@	|X	m7	-1.287712e+01
+CA	[49, -19]	TG	4x	G3	=x	qg	-2.003361e+00
+GT	[73, -48]	AGC	I&Z	v#1	B)W	xLp	-3.554500e+00
+A	[97]	TTCT	cfcD	&{OV	y-V?	iu%R	-1.430000e+01
+T	[108]	AAAG	<1>u	x\Sn	px4d	m!T;	-1.677712e+01
+T	[22]	AT	YA	0y	j$	|+	-1.487712e+01
+GG	[-28, 44]	GAC	Rc}	wjD	04{	b"}	-1.088366e+01
+CA	[60, 37]	CC	uM	z*	!0	"T	-1.586806e+00
+CG	[6, -76]	CT	Kj	dt	8$	0]	-8.051210e+00
+AA	[-114, 90]	CAAT	}W/R	(;dr	M7c)	<0e3	-1.847849e+01
+A	[-121]	AGCT	mfE@	.OYy	eO^.	^>Wt	-1.830000e+01
+A	[-93]	GTG	'h[	bI~	.h?	=j7	-6.326316e+00
+A	[90]	GCG	trL	KNS	U>\	)r0	-1.485206e+01
+C	[4]	CTCG	QC]r	^j)v	>+j-	,KK|	-2.063595e+01
+GG	[63, 10]	GA	P5	v5	B@	2_	-1.942485e+00
+CC	[-16, -109]	ACC	7bU	:_>	ALZ	C=F	-5.878129e+00
+AC	[-101, -96]	GT	cy	Mx	\Y	7!	-1.572588e+01
+CA	[9, -16]	TA	li	$K	^_	ku	-8.278124e+00
+G	[61]	TCT	+)u	BD$	W_8	#q#	-5.610045e+00
+A	[39]	GA	WL	xu	bd	%/	-8.620483e+00
+GT	[-96, -13]	TT	s=	g6	%?	hJ	-2.401030e+00
+T	[68]	ATT	;KD	rtO	*-^	P!`	-1.767713e+01
+AT	[-77, 94]	CAGA	<zAC	f43o	1Qxo	lj6j	-8.178853e+00
+CA	[-20, 63]	CTGA	r0q'	LX+s	*7Nu	'n]R	-8.306450e+00
+A	[-4]	GG	"y	QL	e<	s7	-4.877121e+00
+TT	[-31, 58]	AGG	#W`	b8|	h#y	Ilg	-9.713455e+00
+G	[18]	CCT	rey	Cb]	!>3	c}\	-2.097712e+01
+GT	[-103, 124]	TCC	;J/	=7X	a_a	&@|	-7.620330e+00
+TT	[-118, -55]	AGGA	.cFi	n9{l	/Yvc	em`b	-1.077814e+01
+AG	[-53, 20]	TTC	!is	_8s	dTM	mq>	-5.978151e+00
+C	[113]	AT	)h	NH	&D	kG	-5.177121e+00
+A	[60]	CACA	F}W{	n3MD	2"DO	2^Gi	-1.698587e+01
+AG	[-39, -8]	ACT	0J%	.AT	Z?k	E"#	-3.678265e+00
+CA	[-37, -54]	CCT	gSv	}]=	*@4	(9o	-8.675148e+00
+A	[-7]	TGC	B>0	rc1	q//	M#D	-1.010024e+01
+C	[52]	TA	0l	K{	;-	yh	-1.097712e+01
+T	[-37]	GTGA	I3+!	avbk	TlCA	4x2p	-2.258262e+01
+T	[-24]	TC	<Q	<Q	1;	`=	-4.800868e+00
+C	[-93]	GTCG	x^G)	ZSiO	l>_A	^TrA	-1.630000e+01
+AC	[62, 21]	AT	L,	=<	8\	3M	-1.824898e+00
+CA	[59, 14]	CC	q'	(v	!4	{z	-1.383653e+00
+A	[-27]	CTTT	a<wp	H>be	#%j7	[iCO	-1.777712e+01
+CC	[-5, -80]	GGG	&17	Gwd	e27	+3n	-9.296351e+00
+TC	[85, -125]	GCC	|bg	U$Q	t[4	Lwf	-1.017817e+01
+A	[59]	TC	Jx	uf	j9	,f	-1.151307e+01
+T	[44]	AGA	@J"	,m+	S)j	f:S	-1.617712e+01
+AC	[71, -3]	GT	@(	:`	bQ	B|	-3.974004e+00
+GG	[-18, 5]	GTC	_q:	w>3	P#}	}[o	-6.178132e+00
+T	[116]	AGCG	i^#X	uvNu	g0~~	UX.&	-1.797712e+01
+C	[-86]	AGAT	BF!S	-iLR	%\^t	%n$5	-1.349760e+01
+G	[56]	GG	#,	7`	,:	\j	-6.732924e+00
+T	[104]	CTGA	Ugny	BkB1	C1_S	lnzD	-2.547712e+01
+T	[-90]	GGTT	Ii]8	B'X/	9W6<	_1oA	-1.607712e+01
+G	[-92]	AGT	-aR	bd`	hz~	Ws9	-1.077712e+01
+C	[-31]	ACCG	_+I$	G&Nv	_Hd8	Eu(;	-1.047723e+01
+A	[95]	CT	TG	(U	V4	Re	-5.200009e+00
+AT	[-87, -78]	GT	DJ	eI	fj	E7	-3.013110e-01
+GA	[108, -109]	TT	%y	oC	'@	.g	-4.299452e+00
+TT	[-17, 20]	CAT	vj<	5?i	Xct	|c(	-1.219972e+01
+C	[-48]	ACAC	Ooo3	n4-v	`_ow	4=t{	-2.428262e+01
+C	[-50]	CC	-*	j)	DE	Up	-8.283075e-01
+G	[102]	AC	nd	3g	o=	,q	-1.521307e+01
+AC	[88, 107]	AGA	nlR	a_h	HH#	|':	-6.448326e+00
+GA	[-126, 116]	GC	4a	{9	gz	1G	-2.715724e+00
+CT	[-15, 66]	GTGT	|y55	bJIs	@s}c	v$g5	-6.301061e+00
+G	[1]	GG	^`	!)	bM	z)	-8.000003e-01
+CT	[-48, -104]	CGGT	Y}_=	M+3e	uBj(	Ly]f	-7.301742e+00
+AT	[67, -57]	TTG	712	?x:	>J!	?IM	-2.815296e+00
+C	[13]	CCT	)ez	mAK	fv+	Crw	-1.187511e+01
+C	[109]	TA	U!	w1	&7	)4	-1.674943e+00
+T	[-89]	TC	38	M,	Ib	bG	-1.106938e+00
+A	[31]	GC	}=	pt	hp	Nv	-1.797713e+01
+T	[-94]	GGAT	24)U	N!Gn	$Ns}	7\ML	-1.087987e+01
+T	[56]	GTAG	H5mH	e.1F	$(\k	QL7{	-1.687713e+01
+C	[-20]	GCGC	3L4l	U$4?	V!<\	tO:E	-8.677121e+00
+GG	[25, -4]	GG	P|	7U	z4	jx	-3.065381e-01
+G	[-22]	CC	ho	ZO	(v	Q?	-1.217713e+01
+C	[-8]	GGAG	H^G;	_s\(	4<+l	`GXi	-2.527712e+01
+GA	[-66, 105]	ATC	=\f	lBd	@#&	}=I	-7.601152e+00
+TG	[-78, -108]	ATG	m>K	\v:	n11	L2s	-1.426528e+01
+GG	[39, -89]	GT	kf	Ha	PP	x:	-6.377694e+00
+GA	[-97, 71]	GA	YN	YS	lL	3\	-3.080005e-01
+G	[-32]	TG	fI	q8	ua	$q	-9.979184e+00
+T	[100]	GTGG	V}uq	{Y@I	QyXq	&)5R	-1.844221e+01
+A	[-115]	TAA	Qtt	a|+	'<Q	NJ2	-1.607713e+01
+AT	[-81, -84]	AGC	Vi(	{%J	4M9	+c;	-1.893302e+00
+AT	[1, 76]	GA	/t	ZJ	?_	'S	-6.102744e+00
+CA	[120, -124]	TTA	j[O	=c\	}-W	T#[	-1.467816e+01
+G	[-20]	GCC	Pq*	IDb	qVL	d1?	-6.500009e+00
+A	[-104]	CCA	kn?	R8s	l?D	-hl	-1.770543e+01
+CA	[-108, 70]	AG	C@	7#	%"	WB	-5.011470e-01
+GC	[119, -18]	AGGC	h!ck	nd~5	u2P}	ubyC	-2.106082e+01
+G	[-52]	GTA	I;h	z10	Y):	?<;	-4.200478e+00
+CG	[55, -45]	CTC	@Z2	SN,	XEy	^8q	-1.401330e+00
+AG	[-11, 46]	TCAG	ohPx	UT`=	\pK:	QRb3	-1.188015e+01
+GC	[-81, 11]	TGA	FZV	rqh	0:0	F=p	-1.247824e+01
+C	[47]	AATA	VYgo	-g\}	IbFs	LTf\	-1.980002e+01
+C	[-37]	GG	I^	S"	./	u/	-4.577121e+00
+TG	[23, -24]	CAA	>7U	>T;	"e]	(7C	-5.675093e+00
+A	[-72]	AA	{{	Wn	v$	p/	-7.700000e+00
+C	[8]	AT	HH	jv	h2	4]	-1.288262e+01
+TC	[-63, -55]	CGGC	>r,&	Z).#	zX0G	qLgW	-6.255271e+00
+GG	[7, -52]	ACCG	cZJX	yR:<	-8]0	}x<*	-1.492262e+01
+GA	[107, -89]	GTT	rAf	B<s	%XR	c6r	-1.023377e+01
+C	[-57]	CA	{/	cQ	<M	FQ	-4.800087e+00
+TA	[-121, -67]	TAC	wSh	ZTm	\v,	nMs	-5.399659e+00
+C	[-115]	GTAC	t@`^	7Aos	@.m{	~wW=	-2.017712e+01
+CA	[66, -121]	GGA	32-	wq:	4c1	(TW	-7.351732e+00
+GA	[122, -118]	CCG	/p&	9+q	9;:	^B_	-4.155268e+00
+GG	[72, 79]	AAC	z3B	u%U	D|X	4zE	-4.306532e+00
+AG	[52, -32]	TATT	q>MZ	AW{S	S38D	4tVf	-2.404595e+01
+T	[70]	CTCG	L|yg	=CJa	zo?a	[rx*	-1.777712e+01
+C	[55]	TGC	I>y	iqe	^>D	<Y=	-1.527799e+01
+G	[64]	TGA	$4C	4wJ	gto	ox9	-1.177712e+01
+TG	[-4, -104]	CTGT	M:&(	}CY6	<D!Q	T<En	-1.084202e+01
+T	[33]	CCAC	F+N}	am`W	GbMf	DaKz	-2.487726e+01
+G	[-92]	CAG	T#p	G1W	me:	BGk	-1.457734e+01
+G	[93]	TAAG	O%KP	_q-(	![^2	FDr*	-1.700010e+01
+CC	[-69, -26]	AC	zg	Jm	'}	6f	-3.044935e-01
+C	[82]	TAA	0)k	]sJ	o*\	xOW	-1.557712e+01
+G	[13]	GGCA	jl!X	`b]5	%tr8	Y%bR	-1.790000e+01
+A	[8]	TGTC	f05"	Vw"\	T!7n	.8+}	-2.619945e+01
+CC	[-4, -62]	CA	N7	g~	Cu	1v	-2.989213e+00
+G	[43]	CG	Yn	D{	U+	/;	-1.509476e+01
+CG	[17, -30]	TG	|F	jW	}$	"2	-1.086712e+01
+G	[76]	GAGA	^$'7	a/g4	vyrU	bVe-	-9.400000e+00
+C	[111]	GTA	Kli	rK]	qoT	^<g	-1.120003e+01
+C	[102]	CAGA	G[$B	@zK3	s"je	b9:{	-2.040007e+01
+T	[84]	GAT	ml=	Q#"	5M<	zX#	-8.477121e+00
+C	[10]	TGT	^vb	RKt	V;Q	q8h	-1.787712e+01
+AG	[-29, 84]	TT	uT	+x	P6	M{	-5.881302e+00
+CA	[71, -48]	CG	qc	eB	[_	&4	-3.766046e+00
+C	[109]	AT	u_	([	<}	5.	-5.804365e+00
+A	[30]	CACA	cAg<	x=4n	/)]z	p2q,	-1.897712e+01
+G	[-65]	TCAG	EHh0	'S(r	N27<	`]<;	-1.437712e+01
+TG	[-64, -89]	ATT	%s2	[.H	xCF	eE9	-4.314199e+00
+G	[-49]	GGT	+lr	;oi	#U"	B:k	-1.524598e+01
+C	[109]	CT	WL	^q	#K	<;	-8.000869e+00
+A	[-28]	AGTG	2T$m	_uV<	.D02	Kf^d	-2.120878e+01
+CT	[-28, -18]	CG	}Y	:t	rm	<~	-6.373850e+00
+GG	[61, -15]	TAGT	lL`+	ufa.	bG!*	0\_M	-1.647193e+01
+G	[-5]	GCA	{<m	Q6B	EDl	N61	-3.700014e+00
+T	[-21]	TCAG	Vt!-	GBR}	H}GJ	0"45	-7.213958e+00
+CC	[107, 97]	TT	4y	DK	KK	?j	-3.069667e-01

@@ -147,6 +147,9 @@
 #define VEC_STORE_PD(__v1, __v2) \
     _mm512_store_pd(__v1, __v2)
 
+#define VEC_STORE_INT(__v1, __v2) \
+    _mm512_store_si512((VEC_INT_TYPE *)__v1, __v2)
+
 #define VEC_SUB_INT(__v1, __v2) \
     _mm512_sub_epi64(__v1, __v2)
 
