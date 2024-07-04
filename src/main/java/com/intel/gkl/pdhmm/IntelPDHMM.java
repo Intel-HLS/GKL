@@ -27,6 +27,8 @@ import com.intel.gkl.NativeLibraryLoader;
 import org.broadinstitute.gatk.nativebindings.NativeLibrary;
 
 import java.io.File;
+import java.lang.reflect.Array;
+import java.util.Objects;
 
 public class IntelPDHMM implements NativeLibrary {
     private static final Object lock_class = new Object();
@@ -52,37 +54,50 @@ public class IntelPDHMM implements NativeLibrary {
         return true;
     }
 
+    private static void checkArraySize(Object array, int expectedSize, String arrayName) {
+        Objects.requireNonNull(array, arrayName + " must not be null.");
+        if (!array.getClass().isArray()) {
+            throw new IllegalArgumentException(arrayName + " is not an array.");
+        } else if (Array.getLength(array) != expectedSize) {
+            String errorMessage = String.format("Array %s has size %d, but expected size is %d.", arrayName,
+                    Array.getLength(
+                            array),
+                    expectedSize);
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
     public double[] computePDHMM(byte[] hap_bases, byte[] hap_pdbases, byte[] read_bases, byte[] read_qual,
             byte[] read_ins_qual, byte[] read_del_qual, byte[] gcp, long[] hap_lengths, long[] read_lengths,
-            int testcase, int maxHapLength, int maxReadLength)
-            throws RuntimeException, OutOfMemoryError {
-        if (hap_bases == null)
-            throw new NullPointerException("hap_bases array is null.");
-        if (hap_pdbases == null)
-            throw new NullPointerException("hap_pdbases array is null.");
-        if (read_bases == null)
-            throw new NullPointerException("read_bases array is null.");
-        if (read_qual == null)
-            throw new NullPointerException("read_qual array is null.");
-        if (read_ins_qual == null)
-            throw new NullPointerException("read_ins_qual array is null.");
-        if (read_del_qual == null)
-            throw new NullPointerException("read_del_qual array is null.");
-        if (gcp == null)
-            throw new NullPointerException("gcp array is null.");
-        if (hap_lengths == null)
-            throw new NullPointerException("hap_lengths array is null.");
-        if (read_lengths == null)
-            throw new NullPointerException("read_lengths array is null.");
-        if (testcase <= 0)
-            throw new IllegalArgumentException("Invalid number of testcase.");
-        if (maxHapLength <= 0 || maxReadLength <= 0)
-            throw new IllegalArgumentException("Cannot perform pdhmm on empty sequences");
+            int batchSize, int maxHapLength, int maxReadLength) {
+        int hapArrayLength = maxHapLength * batchSize;
+        int readArrayLength = maxReadLength * batchSize;
+
+        checkArraySize(hap_bases, hapArrayLength, "hap_bases");
+        checkArraySize(hap_pdbases, hapArrayLength, "hap_pdbases");
+        checkArraySize(read_bases, readArrayLength, "read_bases");
+        checkArraySize(read_qual, readArrayLength, "read_qual");
+        checkArraySize(read_ins_qual, readArrayLength, "read_ins_qual");
+        checkArraySize(read_del_qual, readArrayLength, "read_del_qual");
+        checkArraySize(gcp, readArrayLength, "gcp");
+        checkArraySize(hap_lengths, batchSize, "hap_lengths");
+        checkArraySize(read_lengths, batchSize, "read_lengths");
+
+        if (batchSize <= 0)
+            throw new IllegalArgumentException("batchSize must be greater than 0.");
+
+        if (maxHapLength <= 0)
+            throw new IllegalArgumentException(
+                    "maxHapLength must be greater than 0. Cannot perform PDHMM on empty sequence");
+
+        if (maxReadLength <= 0)
+            throw new IllegalArgumentException(
+                    "maxReadLength must be greater than 0. Cannot perform PDHMM on empty sequence");
 
         try {
             return computePDHMMNative(hap_bases, hap_pdbases, read_bases, read_qual,
                     read_ins_qual, read_del_qual, gcp, hap_lengths, read_lengths,
-                    testcase, maxHapLength, maxReadLength);
+                    batchSize, maxHapLength, maxReadLength);
         } catch (OutOfMemoryError e) {
             throw new OutOfMemoryError(
                     "OutOfMemory exception thrown from native pdhmm function call " + e.getMessage());
@@ -95,10 +110,16 @@ public class IntelPDHMM implements NativeLibrary {
         }
     }
 
+    public void done() {
+        doneNative();
+    }
+
     private native static void initNative();
 
     private native double[] computePDHMMNative(byte[] hap_bases, byte[] hap_pdbases, byte[] read_bases,
             byte[] read_qual,
             byte[] read_ins_qual, byte[] read_del_qual, byte[] gcp, long[] hap_lengths, long[] read_lengths,
             int testcase, int maxHapLength, int maxReadLength);
+
+    private native static void doneNative();
 }
