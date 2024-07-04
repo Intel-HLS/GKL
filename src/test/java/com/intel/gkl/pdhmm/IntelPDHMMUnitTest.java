@@ -90,10 +90,10 @@ public class IntelPDHMMUnitTest {
         intelPDHMM = new IntelPDHMM();
     }
 
-//    @AfterMethod
-//    public void closePDHMM() {
-//        intelPDHMM.done();
-//    }
+    @AfterMethod
+    public void closePDHMM() {
+        intelPDHMM.done();
+    }
 
     @Test(dataProvider = "dataWithNullArguments", expectedExceptions = {NullPointerException.class})
     public void testComputePDHMM_ThrowsNullPointerException_WhenArgumentIsNull(PDHMMTestData td) {
@@ -231,8 +231,7 @@ public class IntelPDHMMUnitTest {
                         readLength,
                         batchSize, max_hap_length, max_read_length);
                 long end = System.nanoTime();
-                System.out.println(
-                        String.format("Total Elapsed Time = %d ms.", TimeUnit.NANOSECONDS.toMillis(end - start)));
+                System.out.printf("Total Elapsed Time = %d ms.%n", TimeUnit.NANOSECONDS.toMillis(end - start));
                 // Check Values
                 for (int i = 0; i < batchSize; i++) {
                     Assert.assertEquals(actual[i], expectedFull[i], DOUBLE_ASSERTION_DELTA,
@@ -384,7 +383,5 @@ public class IntelPDHMMUnitTest {
             }
         }
         intelPDHMM.done();
-
     }
-
 }
