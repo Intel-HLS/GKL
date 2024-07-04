@@ -38,6 +38,7 @@
 #define PDHMM_MEMORY_ALLOCATION_FAILED 1
 #define PDHMM_INPUT_DATA_ERROR 2
 #define PDHMM_FAILURE 3
+#define PDHMM_MEMORY_ACCESS_ERROR 4
 
 #include "MathUtils.h"
 #include <cmath>
