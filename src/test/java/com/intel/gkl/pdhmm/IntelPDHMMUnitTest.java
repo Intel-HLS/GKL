@@ -2,6 +2,9 @@ package com.intel.gkl.pdhmm;
 
 import com.intel.gkl.IntelGKLUtils;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.FileInputStream;
@@ -17,7 +20,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import htsjdk.samtools.SAMUtils;
 
 public class IntelPDHMMUnitTest {
-
     private static final String[] pdhmmDataFiles = { IntelGKLUtils.pathToTestResource("expected.PDHMM.hmmresults.txt"),
             IntelGKLUtils.pathToTestResource("pdhmm_syn_199_68_51.txt"),
             IntelGKLUtils.pathToTestResource("pdhmm_syn_1412_129_223.txt"),
@@ -27,14 +29,128 @@ public class IntelPDHMMUnitTest {
     private static final int READ_MAX_LENGTH = 200;
     private static final int HAPLOTYPE_MAX_LENGTH = 500;
 
+    private IntelPDHMM intelPDHMM;
+
+    @DataProvider
+    public Object[][] dataWithNullArguments() {
+        PDHMMTestData td = new PDHMMTestData(1, HAPLOTYPE_MAX_LENGTH, READ_MAX_LENGTH);
+
+        return new Object[][]{
+                {td.copyWithHapBases(null)},
+                {td.copyWithHapPdbases(null)},
+                {td.copyWithReadBases(null)},
+                {td.copyWithReadQual(null)},
+                {td.copyWithReadInsQual(null)},
+                {td.copyWithReadDelQual(null)},
+                {td.copyWithGcp(null)},
+                {td.copyWithReadLengths(null)},
+                {td.copyWithHapLengths(null)}
+        };
+    }
+
+    @DataProvider
+    public Object[][] dataWithWrongSizeArrays() {
+        PDHMMTestData td = new PDHMMTestData(1, HAPLOTYPE_MAX_LENGTH, READ_MAX_LENGTH);
+
+        byte[] wrongSizeHapArray = new byte[td.hapArraySize + 1];
+        byte[] wrongSizeReadArray = new byte[td.readArraySize + 1];
+        long[] wrongSizeLengthsArray = new long[td.batchSize + 1];
+
+        return new Object[][]{
+                {td.copyWithHapBases(wrongSizeHapArray)},
+                {td.copyWithHapPdbases(wrongSizeHapArray)},
+                {td.copyWithReadBases(wrongSizeReadArray)},
+                {td.copyWithReadQual(wrongSizeReadArray)},
+                {td.copyWithReadInsQual(wrongSizeReadArray)},
+                {td.copyWithReadDelQual(wrongSizeReadArray)},
+                {td.copyWithGcp(wrongSizeReadArray)},
+                {td.copyWithReadLengths(wrongSizeLengthsArray)},
+                {td.copyWithHapLengths(wrongSizeLengthsArray)}
+        };
+    }
+
+    @DataProvider
+    public Object[][] dataWithWrongBatchSizeAndLengths() {
+        PDHMMTestData td = new PDHMMTestData(1, HAPLOTYPE_MAX_LENGTH, READ_MAX_LENGTH);
+
+        return new Object[][]{
+                {td.copyWithBatchSize(0)},
+                {td.copyWithBatchSize(-1)},
+                {td.copyWithMaxHapLength(0)},
+                {td.copyWithMaxHapLength(-1)},
+                {td.copyWithMaxReadLength(0)},
+                {td.copyWithMaxReadLength(-1)}
+        };
+    }
+
+    @BeforeMethod
+    public void initializePDHMM() {
+        final boolean isLoaded = new IntelPDHMM().load(null);
+        Assert.assertTrue(isLoaded);
+        intelPDHMM = new IntelPDHMM();
+    }
+
+    @AfterMethod
+    public void closePDHMM() {
+        intelPDHMM.done();
+    }
+
+    @Test(dataProvider = "dataWithNullArguments", expectedExceptions = {NullPointerException.class})
+    public void testComputePDHMM_ThrowsNullPointerException_WhenArgumentIsNull(PDHMMTestData td) {
+        intelPDHMM.computePDHMM(
+                td.hapBases,
+                td.hapPdbases,
+                td.readBases,
+                td.readQual,
+                td.readInsQual,
+                td.readDelQual,
+                td.gcp,
+                td.hapLengths,
+                td.readLengths,
+                td.batchSize,
+                td.maxHapLength,
+                td.maxReadLength
+        );
+    }
+
+    @Test(dataProvider = "dataWithWrongSizeArrays", expectedExceptions = {IllegalArgumentException.class})
+    public void testComputePDHMM_ThrowsIllegalArgumentException_WhenArrayHasWrongSize(PDHMMTestData td) {
+        intelPDHMM.computePDHMM(
+                td.hapBases,
+                td.hapPdbases,
+                td.readBases,
+                td.readQual,
+                td.readInsQual,
+                td.readDelQual,
+                td.gcp,
+                td.hapLengths,
+                td.readLengths,
+                td.batchSize,
+                td.maxHapLength,
+                td.maxReadLength
+        );
+    }
+
+    @Test(dataProvider = "dataWithWrongBatchSizeAndLengths", expectedExceptions = {IllegalArgumentException.class})
+    public void testComputePDHMM_ThrowsIllegalArgumentException_WhenBatchSizeOrLengthsHaveZeroOrNegativeValue(PDHMMTestData td) {
+        intelPDHMM.computePDHMM(
+                td.hapBases,
+                td.hapPdbases,
+                td.readBases,
+                td.readQual,
+                td.readInsQual,
+                td.readDelQual,
+                td.gcp,
+                td.hapLengths,
+                td.readLengths,
+                td.batchSize,
+                td.maxHapLength,
+                td.maxReadLength
+        );
+    }
+
     @Test(enabled = true)
     public void pdhmmPerformanceTest() {
-
-        final boolean isLoaded = new IntelPDHMM().load(null);
-
-        final IntelPDHMM intelPDHMM = new IntelPDHMM();
-        Assert.assertTrue(isLoaded);
-
         for (String pdhmmData : pdhmmDataFiles) {
             try {
                 FileInputStream fis = new FileInputStream(pdhmmData);
@@ -115,8 +231,7 @@ public class IntelPDHMMUnitTest {
                         readLength,
                         batchSize, max_hap_length, max_read_length);
                 long end = System.nanoTime();
-                System.out.println(
-                        String.format("Total Elapsed Time = %d ms.", TimeUnit.NANOSECONDS.toMillis(end - start)));
+                System.out.printf("Total Elapsed Time = %d ms.%n", TimeUnit.NANOSECONDS.toMillis(end - start));
                 // Check Values
                 for (int i = 0; i < batchSize; i++) {
                     Assert.assertEquals(actual[i], expectedFull[i], DOUBLE_ASSERTION_DELTA,
@@ -130,150 +245,6 @@ public class IntelPDHMMUnitTest {
                 e.printStackTrace();
             }
         }
-        intelPDHMM.done();
-    }
-
-    @Test(enabled = true)
-    public void testInvalidInputsForComputePDHMM() {
-        final boolean isLoaded = new IntelPDHMM().load(null);
-
-        final IntelPDHMM intelPDHMM = new IntelPDHMM();
-        Assert.assertTrue(isLoaded);
-        int batchSize = 1;
-        int hapArraySize = batchSize * HAPLOTYPE_MAX_LENGTH;
-        int readArraySize = batchSize * READ_MAX_LENGTH;
-
-        byte[] alleleBasesFull = new byte[hapArraySize];
-        byte[] allelePDBasesFull = new byte[hapArraySize];
-        byte[] readBasesFull = new byte[readArraySize];
-        byte[] readQualsFull = new byte[readArraySize];
-        byte[] readInsQualsFull = new byte[readArraySize];
-        byte[] readDelQualsFull = new byte[readArraySize];
-        byte[] overallGCPFull = new byte[readArraySize];
-        long[] hapLength = new long[batchSize];
-        long[] readLength = new long[batchSize];
-
-        final String NULL_ERROR = "NullPointerException expected.";
-        final String ILLEGAL_ARG_ERROR = "IllegalArgumentException expected.";
-
-        try {
-            intelPDHMM.computePDHMM(null, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(NULL_ERROR);
-        } catch (NullPointerException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, null, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(NULL_ERROR);
-        } catch (NullPointerException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, null, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(NULL_ERROR);
-        } catch (NullPointerException e) {
-        }
-
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, null, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(NULL_ERROR);
-        } catch (NullPointerException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, null,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(NULL_ERROR);
-        } catch (NullPointerException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    null, overallGCPFull, hapLength, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(NULL_ERROR);
-        } catch (NullPointerException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, null, hapLength, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(NULL_ERROR);
-        } catch (NullPointerException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, null, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(NULL_ERROR);
-        } catch (NullPointerException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, null, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(NULL_ERROR);
-        } catch (NullPointerException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, 0, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(ILLEGAL_ARG_ERROR);
-        } catch (IllegalArgumentException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, -1, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(ILLEGAL_ARG_ERROR);
-        } catch (IllegalArgumentException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, 0,
-                    READ_MAX_LENGTH);
-            Assert.fail(ILLEGAL_ARG_ERROR);
-        } catch (IllegalArgumentException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, -1,
-                    READ_MAX_LENGTH);
-            Assert.fail(ILLEGAL_ARG_ERROR);
-        } catch (IllegalArgumentException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    -20);
-            Assert.fail(ILLEGAL_ARG_ERROR);
-        } catch (IllegalArgumentException e) {
-        }
-        try {
-            intelPDHMM.computePDHMM(alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, 0,
-                    -20);
-            Assert.fail(ILLEGAL_ARG_ERROR);
-        } catch (IllegalArgumentException e) {
-        }
-
-        alleleBasesFull = new byte[hapArraySize - 1]; // incorrect sized array
-
-        try {
-            intelPDHMM.computePDHMM(
-                    alleleBasesFull, allelePDBasesFull, readBasesFull, readQualsFull, readInsQualsFull,
-                    readDelQualsFull, overallGCPFull, hapLength, readLength, batchSize, HAPLOTYPE_MAX_LENGTH,
-                    READ_MAX_LENGTH);
-            Assert.fail(ILLEGAL_ARG_ERROR);
-        } catch (IllegalArgumentException e) {
-        }
-
         intelPDHMM.done();
     }
 
@@ -412,7 +383,5 @@ public class IntelPDHMMUnitTest {
             }
         }
         intelPDHMM.done();
-
     }
-
 }
