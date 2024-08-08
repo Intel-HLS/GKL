@@ -42,6 +42,7 @@ public:
     static double get(double difference);
 
     static void initCache();
+    static void freeCache();
 
 private:
     static double cacheIntToDouble(int i);

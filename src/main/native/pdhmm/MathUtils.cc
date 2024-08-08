@@ -61,6 +61,11 @@ void JacobianLogTable::initCache()
     cache = result;
 }
 
+void JacobianLogTable::freeCache()
+{
+    _mm_free(cache);
+}
+
 double JacobianLogTable::cacheIntToDouble(int k)
 {
     return log10(1.0 + pow(10.0, -k * TABLE_STEP));

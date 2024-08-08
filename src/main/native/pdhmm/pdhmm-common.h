@@ -142,6 +142,7 @@ inline void freeInit(double *matchToMatchLog10, double *matchToMatchProb,
                      double *qualToErrorProbCache,
                      double *qualToProbLog10Cache)
 {
+    JacobianLogTable::freeCache();
     _mm_free(matchToMatchLog10);
     _mm_free(matchToMatchProb);
     _mm_free(qualToErrorProbCache);
