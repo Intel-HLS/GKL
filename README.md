@@ -5,7 +5,7 @@
 This repository contains optimized versions of compute kernels used in genomics applications like
 [GATK](https://github.com/broadinstitute/gatk) and [HTSJDK](https://github.com/samtools/htsjdk).
 These kernels are optimized to run on Intel Architecture (AVX, AVX2, AVX-512, and multicore) under 64-bit Linux and Mac OSX.
-
+ 
 Kernels included:
 * **PairHMM**
   * AVX and AVX-512 optimized versions of PairHMM used in GATK HaplotypeCaller and MuTect2. 
